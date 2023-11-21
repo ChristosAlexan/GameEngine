@@ -1,0 +1,4 @@
+Count= 135
+lightsCount= 3
+pointLightsCount= 4
+CollisionCount= 0
