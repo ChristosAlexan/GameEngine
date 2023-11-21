@@ -89,19 +89,28 @@ void Entity::UpdatePhysics(bool& runPhysics)
 		physicsComponent.trans.p.z = pos.z;
 	}
 
-	if (physicsComponent.aActor)
+	//Lamda to handle axis rotation
+	auto axisRotation = [this]()
 	{
-		if (physicsComponent.aActor->getActorFlags().isSet(physx::PxActorFlag::eDISABLE_SIMULATION))
-		{
-			physicsComponent.trans.q += physx::PxQuat(physicsComponent.physics_rot.w, physx::PxVec3(physicsComponent.physics_rot.x, physicsComponent.physics_rot.y, physicsComponent.physics_rot.z));
-		}
-	}
-	else if (physicsComponent.aStaticActor)
+
+			float angleX = physicsComponent.physics_rot.x;
+			float angleY = physicsComponent.physics_rot.y;
+			float angleZ = physicsComponent.physics_rot.z;
+
+			float angleXRad = physx::PxPi * angleX / 180.0f;
+			float angleYRad = physx::PxPi * angleY / 180.0f;
+			float angleZRad = physx::PxPi * angleZ / 180.0f;
+
+			physx::PxQuat quatX(angleXRad, physx::PxVec3(1.0f, 0.0f, 0.0f));
+			physx::PxQuat quatY(angleYRad, physx::PxVec3(0.0f, 1.0f, 0.0f));
+			physx::PxQuat quatZ(angleZRad, physx::PxVec3(0.0f, 0.0f, 1.0f));
+
+			physicsComponent.trans.q = quatX * quatY * quatZ;
+	};
+
+	if (!runPhysics && (physicsComponent.aActor || physicsComponent.aStaticActor))
 	{
-		if (physicsComponent.aStaticActor->getActorFlags().isSet(physx::PxActorFlag::eDISABLE_SIMULATION))
-		{
-			physicsComponent.trans.q += physx::PxQuat(physicsComponent.physics_rot.w, physx::PxVec3(physicsComponent.physics_rot.x, physicsComponent.physics_rot.y, physicsComponent.physics_rot.z));
-		}
+		axisRotation();
 	}
 
 	if (physicsComponent.aActor)
@@ -364,7 +373,7 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<Entity>& entities)
 		ImGui::DragFloat3("modelPos", &modelPos.x, 0.01f);
 
 
-		ImGui::DragFloat4("physics_rot", &physicsComponent.physics_rot.x, 0.01f);
+		ImGui::DragFloat4("physics_rot", &physicsComponent.physics_rot.x, 0.5f);
 		ImGui::DragFloat3("physics_scale", &physicsComponent.physics_scale.x, 0.01f);
 		ImGui::DragFloat3("frustumScale", &frustumScale.x, 0.01f);
 		ImGui::DragFloat3("emissiveColor", &emissiveColor.x, 0.01f);
