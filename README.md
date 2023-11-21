@@ -4,7 +4,8 @@
 
 - <img src="https://user-images.githubusercontent.com/32782134/163593129-59e54fb0-e03e-4a93-bd40-9652b90a5161.png" width=15% height=15%> https://www.fmod.com/
 
-- <img src="https://user-images.githubusercontent.com/32782134/163594397-c083f917-64bf-4f5c-b42d-eb97a7168fe7.png" width=15% height=15%> https://gameworksdocs.nvidia.com/PhysX/4.1/documentation/physxguide/Index.html
+- <img src="https://user-images.githubusercontent.com/32782134/163594397-c083f917-64bf-4f5c-b42d-eb97a7168fe7.png" width=15% height=15%> 
+https://nvidia-omniverse.github.io/PhysX/physx/5.3.0/index.html
 
 - Open Asset Import Library (assimp) https://github.com/assimp/assimp
 - Dear ImGui https://github.com/ocornut/imgui#dear-imgui
