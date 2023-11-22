@@ -71,6 +71,15 @@ void Mesh::Draw(Texture* text)
 					this->deviceContext->PSSetShaderResources(2, 1, textures[i].GetTextureResourceViewAddress());
 				}
 			}
+			else
+			{
+				if(albedoTexture)
+					this->deviceContext->PSSetShaderResources(0, 1, albedoTexture.get());
+				if(normalTexture)
+					this->deviceContext->PSSetShaderResources(1, 1, normalTexture.get());
+				if(roughMetalTexture)
+					this->deviceContext->PSSetShaderResources(2, 1, roughMetalTexture.get());
+			}
 			
 		}
 	}

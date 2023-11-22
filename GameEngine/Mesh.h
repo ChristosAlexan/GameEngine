@@ -31,6 +31,10 @@ public:
 	VertexBuffer<VertexBoneData> boneDataBuffer;
 	IndexBuffer indexBuffer;
 	std::vector<Texture> textures;
+
+	std::unique_ptr<ID3D11ShaderResourceView*> albedoTexture;
+	std::unique_ptr<ID3D11ShaderResourceView*> normalTexture;
+	std::unique_ptr<ID3D11ShaderResourceView*> roughMetalTexture;
 private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
 	DirectX::XMMATRIX transformMatrix;

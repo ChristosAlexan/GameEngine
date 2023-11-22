@@ -35,9 +35,15 @@ void Entity::CreatePhysicsComponent(physx::PxPhysics& physics, physx::PxScene& s
 		return;
 
 	if (physicsComponent.aActor)
+	{
 		scene.removeActor(*physicsComponent.aActor);
+		scale = DirectX::XMFLOAT3(0, 0, 0);
+	}
 	else if (physicsComponent.aStaticActor)
+	{
 		scene.removeActor(*physicsComponent.aStaticActor);
+		scale = DirectX::XMFLOAT3(0, 0, 0);
+	}
 
 	switch (physicsComponent.physicsShapeEnum)
 	{
@@ -349,44 +355,68 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<Entity>& entities)
 	ImGui::SameLine();
 	ImGui::Text((" Z: " + std::to_string(physicsComponent.trans.p.z)).c_str());
 	ImGui::DragFloat3("pos", &pos.x, 0.01f);
-	ImGui::DragFloat3("rot", &rot.x, 0.01f);
-	ImGui::DragFloat3("scale", &scale.x, 0.01f);
+	if (physicsComponent.aActor || physicsComponent.aStaticActor || physicsComponent.isCharacter)
+	{
+		ImGui::DragFloat3("scale", &physicsComponent.physics_scale.x, 0.01f);
+		ImGui::DragFloat4("rot", &physicsComponent.physics_rot.x, 0.5f);
+	}
+	else
+	{
+		ImGui::DragFloat3("rot", &rot.x, 0.01f);
+		ImGui::DragFloat3("scale", &scale.x, 0.01f);
+	}
 
 	static bool showHidden = false;
-	ImGui::Checkbox("Show hidden", &showHidden);
+	ImGui::Checkbox("More", &showHidden);
 
 	if (showHidden)
 	{
-		ImGui::Checkbox("isCharacter", &physicsComponent.isCharacter);
-		ImGui::Checkbox("isPlayer", &isPlayer);
-		ImGui::Checkbox("isAI", &isAI);
-		ImGui::Checkbox("isWalkable", &isWalkable);
-		ImGui::Checkbox("isObstacle", &isObstacle);
-		ImGui::Checkbox("isAttached", &model.isAttached);
-		ImGui::Checkbox("isEmissive", &isEmissive);
-		if (ImGui::Button("Create Controller"))
+
+		if (ImGui::CollapsingHeader("Model transform"))
 		{
-			bCreateController = true;
+			ImGui::DragFloat3("modelPos", &modelPos.x, 0.01f);
+
+			if (physicsComponent.aActor || physicsComponent.aStaticActor || physicsComponent.isCharacter)
+			{
+				ImGui::DragFloat3("model_rotation", &rot.x, 0.01f);
+				ImGui::DragFloat3("model_scale", &scale.x, 0.01f);
+			}
 		}
-		ImGui::Checkbox("Render", &bRender);
 
-		ImGui::DragFloat3("modelPos", &modelPos.x, 0.01f);
+		if (ImGui::CollapsingHeader("Options"))
+		{
+			ImGui::Checkbox("isCharacter", &physicsComponent.isCharacter);
+			ImGui::Checkbox("isPlayer", &isPlayer);
+			ImGui::Checkbox("isAI", &isAI);
+			ImGui::Checkbox("isWalkable", &isWalkable);
+			ImGui::Checkbox("isObstacle", &isObstacle);
+			ImGui::Checkbox("isAttached", &model.isAttached);
+			ImGui::Checkbox("isEmissive", &isEmissive);
+			if (ImGui::Button("Create Controller"))
+			{
+				bCreateController = true;
+			}
+			ImGui::Checkbox("Render", &bRender);
+		}
+	
 
+		if (ImGui::CollapsingHeader("Extra"))
+		{
+			ImGui::DragFloat3("frustumScale", &frustumScale.x, 0.01f);
+			ImGui::DragFloat3("emissiveColor", &emissiveColor.x, 0.01f);
+			ImGui::DragFloat3("BoneRot", &model.BoneRot.x, 0.01f);
 
-		ImGui::DragFloat4("physics_rot", &physicsComponent.physics_rot.x, 0.5f);
-		ImGui::DragFloat3("physics_scale", &physicsComponent.physics_scale.x, 0.01f);
-		ImGui::DragFloat3("frustumScale", &frustumScale.x, 0.01f);
-		ImGui::DragFloat3("emissiveColor", &emissiveColor.x, 0.01f);
-		ImGui::DragFloat3("BoneRot", &model.BoneRot.x, 0.01f);
+			ImGui::Checkbox("isTransparent", &model.isTransparent);
+			ImGui::Checkbox("Frustum", &isfrustumEnabled);
+		}
 
-		ImGui::Checkbox("isTransparent", &model.isTransparent);
-		ImGui::Checkbox("Frustum", &isfrustumEnabled);
-
-		ImGui::DragFloat("Mass", &physicsComponent.mass);
-		ImGui::InputInt("triangleMeshStride", &physicsComponent.triangleMeshStride);
-		ImGui::InputInt("convexMeshDetail", &physicsComponent.convexMeshDetail);
-		ImGui::InputInt("Physics Shape", &physicsComponent.selectedShape);
-
+		if (ImGui::CollapsingHeader("Physics"))
+		{
+			ImGui::DragFloat("Mass", &physicsComponent.mass);
+			ImGui::InputInt("triangleMeshStride", &physicsComponent.triangleMeshStride);
+			ImGui::InputInt("convexMeshDetail", &physicsComponent.convexMeshDetail);
+			ImGui::InputInt("Physics Shape", &physicsComponent.selectedShape);
+		}
 
 		if (ImGui::Button("Apply"))
 		{

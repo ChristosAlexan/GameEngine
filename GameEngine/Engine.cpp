@@ -437,7 +437,7 @@ void Engine::ObjectsHandler(float& dt)
 {
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		entities[i].model.LoadTextures(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get());
+		entities[i].model.LoadTextures(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), globalTextureStorage);
 
 		if (entities[i].isDeleted)
 			continue;
@@ -464,14 +464,18 @@ void Engine::ObjectsHandler(float& dt)
 			if (entities[i].physicsComponent.aActor)
 			{
 				entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
-				entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+
+				if(entities[i].physicsComponent.aShape)
+					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
 
 				entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
 			}
 			else if (entities[i].physicsComponent.aStaticActor)
 			{
 				entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
-				entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+
+				if(entities[i].physicsComponent.aShape)
+					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
 
 				entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
 			}
@@ -481,14 +485,18 @@ void Engine::ObjectsHandler(float& dt)
 			if (entities[i].physicsComponent.aActor)
 			{
 				entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
-				entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+
+				if(entities[i].physicsComponent.aShape)
+					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
 				entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
 			}
 			else if (entities[i].physicsComponent.aStaticActor)
 			{
 				entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
-				entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+
+				if(entities[i].physicsComponent.aShape)
+					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
 				entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
 			}

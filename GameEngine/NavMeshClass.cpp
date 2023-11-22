@@ -10,6 +10,11 @@ NavMeshClass::NavMeshClass()
 
 void NavMeshClass::CalculatePath(float& dt, Entity* start, Entity* end, AIController& controller, GridClass& grid, float& gravity)
 {
+	if (!end->physicsComponent.isCharacter)
+		return;
+	if (end->isDeleted || start->isDeleted)
+		return;
+
 	if (!end || !start)
 		return;
 

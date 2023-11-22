@@ -10,7 +10,7 @@ public:
 
 	bool Initialize(const std::string filePath, ID3D11Device* device, ID3D11DeviceContext* deviceContex, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, bool isAnimated);
 	bool LoadModel(const std::string filePath);
-	void LoadTextures(ID3D11Device* device, ID3D11DeviceContext* deviceContex);
+	void LoadTextures(ID3D11Device* device, ID3D11DeviceContext* deviceContex, std::unordered_map<std::string, Texture>& globalTextureStorage);
 	bool LoadAnimation(const std::string& filePath);
 
 

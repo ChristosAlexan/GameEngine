@@ -123,7 +123,7 @@ bool ModelLoader::LoadModel(const std::string filePath)
 	return true;
 }
 
-void ModelLoader::LoadTextures(ID3D11Device* device, ID3D11DeviceContext* deviceContex)
+void ModelLoader::LoadTextures(ID3D11Device* device, ID3D11DeviceContext* deviceContex, std::unordered_map<std::string, Texture>& globalTextureStorage)
 {
 	if (loadAsync)
 	{
@@ -136,9 +136,62 @@ void ModelLoader::LoadTextures(ID3D11Device* device, ID3D11DeviceContext* device
 					for (int j = 0; j < meshes[i].textures.size(); ++j)
 					{
 						if (isDDS)
-							meshes[i].textures[j].CreateTextureDDSFromWIC(device, deviceContex, meshes[i].textures[j].texturePath);
+						{
+							size_t pos = 0;
+							std::string search = "/Data";
+							std::string replace = ".//Data";
+							pos = meshes[i].textures[j].texturePath.find(search);
+							if (pos != std::string::npos)
+							{
+								meshes[i].textures[j].texturePath.replace(0, pos + search.length(), replace);
+							}
+
+							bool bTextFound = false;
+							pos = 0;
+							search = "png";
+							replace = "dds";
+							while ((pos = meshes[i].textures[j].texturePath.find(search, pos)) != std::string::npos)
+							{
+								meshes[i].textures[j].texturePath.replace(pos, search.length(), replace);
+								pos += replace.length();
+								bTextFound = true;
+							}
+
+							if (!bTextFound)
+							{
+								pos = 0;
+								search = "jpg";
+								while ((pos = meshes[i].textures[j].texturePath.find(search, pos)) != std::string::npos)
+								{
+									meshes[i].textures[j].texturePath.replace(pos, search.length(), replace);
+									pos += replace.length();
+								}
+							}
+						}
+						
+						//OutputDebugStringA((meshes[i].textures[j].texturePath + "\n").c_str());
+
+						if (!globalTextureStorage.contains(meshes[i].textures[j].texturePath))
+						{
+							if (isDDS)
+								meshes[i].textures[j].CreateTextureDDSFromWIC(device, deviceContex, meshes[i].textures[j].texturePath);
+							else
+								meshes[i].textures[j].CreateTextureWIC(device, meshes[i].textures[j].path);
+
+
+
+							globalTextureStorage.emplace(meshes[i].textures[j].texturePath, meshes[i].textures[j]);
+						}
 						else
-							meshes[i].textures[j].CreateTextureWIC(device, meshes[i].textures[j].path);
+						{
+							if (globalTextureStorage.at(meshes[i].textures[j].texturePath).GetType() == aiTextureType::aiTextureType_DIFFUSE)
+								meshes[i].albedoTexture = std::make_unique<ID3D11ShaderResourceView*>(globalTextureStorage.at(meshes[i].textures[j].texturePath).GetTextureResourceView());
+							else if (globalTextureStorage.at(meshes[i].textures[j].texturePath).GetType() == aiTextureType::aiTextureType_NORMALS)
+								meshes[i].normalTexture = std::make_unique<ID3D11ShaderResourceView*>(globalTextureStorage.at(meshes[i].textures[j].texturePath).GetTextureResourceView());
+							else if (globalTextureStorage.at(meshes[i].textures[j].texturePath).GetType() == aiTextureType::aiTextureType_UNKNOWN)
+								meshes[i].roughMetalTexture = std::make_unique<ID3D11ShaderResourceView*>(globalTextureStorage.at(meshes[i].textures[j].texturePath).GetTextureResourceView());
+						}
+					
 					}
 				}
 				bTexturesReady = true;

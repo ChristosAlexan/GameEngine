@@ -362,10 +362,15 @@ void PhysicsHandler::NavMeshRayCast(GridClass& grid, std::vector<Entity>& entiti
 
 void PhysicsHandler::LineOfSightToPlayer(Entity* character, Entity* player)
 {
+	if (!character->physicsComponent.isCharacter)
+		return;
+	if (character->isDeleted)
+		return;
 	if (character == player)
 		return;
 	if (!character || !player)
 		return;
+
 	character->physicsComponent.trans = character->physicsComponent.aActor->getGlobalPose();
 
 	character->physicsComponent.hasLineOfSight = false;

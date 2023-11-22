@@ -140,10 +140,9 @@ private:
 	CopiedLightData copiedLightData;
 	CopiedLightData copiedPointLightData;
 
-
+	std::unordered_map<std::string, Texture> globalTextureStorage;
 
 	SoundComponent backGroundSound;
-
 private:
 		DirectX::XMFLOAT3 camTempPos, camTempRot;
 		bool bProbesReady = true;
