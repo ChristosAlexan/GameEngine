@@ -72,16 +72,16 @@ float4 main(PS_INPUT input) : SV_TARGET
 {
     int3 sampleIndices = int3(input.inPosition.xy, 0);
     
-    float4 albedo = float4(pow(objTexture.Load(sampleIndices), gamma));
+    float4 albedo = float4(pow(objTexture.Sample(SampleTypeWrap, input.inTexCoord), gamma));
     
-    float3 bumpNormal = normalTexture.Load(sampleIndices).rgb;
+    float3 bumpNormal = normalTexture.Sample(SampleTypeWrap, input.inTexCoord).rgb;
     if (bumpNormal.r == -1 && bumpNormal.g == -1 && bumpNormal.b == -1)
     {
         float3 color = albedo.rgb;
         return float4(color, 1.0f);
     }
-    float metallic = roughnessMetalicTexture.Load(sampleIndices).b;
-    float roughness = roughnessMetalicTexture.Load(sampleIndices).g;
+    float metallic = roughnessMetalicTexture.Sample(SampleTypeWrap, input.inTexCoord).b;
+    float roughness = roughnessMetalicTexture.Sample(SampleTypeWrap, input.inTexCoord).g;
     float4 worldPos = worldPositionTexture.Load(sampleIndices);
     
     
