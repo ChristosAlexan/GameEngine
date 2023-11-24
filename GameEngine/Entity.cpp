@@ -13,6 +13,82 @@ Entity::Entity()
 	bFlagForDeletion = false;
 	isEmissive = false;
 }
+/*
+Entity::Entity(const Entity& other)
+{
+	model.isTextured = other.model.isTextured;
+	filePath = other.filePath;
+	model.animFiles = other.model.animFiles;
+
+	bRender = other.bRender;
+	isAI = other.isAI;
+	isAnimated = other.isAnimated;
+	physicsComponent.isCharacter = other.physicsComponent.isCharacter;
+	isfrustumEnabled = other.isfrustumEnabled;
+	isObstacle = other.isObstacle;
+	isPlayer = other.isPlayer;
+	model.isTransparent = other.model.isTransparent;
+	isWalkable = other.isWalkable;
+	physicsComponent.mass = other.physicsComponent.mass;
+	modelPos = other.modelPos;
+	physicsComponent.physicsShapeEnum = other.physicsComponent.physicsShapeEnum;
+	physicsComponent.physics_rot = other.physicsComponent.physics_rot;
+	physicsComponent.physics_scale = other.physicsComponent.physics_scale;
+	pos = other.pos;
+	scale = other.scale;
+	rot = other.rot;
+	model.bConvertCordinates = other.model.bConvertCordinates;
+	frustumScale = other.frustumScale;
+	isEmissive = other.isEmissive;
+	emissiveColor = other.emissiveColor;
+}
+*/
+
+void Entity::CopyData(const Entity& other)
+{
+	if (other.physicsComponent.aActor)
+	{
+		physicsComponent.trans = other.physicsComponent.aActor->getGlobalPose();
+	}
+	else if (other.physicsComponent.aStaticActor)
+	{
+		physicsComponent.trans = other.physicsComponent.aStaticActor->getGlobalPose();
+	}
+	model.isTextured = other.model.isTextured;
+	model.animFiles = other.model.animFiles;
+	bRender = other.bRender;
+	filePath = other._filePath;
+	isAI = other.isAI;
+	isAnimated = other.isAnimated;
+	physicsComponent.isCharacter = other.physicsComponent.isCharacter;
+	isfrustumEnabled = other.isfrustumEnabled;
+	isObstacle = other.isObstacle;
+	isPlayer = other.isPlayer;
+	model.isTransparent = other.model.isTransparent;
+	isWalkable = other.isWalkable;
+	physicsComponent.mass = other.physicsComponent.mass;
+	modelPos = other.modelPos;
+
+	if (other.physicsComponent.physicsShapeEnum != PhysicsShapeEnum::CONVEXMESH)
+	{
+		physicsComponent.physicsShapeEnum = other.physicsComponent.physicsShapeEnum;
+		physicsComponent.selectedShape = other.physicsComponent.selectedShape;
+	}
+	else
+	{
+		physicsComponent.physicsShapeEnum = PhysicsShapeEnum::NONE;
+		physicsComponent.selectedShape = -1;
+	}
+	physicsComponent.physics_rot = other.physicsComponent.physics_rot;
+	physicsComponent.physics_scale = other.physicsComponent.physics_scale;
+	pos = other.pos;
+	scale = other.scale;
+	rot = other.rot;
+	model.bConvertCordinates = other.model.bConvertCordinates;
+	frustumScale = other.frustumScale;
+	isEmissive = other.isEmissive;
+	emissiveColor = other.emissiveColor;
+}
 
 bool Entity::Intitialize(const std::string filePath, ID3D11Device* device, ID3D11DeviceContext* deviceContext, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, bool isAnimated)
 {

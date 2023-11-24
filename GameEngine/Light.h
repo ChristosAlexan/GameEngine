@@ -10,6 +10,8 @@ class Light
 {
 public:
 	Light();
+
+	void CopyData(const Light& other);
 	void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader);
 	void SetupCamera(int windowWidth, int windowHeight);
 	void UpdateCamera();

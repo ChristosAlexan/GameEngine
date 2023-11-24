@@ -8,12 +8,6 @@ Engine::Engine()
 	player = nullptr;
 }
 
-template<class T>
-inline Engine::Engine(T& lhs, T& rhs)
-{
-	std::swap(lhs, rhs);
-}
-
 bool Engine::Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height)
 {
 	this->width = width;
@@ -260,7 +254,7 @@ void Engine::Update(int width, int height)
 			entities[i].Clear(*physicsHandler.aScene);
 			if (i < entities.size() - 1)
 			{
-				std::swap(entities[i], entities.back());
+				std::swap(entities.at(i), entities.back());
 			}
 			entities.pop_back();
 			entities[i].bFlagForDeletion = false;
@@ -463,7 +457,8 @@ void Engine::ObjectsHandler(float& dt)
 		{
 			if (entities[i].physicsComponent.aActor)
 			{
-				entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
+				if(entities[i].physicsComponent.aActor->getNbShapes() > 0)
+					entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
 
 				if(entities[i].physicsComponent.aShape)
 					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
@@ -472,7 +467,8 @@ void Engine::ObjectsHandler(float& dt)
 			}
 			else if (entities[i].physicsComponent.aStaticActor)
 			{
-				entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
+				if (entities[i].physicsComponent.aStaticActor->getNbShapes() > 0)
+					entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
 
 				if(entities[i].physicsComponent.aShape)
 					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
@@ -586,8 +582,6 @@ void Engine::AIHandler(float& dt)
 						AIEntities.push_back(&entities[i]);
 					}
 				}
-				//async_fallCheck.resize(AIEntities.size());
-				//async_lineOfSightToPlayer.resize(AIEntities.size());
 
 				grid.nodes.clear();
 				navMeshes.clear();
@@ -656,81 +650,16 @@ void Engine::CopyPasteEntity()
 		{
 			if (renderer.listbox_item_current == i || entities[i].isSelected)
 			{
-				if (entities[i].physicsComponent.aActor)
-				{
-					copiedEntityData.trans = entities[i].physicsComponent.aActor->getGlobalPose();
-				}
-				else if (entities[i].physicsComponent.aStaticActor)
-				{
-					copiedEntityData.trans = entities[i].physicsComponent.aStaticActor->getGlobalPose();
-				}
-				copiedEntityData.isTextured = entities[i].model.isTextured;
-				copiedEntityData.AnimFilePaths = entities[i].model.animFiles;
-				copiedEntityData.bRender = entities[i].bRender;
-				copiedEntityData.FilePath = entities[i]._filePath;
-				copiedEntityData.isAi = entities[i].isAI;
-				copiedEntityData.isAnimated = entities[i].isAnimated;
-				copiedEntityData.isCharacter = entities[i].physicsComponent.isCharacter;
-				copiedEntityData.isfrustumEnabled = entities[i].isfrustumEnabled;
-				copiedEntityData.isObstacle = entities[i].isObstacle;
-				copiedEntityData.isPlayer = entities[i].isPlayer;
-				copiedEntityData.isTransparent = entities[i].model.isTransparent;
-				copiedEntityData.isWalkable = entities[i].isWalkable;
-				copiedEntityData.mass = entities[i].physicsComponent.mass;
-				copiedEntityData.modelPos = entities[i].modelPos;
-
-				if (copiedEntityData.physicsShapeEnum != PhysicsShapeEnum::CONVEXMESH)
-				{
-					copiedEntityData.physicsShapeEnum = entities[i].physicsComponent.physicsShapeEnum;
-					copiedEntityData.selectedShape = entities[i].physicsComponent.selectedShape;
-				}
-				else
-				{
-					copiedEntityData.physicsShapeEnum = PhysicsShapeEnum::NONE;
-					copiedEntityData.selectedShape = -1;
-				}
-				copiedEntityData.physics_rot = entities[i].physicsComponent.physics_rot;
-				copiedEntityData.physics_scale = entities[i].physicsComponent.physics_scale;
-				copiedEntityData.pos = entities[i].pos;
-				copiedEntityData.scale = entities[i].scale;
-				copiedEntityData.rot = entities[i].rot;
-				copiedEntityData.bConvertCordinates = entities[i].model.bConvertCordinates;
-				copiedEntityData.frustumScale = entities[i].frustumScale;
-				copiedEntityData.isEmissive = entities[i].isEmissive;
-				copiedEntityData.emissiveColor = entities[i].emissiveColor;
-
-				//OutputDebugStringA("Data copied!!\n");
+				entityToCopy = i;
 			}
 		}
 	}
 	if (pasteEntity)
 	{
+
 		entities.push_back(Entity());
-		entities[entities.size() - 1].model.isTextured = copiedEntityData.isTextured;
-		entities[entities.size() - 1].filePath = copiedEntityData.FilePath;
-		entities[entities.size() - 1].model.animFiles = copiedEntityData.AnimFilePaths;
-	
-		entities[entities.size() - 1].bRender = copiedEntityData.bRender;
-		entities[entities.size() - 1].isAI = copiedEntityData.isAi;
-		entities[entities.size() - 1].isAnimated = copiedEntityData.isAnimated;
-		entities[entities.size() - 1].physicsComponent.isCharacter = copiedEntityData.isCharacter;
-		entities[entities.size() - 1].isfrustumEnabled = copiedEntityData.isfrustumEnabled;
-		entities[entities.size() - 1].isObstacle = copiedEntityData.isObstacle;
-		entities[entities.size() - 1].isPlayer = copiedEntityData.isPlayer;
-		entities[entities.size() - 1].model.isTransparent = copiedEntityData.isTransparent;
-		entities[entities.size() - 1].isWalkable = copiedEntityData.isWalkable;
-		entities[entities.size() - 1].physicsComponent.mass = copiedEntityData.mass;
-		entities[entities.size() - 1].modelPos = copiedEntityData.modelPos;
-		entities[entities.size() - 1].physicsComponent.physicsShapeEnum = copiedEntityData.physicsShapeEnum;
-		entities[entities.size() - 1].physicsComponent.physics_rot = copiedEntityData.physics_rot;
-		entities[entities.size() - 1].physicsComponent.physics_scale = copiedEntityData.physics_scale;
-		entities[entities.size() - 1].pos = copiedEntityData.pos;
-		entities[entities.size() - 1].scale = copiedEntityData.scale;
-		entities[entities.size() - 1].rot = copiedEntityData.rot;
-		entities[entities.size() - 1].model.bConvertCordinates = copiedEntityData.bConvertCordinates;
-		entities[entities.size() - 1].frustumScale = copiedEntityData.frustumScale;
-		entities[entities.size() - 1].isEmissive = copiedEntityData.isEmissive;
-		entities[entities.size() - 1].emissiveColor = copiedEntityData.emissiveColor;
+
+		entities[entities.size() - 1].CopyData(entities[entityToCopy]);
 
 		int nameIndex = 0;
 		for (int i = 0; i < entities.size(); ++i)
@@ -750,7 +679,7 @@ void Engine::CopyPasteEntity()
 		else
 			entities[entities.size() - 1].model.loadAsync = true;
 
-		AddEntity(copiedEntityData.FilePath, copiedEntityData.isAnimated, entities[entities.size() - 1].model.bConvertCordinates);
+		AddEntity(entities[entities.size() - 1].filePath, entities[entities.size() - 1].isAnimated, entities[entities.size() - 1].model.bConvertCordinates);
 	
 		if (entities[entities.size() - 1].physicsComponent.isCharacter)
 			entities[entities.size() - 1].physicsComponent.CreateController(*physicsHandler.mPhysics, *physicsHandler.aScene, physx::PxVec3(entities[entities.size() - 1].pos.x, entities[entities.size() - 1].pos.y, entities[entities.size() - 1].pos.z), entities[entities.size() - 1].entityName);
@@ -759,11 +688,11 @@ void Engine::CopyPasteEntity()
 
 		if (entities[entities.size() - 1].physicsComponent.aActor)
 		{
-			entities[entities.size() - 1].physicsComponent.aActor->setGlobalPose(copiedEntityData.trans);
+			entities[entities.size() - 1].physicsComponent.aActor->setGlobalPose(entities[entities.size() - 1].physicsComponent.trans);
 		}
 		else if (entities[entities.size() - 1].physicsComponent.aStaticActor)
 		{
-			entities[entities.size() - 1].physicsComponent.aStaticActor->setGlobalPose(copiedEntityData.trans);
+			entities[entities.size() - 1].physicsComponent.aStaticActor->setGlobalPose(entities[entities.size() - 1].physicsComponent.trans);
 		}
 		//OutputDebugStringA("Data Pasted!!\n");
 	}
@@ -773,89 +702,17 @@ void Engine::CopyPasteEntity()
 
 void Engine::CopyPasteLight()
 {
-	for (int i = 0; i < lights.size(); ++i)
-	{
-		if (renderer.selectedLight == i)
-		{
-
-			copiedLightData.bShadow = lights[i].bShadow;
-			copiedLightData.cutOff = lights[i].cutOff;
-			copiedLightData.dimensions = lights[i].dimensions;
-			copiedLightData.direction = lights[i].direction;
-			copiedLightData.farZ = lights[i].farZ;
-			copiedLightData.fov = lights[i].fov;
-			copiedLightData.isLightEnabled = lights[i].isLightEnabled;
-			copiedLightData.lightColor = lights[i].lightColor;
-			copiedLightData.lightType = lights[i].lightType;
-			copiedLightData.nearZ = lights[i].nearZ;
-			copiedLightData.pos = lights[i].pos;
-			copiedLightData.radius = lights[i].radius;
-			copiedLightData.scale = lights[i].scale;
-			copiedLightData.SpotDir = lights[i].SpotDir;
-		}
-	}
-
 	AddLight();
-
-	lights[lights.size()-1].cutOff = copiedLightData.cutOff;
-	lights[lights.size()-1].dimensions = copiedLightData.dimensions;
-	lights[lights.size()-1].direction = copiedLightData.direction;
-	lights[lights.size()-1].farZ = copiedLightData.farZ;
-	lights[lights.size()-1].fov = copiedLightData.fov;
-	lights[lights.size()-1].isLightEnabled = copiedLightData.isLightEnabled;
-	lights[lights.size()-1].lightColor = copiedLightData.lightColor;
-	lights[lights.size()-1].lightType = copiedLightData.lightType;
-	lights[lights.size()-1].nearZ = copiedLightData.nearZ;
-	lights[lights.size()-1].pos = copiedLightData.pos;
-	lights[lights.size()-1].radius = copiedLightData.radius;
-	lights[lights.size()-1].scale = copiedLightData.scale;
-	lights[lights.size()-1].SpotDir = copiedLightData.SpotDir;
-
+	lights[lights.size() - 1].CopyData(lights[renderer.selectedLight]);
 	renderer.copyLight = false;
-	
 }
 
 
 void Engine::CopyPastePointLight()
 {
-	for (int i = 0; i < pointlights.size(); ++i)
-	{
-		if (renderer.selectedPointLight == i)
-		{
-			copiedPointLightData.bShadow = pointlights[i].bShadow;
-			copiedPointLightData.cutOff = pointlights[i].cutOff;
-			copiedPointLightData.dimensions = pointlights[i].dimensions;
-			copiedPointLightData.direction = pointlights[i].direction;
-			copiedPointLightData.farZ = pointlights[i].farZ;
-			copiedPointLightData.fov = pointlights[i].fov;
-			copiedPointLightData.isLightEnabled = pointlights[i].isLightEnabled;
-			copiedPointLightData.lightColor = pointlights[i].lightColor;
-			copiedPointLightData.lightType = pointlights[i].lightType;
-			copiedPointLightData.nearZ = pointlights[i].nearZ;
-			copiedPointLightData.pos = pointlights[i].pos;
-			copiedPointLightData.radius = pointlights[i].radius;
-			copiedPointLightData.scale = pointlights[i].scale;
-			copiedPointLightData.SpotDir = pointlights[i].SpotDir;
-		}
-	}
-
 	AddPointLight();
 
-	pointlights[pointlights.size() - 1].bShadow = copiedPointLightData.bShadow;
-	pointlights[pointlights.size() - 1].cutOff = copiedPointLightData.cutOff;
-	pointlights[pointlights.size() - 1].dimensions = copiedPointLightData.dimensions;
-	pointlights[pointlights.size() - 1].direction = copiedPointLightData.direction;
-	pointlights[pointlights.size() - 1].farZ = copiedPointLightData.farZ;
-	pointlights[pointlights.size() - 1].fov = copiedPointLightData.fov;
-	pointlights[pointlights.size() - 1].isLightEnabled = copiedPointLightData.isLightEnabled;
-	pointlights[pointlights.size() - 1].lightColor = copiedPointLightData.lightColor;
-	pointlights[pointlights.size() - 1].lightType = copiedPointLightData.lightType;
-	pointlights[pointlights.size() - 1].nearZ = copiedPointLightData.nearZ;
-	pointlights[pointlights.size() - 1].pos = copiedPointLightData.pos;
-	pointlights[pointlights.size() - 1].radius = copiedPointLightData.radius;
-	pointlights[pointlights.size() - 1].scale = copiedPointLightData.scale;
-	pointlights[pointlights.size() - 1].SpotDir = copiedPointLightData.SpotDir;
-
+	pointlights[pointlights.size() - 1].CopyData(pointlights[renderer.selectedPointLight]);
 	renderer.copyPointLight = false;
 
 }

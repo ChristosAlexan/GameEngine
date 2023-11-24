@@ -32,6 +32,23 @@ Light::Light()
 	lightType = 1.0f;
 }
 
+void Light::CopyData(const Light& other)
+{
+	cutOff = other.cutOff;
+	dimensions = other.dimensions;
+	direction = other.direction;
+	farZ = other.farZ;
+	fov = other.fov;
+	isLightEnabled = other.isLightEnabled;
+	lightColor = other.lightColor;
+	lightType = other.lightType;
+	nearZ = other.nearZ;
+	pos = other.pos;
+	radius = other.radius;
+	scale = other.scale;
+	SpotDir = other.SpotDir;
+}
+
 void Light::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader)
 {
 

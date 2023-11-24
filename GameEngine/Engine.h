@@ -21,8 +21,6 @@ class Engine : virtual WindowContainer
 {
 public:
 	Engine();
-	template<class T>
-	Engine(T& lhs, T& rhs);
 
 	bool Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height);
 	bool ProcessMessages();
@@ -89,56 +87,6 @@ private:
 	bool bCanCopy = true;
 	bool bCanPaste = true;
 
-	struct CopiedEntityData
-	{
-		physx::PxTransform trans;
-		std::string FilePath;
-		std::vector<std::string> AnimFilePaths;
-		bool isTransparent;
-		bool isAnimated;
-		bool isAi;
-		bool isTextured;
-		bool bConvertCordinates;
-		physx::PxReal mass;
-		DirectX::XMFLOAT3 pos;
-		DirectX::XMFLOAT3 scale;
-		DirectX::XMFLOAT3 rot;
-		DirectX::XMFLOAT3 frustumScale;
-		bool isCharacter;
-		bool isPlayer;
-		bool isWalkable;
-		bool isObstacle;
-		bool bRender;
-		DirectX::XMFLOAT3 modelPos;
-		physx::PxQuat physics_rot;
-		physx::PxVec3 physics_scale;
-		bool isfrustumEnabled;
-		bool isEmissive;
-		DirectX::XMFLOAT3 emissiveColor;
-		PhysicsShapeEnum physicsShapeEnum;
-		int selectedShape;
-	};
-	struct CopiedLightData
-	{
-		bool isLightEnabled;
-		bool bShadow;
-		DirectX::XMFLOAT3 pos;
-		DirectX::XMFLOAT3 scale;
-		DirectX::XMFLOAT4 lightColor;
-		DirectX::XMFLOAT3 direction;
-		DirectX::XMFLOAT3 SpotDir;
-		float radius;
-		float cutOff;
-		float lightType;
-		float nearZ;
-		float farZ;
-		float fov;
-		float dimensions;
-	};
-
-	CopiedEntityData copiedEntityData;
-	CopiedLightData copiedLightData;
-	CopiedLightData copiedPointLightData;
 
 	std::unordered_map<std::string, Texture> globalTextureStorage;
 
@@ -155,4 +103,6 @@ private:
 		std::vector<std::future<void>> async_fallCheck, async_lineOfSightToPlayer;
 
 		std::future<void> ai_async;
+
+		int entityToCopy = -1;
 };
