@@ -550,6 +550,10 @@ void Engine::ObjectsHandler(float& dt)
 
 void Engine::AIHandler(float& dt)
 {
+
+	if (entities.empty())
+		return;
+
 	grid.SetupGridBounds();
 
 	if (renderer.bHasFinishedLoading)
@@ -573,7 +577,6 @@ void Engine::AIHandler(float& dt)
 		{
 			if (grid.bInitGrid)
 			{
-
 				AIEntities.clear();
 				for (int i = 0; i < entities.size(); ++i)
 				{
@@ -629,8 +632,8 @@ void Engine::AIHandler(float& dt)
 						
 						physicsHandler.FallCheck(AIEntities[i]);
 						physicsHandler.LineOfSightToPlayer(AIEntities[i], player);
-					
-						if(async_rayCastNavMesh._Is_ready() && grid.bCreatePathStage)
+						
+						if(async_navMesh[i]._Is_ready())
 							navMeshes[i].CalculatePath(dt, AIEntities[i], player, enemyController, grid, gravity);
 					}
 				}
