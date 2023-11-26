@@ -522,6 +522,8 @@ void PhysicsHandler::PlayerFireRayTrace(TpsController& tpsPlayerController,Entit
 
 void PhysicsHandler::CrosshairRayTrace(TpsController& tpsPlayerController, Entity* player, std::vector<Entity>& entities, RectShape& crosshair, Camera& camera)
 {
+	if (!player || !player->physicsComponent.aActor || !player->physicsComponent.aShape)
+		return;
 	DirectX::XMFLOAT3 forwardDir;
 	DirectX::XMStoreFloat3(&forwardDir, camera.GetForwardVector());
 
@@ -529,8 +531,7 @@ void PhysicsHandler::CrosshairRayTrace(TpsController& tpsPlayerController, Entit
 
 	physx::PxVec3 origin;
 
-	if (player)
-		player->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+	player->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
 
 	origin = physx::PxVec3(camera.pos.x, camera.pos.y, camera.pos.z);
 

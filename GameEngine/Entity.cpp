@@ -213,7 +213,7 @@ void Entity::Update(bool& runPhysics)
 	UpdatePhysics(runPhysics);
 }
 
-void Entity::Draw(Camera& camera, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, Texture* text, bool bCheckFrustum)
+void Entity::Draw(Camera& camera, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, float screenFrustumDepth, Texture* text, bool bCheckFrustum)
 {
 
 	DirectX::XMMATRIX matrix_scale;
@@ -324,7 +324,7 @@ void Entity::Draw(Camera& camera, const DirectX::XMMATRIX& viewMatrix, const Dir
 
 				DirectX::XMMATRIX view = viewMatrix;
 				DirectX::XMMATRIX proj = projectionMatrix;
-				frustum.ConstructFrustum(100, view, proj);
+				frustum.ConstructFrustum(screenFrustumDepth, view, proj);
 
 				if (physicsComponent.aActor || physicsComponent.aStaticActor)
 					frustum.checkFrustum = frustum.CheckRect(physicsComponent.trans.p.x, physicsComponent.trans.p.y, physicsComponent.trans.p.z, scale.x + frustumScale.x, scale.y + frustumScale.y, scale.z + frustumScale.z);
@@ -608,8 +608,8 @@ void Entity::Input(Mouse& mouse, Keyboard& keyboard)
 
 void Entity::Clear(physx::PxScene& scene)
 {
-	if (isDeleted)
-		return;
+	//if (isDeleted)
+		//return;
 
 	isDeleted = true;
 	model.Clear();

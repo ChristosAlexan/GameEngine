@@ -65,32 +65,32 @@ void Texture::CreateTextureDDSFromWIC(ID3D11Device* device, ID3D11DeviceContext*
 	std::string replace = ".//Data";
 	pos = texturePath.find(search);
 
-	//if (pos != std::string::npos)
-	//{
-	//	texturePath.replace(0, pos + search.length(), replace);
-	//}
+	if (pos != std::string::npos)
+	{
+		texturePath.replace(0, pos + search.length(), replace);
+	}
 
-	//bool bTextFound = false;
-	//pos = 0;
-	//search = "png";
-	//replace = "dds";
-	//while ((pos = texturePath.find(search, pos)) != std::string::npos)
-	//{
-	//	texturePath.replace(pos, search.length(), replace);
-	//	pos += replace.length();
-	//	bTextFound = true;
-	//}
-	//
-	//if (!bTextFound)
-	//{
-	//	pos = 0;
-	//	search = "jpg";
-	//	while ((pos = texturePath.find(search, pos)) != std::string::npos)
-	//	{
-	//		texturePath.replace(pos, search.length(), replace);
-	//		pos += replace.length();
-	//	}
-	//}
+	bool bTextFound = false;
+	pos = 0;
+	search = "png";
+	replace = "dds";
+	while ((pos = texturePath.find(search, pos)) != std::string::npos)
+	{
+		texturePath.replace(pos, search.length(), replace);
+		pos += replace.length();
+		bTextFound = true;
+	}
+	
+	if (!bTextFound)
+	{
+		pos = 0;
+		search = "jpg";
+		while ((pos = texturePath.find(search, pos)) != std::string::npos)
+		{
+			texturePath.replace(pos, search.length(), replace);
+			pos += replace.length();
+		}
+	}
 
 
 	HRESULT hr;

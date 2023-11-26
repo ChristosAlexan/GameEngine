@@ -406,12 +406,25 @@ void Engine::AddPhysicsComp(Entity& entity)
 
 void Engine::AddLight()
 {
-	lights.push_back(Light());
-	lights[lights.size() - 1].lightType = 1.0f;
+	//lights.push_back(Light());
+	//lights[lights.size() - 1].lightType = 1.0f;
 
+	int width, height;
 
+	if (lights[lights.size() - 1].lightType == 2)
+	{
+		width = 2048 * 2;
+		height = 2048 * 2;
+	}
+	else
+	{
+		width = 1024;
+		height = 1024;
+	}
+	width = 2048 * 4;
+	height = 2048 * 4;
 	lights[lights.size() - 1].Initialize(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), renderer.gfx11.cb_vs_vertexshader);
-	lights[lights.size() - 1].m_shadowMap.InitializeShadow(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), 1024, 1024, DXGI_FORMAT_R16_FLOAT);
+	lights[lights.size() - 1].m_shadowMap.InitializeShadow(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), width, height, DXGI_FORMAT_R16_FLOAT);
 	lights[lights.size() - 1].SetupCamera(renderer.gfx11.windowWidth, renderer.gfx11.windowHeight);
 }
 void Engine::AddPointLight()
@@ -452,51 +465,67 @@ void Engine::ObjectsHandler(float& dt)
 				entities[i].bCreateController = false;
 			}
 		}
-	
+		
+
 		if (!renderer.runPhysics)
 		{
 			if (entities[i].physicsComponent.aActor)
 			{
-				if(entities[i].physicsComponent.aActor->getNbShapes() > 0)
+				if (entities[i].physicsComponent.aActor->getNbShapes() > 0)
+				{
 					entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
 
-				if(entities[i].physicsComponent.aShape)
-					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+					if (entities[i].physicsComponent.aShape)
+						entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
 
-				entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+					if (entities[i].physicsComponent.aActor)
+						entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+				}
 			}
 			else if (entities[i].physicsComponent.aStaticActor)
 			{
 				if (entities[i].physicsComponent.aStaticActor->getNbShapes() > 0)
+				{
 					entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
 
-				if(entities[i].physicsComponent.aShape)
-					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+					if (entities[i].physicsComponent.aShape)
+						entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
 
-				entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+					if (entities[i].physicsComponent.aStaticActor)
+						entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+				}
+				
 			}
 		}
 		else
 		{
 			if (entities[i].physicsComponent.aActor)
 			{
-				entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
+				if (entities[i].physicsComponent.aActor->getNbShapes() > 0)
+				{
+					entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
 
-				if(entities[i].physicsComponent.aShape)
-					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+					if (entities[i].physicsComponent.aShape)
+						entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
-				entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
+					entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
+				}
+				
 			}
 			else if (entities[i].physicsComponent.aStaticActor)
 			{
-				entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
+				if (entities[i].physicsComponent.aStaticActor->getNbShapes() > 0)
+				{
+					entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
 
-				if(entities[i].physicsComponent.aShape)
-					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+					if (entities[i].physicsComponent.aShape)
+						entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
-				entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
+					entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
+				}
 			}
 		}
+
 		entities[i].physicsComponent.UpdatePhysics(*physicsHandler.mPhysics, *physicsHandler.aScene);
 		entities[i].Update(renderer.runPhysics);
 
@@ -705,8 +734,10 @@ void Engine::CopyPasteEntity()
 
 void Engine::CopyPasteLight()
 {
-	AddLight();
+	lights.push_back(Light());
+	//AddLight();
 	lights[lights.size() - 1].CopyData(lights[renderer.selectedLight]);
+	AddLight();
 	renderer.copyLight = false;
 }
 

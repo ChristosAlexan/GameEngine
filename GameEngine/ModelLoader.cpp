@@ -3,7 +3,7 @@
 ModelLoader::ModelLoader()
 {
 	texturesLoaded = false;
-	loadAsync = true;
+	loadAsync = false;
 	isTransparent = false;
 	bConvertCordinates = true;
 	isAttached = false;
@@ -41,8 +41,6 @@ bool ModelLoader::Initialize(const std::string filePath, ID3D11Device* device, I
 	//OutputDebugStringA(("isDDS = "+ std::to_string(isDDS) + "\n").c_str());
 	if (!_filePath.empty())
 	{
-		_asyncLoad = std::async(std::launch::async, &ModelLoader::LoadModel, this, _filePath);
-		/*
 		if (loadAsync)
 		{
 			_asyncLoad = std::async(std::launch::async, &ModelLoader::LoadModel, this, _filePath);
@@ -68,7 +66,7 @@ bool ModelLoader::Initialize(const std::string filePath, ID3D11Device* device, I
 				}
 			}
 			
-		}*/
+		}
 
 		
 	}
@@ -517,4 +515,11 @@ void ModelLoader::Clear()
 	scenes.clear();
 	m_vertices.clear();
 	m_indices.clear();
+	animFiles.clear();
+
+	for (int i = 0; i < meshes.size(); ++i)
+	{
+		meshes[i].Clear();
+	}
+	meshes.clear();
 }

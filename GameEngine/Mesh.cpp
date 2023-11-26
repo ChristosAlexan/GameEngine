@@ -44,6 +44,11 @@ Mesh::Mesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, Microsoft::WRL::ComPtr<
 }
 
 
+void Mesh::Clear()
+{
+	textures.clear();
+}
+
 void Mesh::Draw(Texture* text)
 {
 	ID3D11Buffer* buffers[2] = { vertexBuffer.Get(),boneDataBuffer.Get() };

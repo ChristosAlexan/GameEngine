@@ -74,6 +74,11 @@ struct CB_PS_screenEffectBuffer
 	float bloomBrightness;
 	float bloomStrength;
 	float ambientStrength;
+
+	float exposure;
+	float banding1;
+	float banding2;
+	float banding3;
 };
 
 struct CB_PS_pbrBuffer

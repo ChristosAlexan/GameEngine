@@ -17,7 +17,14 @@ cbuffer shadowsbuffer : register(b9)
     float4 shadowsSoftnessBias[NO_LIGHTS];
     double bias;
 }
-
+cbuffer ssrBuffer : register(b10)
+{
+    float4x4 ssrViewMatrix;
+    float4x4 ssrProjectionMatrix;
+    float4x4 ssrInvViewMatrix;
+    float4x4 ssrInvProjectionMatrix;
+    float4 ssrCameraPos;
+}
 
 cbuffer lightCull : register(b3)
 {
@@ -56,7 +63,6 @@ SamplerState SampleTypeWrap : register(s0);
 SamplerState SampleTypeClamp : register(s1);
 SamplerState objSamplerStateMip : SAMPLER : register(s2);
 
-
 float3 Shadows(float4 lightViewPosition, Texture2D depthMapTexture, PS_INPUT input, int index);
 
 float3 fresnelSchlick(float cosTheta, float3 F0);
@@ -72,8 +78,8 @@ float4 main(PS_INPUT input) : SV_TARGET
 {
     int3 sampleIndices = int3(input.inPosition.xy, 0);
     
-    float4 albedo = float4(pow(objTexture.Sample(SampleTypeWrap, input.inTexCoord), gamma));
-    
+    float4 albedo = objTexture.Sample(SampleTypeWrap, input.inTexCoord);
+    //float4 albedo = float4(pow(objTexture.Sample(SampleTypeWrap, input.inTexCoord), gamma));
     float3 bumpNormal = normalTexture.Sample(SampleTypeWrap, input.inTexCoord).rgb;
     if (bumpNormal.r == -1 && bumpNormal.g == -1 && bumpNormal.b == -1)
     {
@@ -117,7 +123,12 @@ float4 main(PS_INPUT input) : SV_TARGET
                 else if (lightTypeEnableShadows[i].x == 2.0)
                 {
                     if (lightTypeEnableShadows[i].y == 1.0f)
-                        Lo += dirLight(input, albedo.rgb, bumpNormal, roughness, metallic, V, F0, worldPos.xyz, i) * Shadows(worldPos, depthMapTextures[i], input, i);
+                    {
+                        if(i==0)
+                            Lo += dirLight(input, albedo.rgb, bumpNormal, roughness, metallic, V, F0, worldPos.xyz, i) * Shadows(worldPos, depthMapTextures[i], input, i);
+                        else
+                            Lo *= Shadows(worldPos, depthMapTextures[i], input, i);
+                    }
                     else
                         Lo += dirLight(input, albedo.rgb, bumpNormal, roughness, metallic, V, F0, worldPos.xyz, i);
                 }
@@ -133,7 +144,8 @@ float4 main(PS_INPUT input) : SV_TARGET
     float3 irradiance = irradianceMap.Sample(objSamplerStateMip, bumpNormal.rgb).rgb;
     float3 diffuse = irradiance * albedo.rgb;
     float3 R = reflect(-V, bumpNormal);
-
+    
+    
     const float MAX_REF_LOD = 5.0f;
     float3 prefilteredColor = prefilterMap.SampleLevel(objSamplerStateMip, R, roughness * MAX_REF_LOD).rgb;
     float2 brdf = brdfTexture.Sample(SampleTypeWrap, float2(max(dot(bumpNormal, V), 0.0), roughness)).rg;
@@ -142,9 +154,10 @@ float4 main(PS_INPUT input) : SV_TARGET
     ambient = (kD * diffuse + specular) * ambientStrength;
     float3 color = ambient + Lo;
    
-    color = color / (color + float3(1.0, 1.0f, 1.0f));
-    color = pow(color, float3(1.0f / gamma, 1.0f / gamma, 1.0f / gamma));
-
+    //color = ReinhardToneMapping(color, 2.0f);
+    //color = color / (color + float3(1.0, 1.0f, 1.0f));
+    //color = pow(color, float3(1.0f / gamma, 1.0f / gamma, 1.0f / gamma));
+    //color = pow(color, 1.0 / gamma);
   
     return float4(color, 1.0);
    

@@ -34,7 +34,7 @@ private:
 	void RenderToEnvProbe(EnvironmentProbe& probe, Camera& camera, std::vector<Entity>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Sky& sky);
 	void ForwardPass(std::vector<Entity>& entities, Camera& camera, Sky& sky);
 	void SkyRender(Camera& camera, Sky& sky);
-	void DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, GridClass& grid, PhysicsHandler& physicsHandler, std::vector<NavMeshClass>& navMeshes);
+	void DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, GridClass& grid, PhysicsHandler& physicsHandler, std::vector<NavMeshClass>& navMeshes, std::vector<Light>& lights);
 
 private:
 	float rgb[4];
@@ -108,8 +108,6 @@ public:
 
 	bool bHasFinishedLoading = false;
 
-
-
 	RectShape crosshair;
 private:
 	int windowWidth, windowHeight;
@@ -123,6 +121,7 @@ private:
 	float bloomBrightness;
 	float bloomStrength;
 	float gamma;
+	float exposure;
 	bool bRenderCollision;
 
 

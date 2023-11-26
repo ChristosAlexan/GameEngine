@@ -41,7 +41,8 @@ void Shadows::RenderShadowEntities(DX11& gfx11, std::vector<Entity>& entities, L
 				gfx11.deviceContext->IASetInputLayout(gfx11.depthVS.GetInputLayout());
 				gfx11.deviceContext->VSSetShader(gfx11.depthVS.GetShader(), nullptr, 0);
 			}
-			entities[i].Draw(camera, viewMatrix, projectionMatrix, nullptr, false);
+
+			entities[i].Draw(camera, viewMatrix, projectionMatrix, light->frustumScreenDepth, nullptr, true);
 		}
 		else
 		{
@@ -61,7 +62,8 @@ void Shadows::RenderShadowEntities(DX11& gfx11, std::vector<Entity>& entities, L
 					gfx11.deviceContext->IASetInputLayout(gfx11.depthVS.GetInputLayout());
 					gfx11.deviceContext->VSSetShader(gfx11.depthVS.GetShader(), nullptr, 0);
 				}
-				entities[i].Draw(camera, viewMatrix, projectionMatrix, nullptr, true);
+
+				entities[i].Draw(camera, viewMatrix, projectionMatrix,100.0f, nullptr, true);
 			}
 		}
 		

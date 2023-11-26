@@ -111,7 +111,7 @@ void PostProcessClass::HbaoPlusRender(DX11& gfx11, RectShape& rect, Camera& came
 	Params.LargeScaleAO = largeScaleAO;
 	Params.SmallScaleAO = smallScaleAO;
 	Params.StepCount = GFSDK_SSAO_STEP_COUNT_8;
-	Params.DepthClampMode = GFSDK_SSAO_DepthClampMode::GFSDK_SSAO_CLAMP_TO_BORDER;
+	Params.DepthClampMode = GFSDK_SSAO_DepthClampMode::GFSDK_SSAO_CLAMP_TO_EDGE;//GFSDK_SSAO_DepthClampMode::GFSDK_SSAO_CLAMP_TO_BORDER;
 	Params.Radius = radius;
 	Params.Bias = bias;
 	Params.PowerExponent = powerExponent;

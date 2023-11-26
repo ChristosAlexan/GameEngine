@@ -22,7 +22,7 @@ public:
 
 	void LoadTextures(std::vector<Texture>& textures);
 
-
+	void Clear();
 
 	void Draw(Texture* text = nullptr);
 	const DirectX::XMMATRIX& GetTranformMatrix();

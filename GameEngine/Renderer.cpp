@@ -39,11 +39,12 @@ Renderer::Renderer()
 	switchCameraMode = 0;
 	vSync = 0;
 	gamma = 2.2f;
+	exposure = 0.4f;
 	renderDistance = 6000.0f;
 	shadowLightsDistance = 2000.0f;
 	deferredLightsDistance = 1000.0f;
-	bloomBrightness = 0.1f;
-	bloomStrength = 0.01f;
+	bloomBrightness = 3.0f;
+	bloomStrength = 0.2f;
 	shadowBias = 0.0000001;
 
 	ambientStrength = 1.0f;
@@ -123,23 +124,17 @@ void Renderer::InitScene(std::vector<Entity>& entities, std::vector<Light>& ligh
 	//gfx11.renderTexture.Initialize(gfx11.device.Get(), gfx11.windowWidth, gfx11.windowHeight);
 	//finalImage.Initialize(gfx11.device.Get(), gfx11.windowWidth, gfx11.windowHeight);
 
-	gfx11.renderTexture.Initialize(gfx11.device.Get(), windowWidth,windowHeight, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	finalImage.Initialize(gfx11.device.Get(), windowWidth, windowHeight, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	gfx11.renderTexture.Initialize(gfx11.device.Get(), windowWidth,windowHeight, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	finalImage.Initialize(gfx11.device.Get(), windowWidth, windowHeight, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	sky.Initialize(gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader);
 
+	AppTimer load_Timer;
+
+	load_Timer.Start();
 	for (int i = 0; i < entities.size(); ++i)
 	{
 		if (!entities[i].isDeleted)
 		{
-			/*
-			if (i == 0)
-			{
-				entities[i].model.loadAsync = true;
-			}
-			else
-			{
-				entities[i].model.loadAsync = true;
-			}*/
 			entities[i].model.loadAsync = true;
 
 			entities[i].Intitialize(entities[i].filePath, gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader, entities[i].isAnimated);
@@ -152,7 +147,11 @@ void Renderer::InitScene(std::vector<Entity>& entities, std::vector<Light>& ligh
 			}
 		}
 	}
-
+	
+	load_Timer.Stop();
+	float val = load_Timer.GetMilisecondsElapsed();
+	std::string v_t_str = std::to_string(val);
+	OutputDebugStringA(("time elapsed = " + v_t_str + "\n").c_str());
 	rect.Initialize(gfx11.device.Get(),gfx11.windowWidth,gfx11.windowHeight);
 	//postProcess.rectBloom.Initialize(gfx11.device.Get(), gfx11.windowWidth, gfx11.windowHeight);
 	rectSmall.Initialize(gfx11.device.Get(), windowWidth, gfx11.windowHeight);
@@ -189,7 +188,7 @@ void Renderer::InitScene(std::vector<Entity>& entities, std::vector<Light>& ligh
 	postProcess.HbaoPlusInit(gfx11, windowWidth, windowHeight);
 
 	//Volumetric light
-	forwardRenderTexture.Initialize(gfx11.device.Get(), windowWidth, windowHeight, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	forwardRenderTexture.Initialize(gfx11.device.Get(), windowWidth, windowHeight, DXGI_FORMAT_R32G32B32A32_FLOAT);
 
 	pbr.Initialize(gfx11);
 	gBuffer.Initialize(gfx11, windowWidth, windowHeight);
@@ -230,19 +229,22 @@ void Renderer::RenderDeferred(std::vector<Entity>& entities, std::vector<Light>&
 	gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		if (entities[i].model.loadAsync && entities[i].physicsComponent.mass == 0.0f)
+		
+		//bHasFinishedLoading = true; 
+		if (entities[i].model.loadAsync)
 		{
+
 			if (!entities[i].model._asyncLoad._Is_ready())
 			{
 				//entities[i].model._asyncLoad.wait();
-				bHasFinishedLoading = false;
+				bHasFinishedLoading = true;
 			}
 			else
 			{
-				bHasFinishedLoading = true;
+				bHasFinishedLoading = false;
 			}
 		}
-
+		bHasFinishedLoading = true;
 		//skyEntity.pos = camera.pos;
 		
 		
@@ -288,7 +290,7 @@ void Renderer::RenderDeferred(std::vector<Entity>& entities, std::vector<Light>&
 					}
 				}
 
-				entities[i].Draw(camera, camera.GetViewMatrix(), camera.GetProjectionMatrix(), defaultText);
+				entities[i].Draw(camera, camera.GetViewMatrix(), camera.GetProjectionMatrix(),100.0f, defaultText);
 			}
 
 
@@ -438,6 +440,10 @@ void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& poi
 	gfx11.cb_ps_screenEffectBuffer.data.bloomBrightness = bloomBrightness;
 	gfx11.cb_ps_screenEffectBuffer.data.bloomStrength = bloomStrength;
 	gfx11.cb_ps_screenEffectBuffer.data.ambientStrength = ambientStrength;
+	gfx11.cb_ps_screenEffectBuffer.data.exposure = exposure;
+	gfx11.cb_ps_screenEffectBuffer.data.banding1 = 0;
+	gfx11.cb_ps_screenEffectBuffer.data.banding2 = 0;
+	gfx11.cb_ps_screenEffectBuffer.data.banding3 = 0;
 
 	gfx11.cb_ps_inverseCoordsBuffer.data.projectionMatrix = DirectX::XMMatrixTranspose(camera.GetProjectionMatrix());
 	gfx11.cb_ps_inverseCoordsBuffer.data.viewMatrix = DirectX::XMMatrixTranspose(camera.GetViewMatrix());
@@ -616,7 +622,7 @@ void Renderer::Render(Camera& camera, std::vector<Entity>& entities, PhysicsHand
 
 	/////////////////////////////////////////////////////////////////////////////////
 
-	DebugDraw(camera, sounds, grid, physicsHandler, navMeshes);
+	DebugDraw(camera, sounds, grid, physicsHandler, navMeshes, lights);
 	
 	
 	gfx11.deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -781,6 +787,7 @@ void Renderer::Render(Camera& camera, std::vector<Entity>& entities, PhysicsHand
 			ImGui::DragFloat("bloomStrengh", &bloomStrength, 0.1f);
 			ImGui::DragFloat("bloomBrightness", &bloomBrightness, 0.1f);
 			ImGui::DragFloat("gamma", &gamma, 0.1f);
+			ImGui::DragFloat("exposure", &exposure, 0.1f);
 			ImGui::InputInt("cameraMode", &switchCameraMode);
 			ImGui::DragFloat("renderDistance", &renderDistance, 1.0f);
 			ImGui::DragFloat("renderShadowDistance", &shadowLightsDistance, 1.0f);
@@ -1160,8 +1167,8 @@ void Renderer::RenderToEnvProbe(EnvironmentProbe& probe,Camera& camera, std::vec
 		gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 		for (int i = 0; i < entities.size(); ++i)
 		{
-			if (entities[i].physicsComponent.mass == 0.0f)
-			{
+			//if (entities[i].physicsComponent.mass == 0.0f)
+			//{
 				if (entities[i].isEmissive)
 				{
 					gfx11.deviceContext->PSSetShader(gfx11.lightPS.GetShader(), nullptr, 0);
@@ -1173,8 +1180,8 @@ void Renderer::RenderToEnvProbe(EnvironmentProbe& probe,Camera& camera, std::vec
 
 				gfx11.deviceContext->IASetInputLayout(gfx11.testVS.GetInputLayout());
 				gfx11.deviceContext->VSSetShader(gfx11.testVS.GetShader(), nullptr, 0);
-				entities[i].Draw(probe.camera[face], probe.camera[face].GetViewMatrix(), probe.camera[face].GetProjectionMatrix(),defaultText);
-			}
+				entities[i].Draw(probe.camera[face], probe.camera[face].GetViewMatrix(), probe.camera[face].GetProjectionMatrix(), 100.0f, defaultText);
+			//}
 
 		}
 	}
@@ -1222,7 +1229,7 @@ void Renderer::ForwardPass(std::vector<Entity>& entities, Camera& camera, Sky& s
 					}
 				}
 
-				entities[i].Draw(camera, camera.GetViewMatrix(), camera.GetProjectionMatrix(),defaultText);
+				entities[i].Draw(camera, camera.GetViewMatrix(), camera.GetProjectionMatrix(), 100.0f, defaultText);
 			}
 		}
 
@@ -1284,14 +1291,14 @@ void Renderer::SkyRender(Camera& camera, Sky& sky)
 	gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 }
 
-void Renderer::DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, GridClass& grid, PhysicsHandler& physicsHandler, std::vector<NavMeshClass>& navMeshes)
+void Renderer::DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, GridClass& grid, PhysicsHandler& physicsHandler, std::vector<NavMeshClass>& navMeshes, std::vector<Light>& lights)
 {
 
 	gfx11.deviceContext->PSSetShader(gfx11.testPS.GetShader(), nullptr, 0);
 	rectSmall.pos = DirectX::XMFLOAT3(2.88, -1.56, 2.878);
-	gfx11.deviceContext->PSSetShaderResources(0, 1, &postProcess.SsrRenderTexture.shaderResourceView);
+	//gfx11.deviceContext->PSSetShaderResources(0, 1, &postProcess.SsrRenderTexture.shaderResourceView);
 	//gfx11.deviceContext->PSSetShaderResources(0, 1, &postProcess.hbaoTexture.shaderResourceView);
-	//gfx11.deviceContext->PSSetShaderResources(0, 1, &lights[lights.size() - 1].m_shadowMap.shaderResourceView);
+	gfx11.deviceContext->PSSetShaderResources(0, 1, &lights[0].m_shadowMap.shaderResourceView);
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
 	gfx11.deviceContext->IASetInputLayout(gfx11.vs2D.GetInputLayout());
 	gfx11.deviceContext->VSSetShader(gfx11.vs2D.GetShader(), nullptr, 0);

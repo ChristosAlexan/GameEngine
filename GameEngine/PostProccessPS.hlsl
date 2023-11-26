@@ -8,6 +8,8 @@ cbuffer screenEffectBuffer : register(b4)
     float gamma;
     float bloomBrightness;
     float bloomStrength;
+    float ambinetStrength;
+    float exposure;
 }
 
 Texture2D objTexture : TEXTURE : register(t0);
@@ -17,6 +19,17 @@ Texture2D hbaoPlusTexture : TEXTURE : register(t3);
 
 SamplerState objSamplerState : SAMPLER : register(s0);
 SamplerState objSamplerStateClamp : SAMPLER : register(s1);
+
+
+
+
+float3 ReinhardToneMapping(float3 color, float exposure)
+{
+    float3 mappedColor = color / (color + 1.0);
+    mappedColor = pow(mappedColor, float3(1.0 / exposure, 1.0 / exposure, 1.0 / exposure));
+    return mappedColor;
+}
+
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
@@ -28,7 +41,8 @@ float4 main(PS_INPUT input) : SV_TARGET
     sampleColor *= hbaoPlus;
     sampleColor += bloom * bloomStrength;
     //sampleColor += forwardColor;
-
+    sampleColor = ReinhardToneMapping(sampleColor, exposure);
+    sampleColor = pow(sampleColor, float3(1.0f / gamma, 1.0f / gamma, 1.0f / gamma));
     
     return float4(sampleColor, 1.0f);
 }

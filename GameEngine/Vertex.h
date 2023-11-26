@@ -6,6 +6,7 @@ struct Vertex
 	Vertex() {
 
 	}
+
 	Vertex(float x, float y)
 		:pos(x, y, 0.0f)
 	{
@@ -50,7 +51,6 @@ struct Vertex
 	{
 
 	}
-
 
 
 	DirectX::XMFLOAT3 GetPos()

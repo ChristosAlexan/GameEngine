@@ -135,6 +135,7 @@ void Light::DrawGui(std::string name)
 	}
 	else
 	{
+		ImGui::DragFloat("frustumScreenDepth", &frustumScreenDepth, 1.0f);
 		ImGui::DragFloat("shadowRenderDist", &shadowRenderDist, 1.0f);
 		ImGui::DragFloat("radius", &radius, 0.05f);
 	}

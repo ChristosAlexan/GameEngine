@@ -129,6 +129,7 @@ public:
 
 	ConstantBuffer<CB_PS_inverseCoordsBuffer> cb_ps_inverseCoordsBuffer;
 	RenderTexture renderTexture;
-	//RenderTexture shadowTexture;
+
+	bool bFullScreen;
 };
 

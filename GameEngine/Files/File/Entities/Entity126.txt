@@ -1,7 +1,7 @@
 mass= 100
-posX= -15.2883
+posX= -12.6739
 posY= 0.839994
-posZ= -0.475068
+posZ= 2.29412
 rotX= -1.57
 rotY= 3.03
 rotZ= 0

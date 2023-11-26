@@ -11,6 +11,7 @@ bool DX11::Initialize(HWND hwnd, Camera& camera, int width, int height)
 {
 	this->windowWidth = width;
 	this->windowHeight = height;
+	this->bFullScreen = false;
 
 	if (!InitializeDirectX(hwnd))
 		return false;
@@ -70,7 +71,7 @@ bool DX11::InitializeDirectX(HWND hwnd)
 		scd1.Width = lround(this->windowWidth);
 		scd1.Height = lround(this->windowHeight);
 		//scd1.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-		scd1.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+		scd1.Format = DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT;
 		scd1.Stereo = false;
 		scd1.SampleDesc.Count = MSSA_COUNT;
 		scd1.SampleDesc.Quality = MSSA_Quality;
@@ -86,7 +87,11 @@ bool DX11::InitializeDirectX(HWND hwnd)
 		scdFullScreen.RefreshRate.Denominator = denominator;
 		scdFullScreen.Scaling = DXGI_MODE_SCALING::DXGI_MODE_SCALING_UNSPECIFIED;
 		scdFullScreen.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-		scdFullScreen.Windowed = TRUE;
+
+		if(bFullScreen)
+			scdFullScreen.Windowed = FALSE;
+		else
+			scdFullScreen.Windowed = TRUE;
 
 		D3D_FEATURE_LEVEL featureLevels[]
 		{
