@@ -40,6 +40,7 @@ Renderer::Renderer()
 	vSync = 0;
 	gamma = 2.2f;
 	exposure = 0.4f;
+	envMapStrength = 10.0f;
 	renderDistance = 6000.0f;
 	shadowLightsDistance = 2000.0f;
 	deferredLightsDistance = 1000.0f;
@@ -441,7 +442,7 @@ void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& poi
 	gfx11.cb_ps_screenEffectBuffer.data.bloomStrength = bloomStrength;
 	gfx11.cb_ps_screenEffectBuffer.data.ambientStrength = ambientStrength;
 	gfx11.cb_ps_screenEffectBuffer.data.exposure = exposure;
-	gfx11.cb_ps_screenEffectBuffer.data.banding1 = 0;
+	gfx11.cb_ps_screenEffectBuffer.data.envMapStrength = envMapStrength;
 	gfx11.cb_ps_screenEffectBuffer.data.banding2 = 0;
 	gfx11.cb_ps_screenEffectBuffer.data.banding3 = 0;
 
@@ -616,7 +617,7 @@ void Renderer::Render(Camera& camera, std::vector<Entity>& entities, PhysicsHand
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState.Get(), 0);
 	//////////////////////////////////////////////////////////////////////////////////
 
-	SkyRender(camera, sky);
+	SkyRender(camera, sky, 1.0f);
 	ForwardPass(entities, camera, sky);
 	
 
@@ -788,6 +789,7 @@ void Renderer::Render(Camera& camera, std::vector<Entity>& entities, PhysicsHand
 			ImGui::DragFloat("bloomBrightness", &bloomBrightness, 0.1f);
 			ImGui::DragFloat("gamma", &gamma, 0.1f);
 			ImGui::DragFloat("exposure", &exposure, 0.1f);
+			ImGui::DragFloat("envMapStrength", &envMapStrength, 0.1f);
 			ImGui::InputInt("cameraMode", &switchCameraMode);
 			ImGui::DragFloat("renderDistance", &renderDistance, 1.0f);
 			ImGui::DragFloat("renderShadowDistance", &shadowLightsDistance, 1.0f);
@@ -1143,26 +1145,41 @@ void Renderer::RenderToEnvProbe(EnvironmentProbe& probe,Camera& camera, std::vec
 
 	gfx11.deviceContext->PSSetShader(gfx11.envProbePS.GetShader(), nullptr, 0);
 	
+	if (!culledShadowLights.empty())
+	{
+		std::vector< ID3D11ShaderResourceView*> ShadowTextures;
+		ShadowTextures.resize(culledShadowLights.size());
+		int index = 0;
+		for (int j = 0; j < ShadowTextures.size(); ++j)
+		{
+
+			ShadowTextures[index] = culledShadowLights[j]->m_shadowMap.shaderResourceView;
+			index++;
+		}
+		gfx11.deviceContext->PSSetShaderResources(9, ShadowTextures.size(), ShadowTextures.data());
+	}
+
+
 	for (int face = 0; face < 6; ++face)
 	{
 	
 		environmentProbe.environmentCubeMap.RenderCubeMapFaces(gfx11.device.Get(), gfx11.deviceContext.Get(), face, gfx11.depthStencilView.Get(), rgb,true);
 
 		gfx11.deviceContext->IASetInputLayout(gfx11.testVS.GetInputLayout());
-		gfx11.deviceContext->VSSetShader(gfx11.testVS.GetShader(), nullptr, 0);
+		gfx11.deviceContext->VSSetShader(gfx11.deferredVS.GetShader(), nullptr, 0);
 		gfx11.deviceContext->PSSetShader(gfx11.skyPS.GetShader(), nullptr, 0);
 		gfx11.cb_ps_materialBuffer.data.emissiveColor = sky.color;
 		gfx11.cb_ps_materialBuffer.data.bEmissive = 0.0f;
+		gfx11.cb_ps_screenEffectBuffer.data.envMapStrength = 3.0f;
+		gfx11.cb_ps_screenEffectBuffer.UpdateBuffer();
 		gfx11.cb_ps_materialBuffer.UpdateBuffer();
+
 		//gfx11.deviceContext->PSSetShader(gfx11.lightPS.GetShader(), nullptr, 0);
 		gfx11.deviceContext->RSSetState(gfx11.rasterizerStateFront.Get());
 
-		gfx11.cb_ps_skyBuffer.data.apexColor = sky.apexColor;
-		gfx11.cb_ps_skyBuffer.data.centerColor = sky.centerColor;
-
-		gfx11.cb_ps_skyBuffer.UpdateBuffer();
 		gfx11.deviceContext->PSSetShaderResources(1, 1, &gBuffer.m_shaderResourceViewArray[4]);
-		sky.Draw(gfx11.deviceContext.Get(), environmentProbe.camera[face], gfx11.cb_vs_vertexshader);
+		//sky.Draw(gfx11.deviceContext.Get(), environmentProbe.camera[face], gfx11.cb_vs_vertexshader);
+		SkyRender(environmentProbe.camera[face], sky, 3.0f);
 
 		gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 		for (int i = 0; i < entities.size(); ++i)
@@ -1265,7 +1282,7 @@ void Renderer::ForwardPass(std::vector<Entity>& entities, Camera& camera, Sky& s
 	gfx11.deviceContext->OMSetBlendState(nullptr, NULL, 0xFFFFFFFF);
 }
 
-void Renderer::SkyRender(Camera& camera, Sky& sky)
+void Renderer::SkyRender(Camera& camera, Sky& sky,float envMapStrengthMultiplier)
 {
 	sky.scale.x = 100;
 	sky.scale.y = 100;
@@ -1281,7 +1298,9 @@ void Renderer::SkyRender(Camera& camera, Sky& sky)
 
 	gfx11.cb_ps_skyBuffer.data.apexColor = sky.apexColor;
 	gfx11.cb_ps_skyBuffer.data.centerColor = sky.centerColor;
-
+	envMapStrength = envMapStrengthMultiplier;
+	gfx11.cb_ps_screenEffectBuffer.data.envMapStrength = envMapStrength;
+	gfx11.cb_ps_screenEffectBuffer.UpdateBuffer();
 	gfx11.cb_ps_skyBuffer.UpdateBuffer();
 	gfx11.cb_ps_materialBuffer.UpdateBuffer();
 

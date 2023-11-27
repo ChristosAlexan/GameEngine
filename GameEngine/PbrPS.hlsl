@@ -37,6 +37,8 @@ cbuffer screenEffectBuffer : register(b4)
     float bloomBrightness;
     float bloomStrength;
     float ambientStrength;
+    float exposure;
+    float envMapStrength;
 }
 
 struct PS_INPUT
@@ -154,13 +156,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     ambient = (kD * diffuse + specular) * ambientStrength;
     float3 color = ambient + Lo;
    
-    //color = ReinhardToneMapping(color, 2.0f);
-    //color = color / (color + float3(1.0, 1.0f, 1.0f));
-    //color = pow(color, float3(1.0f / gamma, 1.0f / gamma, 1.0f / gamma));
-    //color = pow(color, 1.0 / gamma);
-  
     return float4(color, 1.0);
-   
 }
 
 

@@ -33,7 +33,7 @@ private:
 	void UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera);
 	void RenderToEnvProbe(EnvironmentProbe& probe, Camera& camera, std::vector<Entity>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Sky& sky);
 	void ForwardPass(std::vector<Entity>& entities, Camera& camera, Sky& sky);
-	void SkyRender(Camera& camera, Sky& sky);
+	void SkyRender(Camera& camera, Sky& sky, float envMapStrengthMultiplier);
 	void DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, GridClass& grid, PhysicsHandler& physicsHandler, std::vector<NavMeshClass>& navMeshes, std::vector<Light>& lights);
 
 private:
@@ -122,6 +122,7 @@ private:
 	float bloomStrength;
 	float gamma;
 	float exposure;
+	float envMapStrength;
 	bool bRenderCollision;
 
 

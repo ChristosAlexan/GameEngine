@@ -48,7 +48,7 @@ public:
 	DirectX::XMFLOAT3 volumeScale;
 
 	bool entityInFrustum = true;
-	float frustumScreenDepth = 1.0f;
+	float frustumScreenDepth = 0.6f;
 	float shadowRenderDist = 10.0f;
 	float lightStrenth = 1.0f;
 	float attenuation_a = 1.0f;

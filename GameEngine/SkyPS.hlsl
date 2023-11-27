@@ -3,7 +3,13 @@
 cbuffer screenEffectBuffer : register(b4)
 {
     float gamma;
+    float bloomBrightness;
+    float bloomStrength;
+    float ambientStrength;
+    float exposure;
+    float envMapStrength;
 }
+
 
 cbuffer lightBuffer : register(b6)
 {
@@ -16,6 +22,7 @@ cbuffer skyBuffer : register(b8)
     float4 centerColor;
 
 }
+
 struct PS_INPUT
 {
     float4 inPosition : SV_POSITION;
@@ -28,20 +35,15 @@ SamplerState objSamplerState : SAMPLER : register(s0);
 float4 main(PS_INPUT input) : SV_TARGET
 {
     float depth = depthTexture.Load(input.inPosition.xyz).z;
-
-    if (bEmissive == 1.0f)
-    {
-        float dist = input.inPosition.z / input.inPosition.w;
-        if (dist < depth)
-            discard;
-    }
-    float height = input.inWorldPos.y;
     
-    if(height < 0.0)
-        height = 0.0f;
-    float4 OutPutColor = lerp(centerColor, apexColor, height);
-   
-    //OutPutColor.rgb = OutPutColor.rgb / (OutPutColor.rgb + float3(1.0, 1.0f, 1.0f));
-    //OutPutColor.rgb = pow(OutPutColor.rgb, float3(1.0f / gamma, 1.0f / gamma, 1.0f / gamma));
-    return OutPutColor;
+    float dist = input.inPosition.z / input.inPosition.w;
+    if (dist < depth)
+        discard;
+    
+    
+    float3 viewDir = normalize(input.inWorldPos.xyz);
+    float zenithAngle = acos(dot(viewDir, float3(0, 1, 0)));
+    float3 skyColor = lerp(centerColor.rgb, apexColor.rgb, saturate(1.0 - pow(zenithAngle / 3.14159, 2)));
+    skyColor *= envMapStrength;
+    return float4(skyColor, 1.0f);
 }

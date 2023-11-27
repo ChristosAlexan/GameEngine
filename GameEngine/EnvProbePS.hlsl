@@ -23,5 +23,5 @@ float4 main(PS_INPUT input) : SV_TARGET
     float3 color = albedo.rgb;
     color.rgb = color.rgb / (color.rgb + float3(1.0, 1.0f, 1.0f));
     color.rgb = pow(color.rgb, float3(1.0f / 1.0f, 1.0f / 1.0f, 1.0f / 1.0f));
-    return float4(color, 1.0);
+    return float4(color*10, 1.0);
 }

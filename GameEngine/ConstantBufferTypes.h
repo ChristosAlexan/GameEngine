@@ -76,7 +76,7 @@ struct CB_PS_screenEffectBuffer
 	float ambientStrength;
 
 	float exposure;
-	float banding1;
+	float envMapStrength;
 	float banding2;
 	float banding3;
 };
