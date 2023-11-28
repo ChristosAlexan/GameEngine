@@ -112,8 +112,7 @@ void NavMeshClass::Solve_AStar(float& dt, Entity* start, Entity* end, float& gra
 	
 		if (currentNode == endNode)
 		{
-			std::async(std::launch::async, &NavMeshClass::RetracePath,this, std::ref(*startNode), std::ref(*endNode), start);
-			//RetracePath(*startNode, *endNode, start);
+			RetracePath(*startNode, *endNode, start);
 			start->m_index = start->locations.size() - 1;
 			return;
 		}
