@@ -63,7 +63,7 @@ void NavMeshClass::CalculatePath(float& dt, Entity* start, Entity* end, AIContro
 
 		if (!startNode || !endNode)
 			return;
-		//Solve_AStar(dt, start, end, gravity);
+
 		solve_async = std::async(std::launch::async, &NavMeshClass::Solve_AStar, this, std::ref(dt), start, end, std::ref(gravity));
 
 	}
@@ -112,7 +112,8 @@ void NavMeshClass::Solve_AStar(float& dt, Entity* start, Entity* end, float& gra
 	
 		if (currentNode == endNode)
 		{
-			RetracePath(*startNode, *endNode, start);
+			std::async(std::launch::async, &NavMeshClass::RetracePath,this, std::ref(*startNode), std::ref(*endNode), start);
+			//RetracePath(*startNode, *endNode, start);
 			start->m_index = start->locations.size() - 1;
 			return;
 		}

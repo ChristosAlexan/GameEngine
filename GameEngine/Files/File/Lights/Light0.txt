@@ -1,12 +1,12 @@
-posX= 14.5381
+posX= 10.1683
 posY= -11.64
-posZ= 9.88113
+posZ= 16.4225
 scaleX= 0
 scaleY= 0
 scaleZ= 0
-colorX= 50
-colorY= 28.41
-colorZ= 9.355
+colorX= 100
+colorY= 50
+colorZ= 15
 colorW= 1.275
 emissionColorX= 1
 emissionColorY= 1

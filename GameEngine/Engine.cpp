@@ -181,10 +181,12 @@ void Engine::Update(int width, int height)
 
 	if (keyboard.KeyIsPressed(VK_F7))
 	{
+		renderer.bEnableSimulation = true;
 		renderer.runPhysics = true;
 	}
 	if (keyboard.KeyIsPressed(VK_F6))
 	{
+		renderer.bEnableSimulation = false;
 		renderer.runPhysics = false;
 	}
 
@@ -369,11 +371,11 @@ void Engine::RenderFrame(float& dt,float& fps)
 
 	if (physicsHandler.advance(dt, fps, camera))
 	{
-		if (!physicsHandler.isMouseHover && !renderer.runPhysics)
+		if (!physicsHandler.isMouseHover && !renderer.bEnableSimulation)
 		{
 			physicsHandler.MouseRayCast(entities, camera, mouse, keyboard, this->width, this->height, renderer.listbox_item_current);
 		}
-		if (renderer.runPhysics)
+		if (renderer.bEnableSimulation)
 		{
 			//async_fireRayCast = std::async(std::launch::async, &Engine::Async_FireRayCast, this);
 			Async_FireRayCast();
@@ -467,10 +469,15 @@ void Engine::ObjectsHandler(float& dt)
 		}
 		
 
-		if (!renderer.runPhysics)
+		if (!renderer.bEnableSimulation)
 		{
 			if (entities[i].physicsComponent.aActor)
 			{
+				if (!renderer.runPhysics)
+				{
+					entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+				}
+
 				if (entities[i].physicsComponent.aActor->getNbShapes() > 0)
 				{
 					entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
@@ -484,6 +491,11 @@ void Engine::ObjectsHandler(float& dt)
 			}
 			else if (entities[i].physicsComponent.aStaticActor)
 			{
+				if (!renderer.runPhysics)
+				{
+					entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+				}
+
 				if (entities[i].physicsComponent.aStaticActor->getNbShapes() > 0)
 				{
 					entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
@@ -501,6 +513,11 @@ void Engine::ObjectsHandler(float& dt)
 		{
 			if (entities[i].physicsComponent.aActor)
 			{
+				if (renderer.runPhysics)
+				{
+					entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+				}
+
 				if (entities[i].physicsComponent.aActor->getNbShapes() > 0)
 				{
 					entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
@@ -514,6 +531,10 @@ void Engine::ObjectsHandler(float& dt)
 			}
 			else if (entities[i].physicsComponent.aStaticActor)
 			{
+				if (renderer.runPhysics)
+				{
+					entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+				}
 				if (entities[i].physicsComponent.aStaticActor->getNbShapes() > 0)
 				{
 					entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
@@ -527,7 +548,7 @@ void Engine::ObjectsHandler(float& dt)
 		}
 
 		entities[i].physicsComponent.UpdatePhysics(*physicsHandler.mPhysics, *physicsHandler.aScene);
-		entities[i].Update(renderer.runPhysics);
+		entities[i].Update(renderer.bEnableSimulation);
 
 		if (entities[i].model.isAttached)
 		{
@@ -548,7 +569,7 @@ void Engine::ObjectsHandler(float& dt)
 
 		if (entities[i].physicsComponent.aStaticActor)
 		{
-			if (renderer.runPhysics)
+			if (renderer.bEnableSimulation)
 			{
 				if (entities[i].physicsComponent.physicsShapeEnum == PhysicsShapeEnum::NONE && !entities[i].physicsComponent.isCharacter)
 				{
@@ -569,7 +590,7 @@ void Engine::ObjectsHandler(float& dt)
 	//{
 	//
 	//	collisionObjects[i].physicsComponent.UpdatePhysics(*physicsHandler.mPhysics, *physicsHandler.aScene, physicsHandler.mCooking);
-	//	if (renderer.runPhysics)
+	//	if (renderer.bEnableSimulation)
 	//		collisionObjects[i].bRender = false;
 	//	else
 	//		collisionObjects[i].bRender = true;
@@ -649,7 +670,7 @@ void Engine::AIHandler(float& dt)
 		
 		
 
-		if (renderer.runPhysics)
+		if (renderer.bEnableSimulation)
 		{
 			for (int i = 0; i < AIEntities.size(); ++i)
 			{

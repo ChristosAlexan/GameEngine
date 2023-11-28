@@ -88,6 +88,7 @@ public:
 	bool save;
 	bool bGuiEnabled;
 	bool bDrawFrustums;
+	bool bEnableSimulation;
 	int switchCameraMode;
 	bool copyLight;
 	bool copyPointLight;

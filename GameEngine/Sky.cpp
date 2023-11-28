@@ -9,8 +9,8 @@ Sky::Sky()
 	//color = DirectX::XMFLOAT3(0.f, 0.f, 0.f);
 	color = DirectX::XMFLOAT3(1.67f, 1.29f, 3.0f);
 
-	apexColor = DirectX::XMFLOAT4(0.44f, 0.53f, 2.43f,1.0f);
-	centerColor = DirectX::XMFLOAT4(0.91f, 0.440f, 0.495f,1.0f);
+	apexColor = DirectX::XMFLOAT4(0.71f, 0.79f, 0.795f,1.0f);
+	centerColor = DirectX::XMFLOAT4(1.3f, 0.625f, 0.02f,1.0f);
 
 	//apexColor = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	//centerColor = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);

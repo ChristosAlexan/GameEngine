@@ -38,16 +38,6 @@ void PhysicsHandler::Initialize(Camera& camera)
 	if (!mPhysics)
 		ErrorLogger::Log("PxPhysics failed!");
 
-	physx::PxCookingParams params(mPhysics->getTolerancesScale());
-	//params.meshPreprocessParams = physx::PxMeshPreprocessingFlag::eDISABLE_ACTIVE_EDGES_PRECOMPUTE;
-	//params.meshPreprocessParams = physx::PxMeshPreprocessingFlag::eDISABLE_CLEAN_MESH;
-	params.meshPreprocessParams = physx::PxMeshPreprocessingFlag::eWELD_VERTICES;
-	params.meshPreprocessParams = physx::PxMeshPreprocessingFlag::eFORCE_32BIT_INDICES;
-	params.suppressTriangleMeshRemapTable = true;
-	params.areaTestEpsilon = 0.1f;
-	params.convexMeshCookingType = physx::PxConvexMeshCookingType::eQUICKHULL;
-	params.meshWeldTolerance = 1.0f;
-	params.planeTolerance = 0.001f;
 
 	if (!PxInitExtensions(*mPhysics, mPvd))
 		ErrorLogger::Log("PxInitExtensions failed!");

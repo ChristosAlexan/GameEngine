@@ -139,7 +139,7 @@ void Entity::CreatePhysicsComponent(physx::PxPhysics& physics, physx::PxScene& s
 		physicsComponent.CreateConvex(physics, scene, model.m_vertices, physx::PxVec3(scale.x, scale.y, scale.z), physx::PxVec3(pos.x, pos.y, pos.z));
 		break;
 	case TRIANGLEMESH:
-		physicsComponent.CreateTriangleMesh(physics, scene, model.m_vertices, model.m_indices, physx::PxVec3(scale.x, scale.y, scale.z), physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(1, physx::PxVec3(rot.x, rot.y, rot.z)));
+		physicsComponent.CreateTriangleMesh(physics, scene, model.m_vertices, model.m_indices, physx::PxVec3(scale.x, scale.y, scale.z), physx::PxVec3(pos.x, pos.y, pos.z));
 		break;
 	case NONE:
 		if(!physicsComponent.isCharacter)

@@ -309,18 +309,14 @@ void PhysicsComponent::CreateConvex(physx::PxPhysics& physics, physx::PxScene& s
 	}
 }
 
-void PhysicsComponent::CreateTriangleMesh(physx::PxPhysics& physics, physx::PxScene& scene, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, physx::PxVec3 _scale, physx::PxVec3 _pos, physx::PxQuat _rot)
+void PhysicsComponent::CreateTriangleMesh(physx::PxPhysics& physics, physx::PxScene& scene, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, physx::PxVec3 _scale, physx::PxVec3 _pos)
 {
-	//OutputDebugStringA(("POS = " + std::to_string(_pos.x) + "\n").c_str());
-	//scale = _scale;
-	//rot = _rot;
-
 	current_scale = physics_scale;
 	verts = &vertices;
 	this->indices = &indices;
-	if (vertices.size() <= 0)
+	if (vertices.empty())
 		return;
-	aStaticActor = physics.createRigidStatic(physx::PxTransform(_pos, physics_rot));
+	aStaticActor = physics.createRigidStatic(physx::PxTransform(_pos, physx::PxQuat(0,0,0,1)));
 	aMaterial = physics.createMaterial(1.0f, 1.0f, 0.9f);
 
 	std::vector< physx::PxU32>tris;
@@ -537,7 +533,7 @@ void PhysicsComponent::UpdatePhysics(physx::PxPhysics& physics, physx::PxScene& 
 						_pos = aStaticActor->getGlobalPose().p;
 						scene.removeActor(*aStaticActor);
 					}
-					CreateTriangleMesh(physics, scene, *verts, *indices, physics_scale, _pos, physics_rot);
+					CreateTriangleMesh(physics, scene, *verts, *indices, physics_scale, _pos);
 				}
 			}
 		}

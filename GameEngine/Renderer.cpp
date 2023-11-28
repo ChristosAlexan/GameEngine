@@ -36,6 +36,7 @@ Renderer::Renderer()
 	bEnableShadows = true;
 	bGuiEnabled = true;
 	bDrawFrustums = false;
+	bEnableSimulation = false;
 	switchCameraMode = 0;
 	vSync = 0;
 	gamma = 2.2f;
@@ -137,7 +138,6 @@ void Renderer::InitScene(std::vector<Entity>& entities, std::vector<Light>& ligh
 		if (!entities[i].isDeleted)
 		{
 			entities[i].model.loadAsync = true;
-
 			entities[i].Intitialize(entities[i].filePath, gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader, entities[i].isAnimated);
 		}
 		if (!entities[i].isDeleted)
@@ -775,10 +775,11 @@ void Renderer::Render(Camera& camera, std::vector<Entity>& entities, PhysicsHand
 
 		if (ImGui::CollapsingHeader("Options##2"))
 		{
+			ImGui::Checkbox("runPhysics", &runPhysics);
+			ImGui::NewLine();
 			ImGui::InputFloat3("Camera", &camera.pos.x);
 			ImGui::Checkbox("Show collision", &physicsHandler.bRenderCollisionShape);
 			ImGui::Checkbox("DrawFrustums", &bDrawFrustums);
-			ImGui::Checkbox("runPhysics", &runPhysics);
 			ImGui::Checkbox("Possess", &camera.PossessCharacter);
 			ImGui::Checkbox("bEnableShadows", &bEnableShadows);
 			ImGui::Checkbox("enablePostProccess", &enablePostProccess);
@@ -1263,7 +1264,7 @@ void Renderer::ForwardPass(std::vector<Entity>& entities, Camera& camera, Sky& s
 		gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 	}
 
-	if (runPhysics)
+	if (bEnableSimulation)
 	{
 		gfx11.deviceContext->OMSetBlendState(gfx11.blendState.Get(), NULL, 0xFFFFFFFF);
 		gfx11.deviceContext->PSSetShaderResources(0, 1, crosshair.texture.GetTextureResourceViewAddress());
@@ -1349,7 +1350,7 @@ void Renderer::DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, G
 
 
 
-	if (!runPhysics)
+	if (!bEnableSimulation)
 	{
 		gfx11.deviceContext->PSSetShaderResources(0, 1, &gBuffer.m_shaderResourceViewArray[4]);
 		gfx11.deviceContext->IASetInputLayout(gfx11.testVS.GetInputLayout());

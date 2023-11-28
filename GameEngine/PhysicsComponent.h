@@ -26,7 +26,7 @@ public:
 	void CreateSphere(physx::PxPhysics& physics, physx::PxScene& scene, physx::PxReal radius, physx::PxVec3 _pos);
 	void CreateCapsule(physx::PxPhysics& physics, physx::PxScene& scene, physx::PxVec3 _scale, physx::PxVec3 _pos);
 	void CreateConvex(physx::PxPhysics& physics, physx::PxScene& scene, std::vector<Vertex>& vertices, physx::PxVec3 _scale, physx::PxVec3 _pos);
-	void CreateTriangleMesh(physx::PxPhysics& physics, physx::PxScene& scene, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, physx::PxVec3 _scale, physx::PxVec3 _pos, physx::PxQuat _rot);
+	void CreateTriangleMesh(physx::PxPhysics& physics, physx::PxScene& scene, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, physx::PxVec3 _scale, physx::PxVec3 _pos);
 
 	void CreatePickingShape(physx::PxPhysics& physics, physx::PxScene& scene, physx::PxVec3 _scale, physx::PxVec3 _pos);
 
