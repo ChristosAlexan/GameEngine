@@ -788,8 +788,6 @@ void Engine::PlayerLogic(float& dt)
 			fpsPlayerController.MouseMovement(dt, *player.lock(), keyboard, mouse, camera);
 			fpsPlayerController.Movement(dt, physicsHandler.aScene->getGravity().y, player.lock().get(), keyboard, mouse, camera);
 		}
-		//physicsHandler.FallCheck(player);
-
 		async_playerFallCheck = std::async(std::launch::async, &PhysicsHandler::FallCheck, &physicsHandler, player.lock().get());
 	}
 }

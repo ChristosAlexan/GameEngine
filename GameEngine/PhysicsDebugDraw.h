@@ -6,7 +6,7 @@
 #include "Camera.h"
 #include "Vertex.h"
 #include "Mesh.h"
-#include <PxPhysicsAPI.h>
+#include <PhysX/PxPhysicsAPI.h>
 class PhysicsDebugDraw
 {
 public:

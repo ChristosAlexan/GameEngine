@@ -1,5 +1,5 @@
 #pragma once
-#include <PxPhysicsAPI.h>
+#include <PhysX/PxPhysicsAPI.h>
 #include"PxDefaultErrorCallback.h"
 #include"PxDefaultAllocator.h"
 #include"AppTimer.h"
@@ -43,7 +43,7 @@ public:
 
 	std::vector<physx::PxVec3> rayOriginOut;
 	std::vector<physx::PxVec3> rayDestOut;
-
+	
 	float rayDist;
 private:
 	physx::PxFoundation* mFoundation;

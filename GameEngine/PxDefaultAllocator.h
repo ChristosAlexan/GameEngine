@@ -1,6 +1,6 @@
 #pragma once
-#include <foundation/PxAllocatorCallback.h>
-#include<foundation/PxAssert.h>
+#include <PhysX/foundation/PxAllocatorCallback.h>
+#include<PhysX/foundation/PxAssert.h>
 
 #include <stdlib.h>
 

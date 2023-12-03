@@ -1,6 +1,6 @@
 #pragma once
-#include<foundation/PxErrorCallback.h>
-#include<PxPhysXConfig.h>
+#include<PhysX/foundation/PxErrorCallback.h>
+#include<PhysX/PxPhysXConfig.h>
 
 
 #if !PX_DOXYGEN

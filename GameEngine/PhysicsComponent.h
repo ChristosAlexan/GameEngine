@@ -1,5 +1,5 @@
 #pragma once
-#include <PxPhysicsAPI.h>
+#include <PhysX/PxPhysicsAPI.h>
 #include <vector>
 #include "Vertex.h"
 #include <Windows.h>
