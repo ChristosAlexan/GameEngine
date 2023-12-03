@@ -16,78 +16,71 @@ Entity::Entity()
 /*
 Entity::Entity(const Entity& other)
 {
-	model.isTextured = other.model.isTextured;
-	filePath = other.filePath;
-	model.animFiles = other.model.animFiles;
+	model.isTextured = other->model.isTextured;
+	filePath = other->filePath;
+	model.animFiles = other->model.animFiles;
 
-	bRender = other.bRender;
-	isAI = other.isAI;
-	isAnimated = other.isAnimated;
-	physicsComponent.isCharacter = other.physicsComponent.isCharacter;
-	isfrustumEnabled = other.isfrustumEnabled;
-	isObstacle = other.isObstacle;
-	isPlayer = other.isPlayer;
-	model.isTransparent = other.model.isTransparent;
-	isWalkable = other.isWalkable;
-	physicsComponent.mass = other.physicsComponent.mass;
-	modelPos = other.modelPos;
-	physicsComponent.physicsShapeEnum = other.physicsComponent.physicsShapeEnum;
-	physicsComponent.physics_rot = other.physicsComponent.physics_rot;
-	physicsComponent.physics_scale = other.physicsComponent.physics_scale;
-	pos = other.pos;
-	scale = other.scale;
-	rot = other.rot;
-	model.bConvertCordinates = other.model.bConvertCordinates;
-	frustumScale = other.frustumScale;
-	isEmissive = other.isEmissive;
-	emissiveColor = other.emissiveColor;
+	bRender = other->bRender;
+	isAI = other->isAI;
+	isAnimated = other->isAnimated;
+	physicsComponent.isCharacter = other->physicsComponent.isCharacter;
+	isfrustumEnabled = other->isfrustumEnabled;
+	isObstacle = other->isObstacle;
+	isPlayer = other->isPlayer;
+	model.isTransparent = other->model.isTransparent;
+	isWalkable = other->isWalkable;
+	physicsComponent.mass = other->physicsComponent.mass;
+	modelPos = other->modelPos;
+	physicsComponent.physicsShapeEnum = other->physicsComponent.physicsShapeEnum;
+	physicsComponent.physics_rot = other->physicsComponent.physics_rot;
+	physicsComponent.physics_scale = other->physicsComponent.physics_scale;
+	pos = other->pos;
+	scale = other->scale;
+	rot = other->rot;
+	model.bConvertCordinates = other->model.bConvertCordinates;
+	frustumScale = other->frustumScale;
+	isEmissive = other->isEmissive;
+	emissiveColor = other->emissiveColor;
 }
 */
 
-void Entity::CopyData(const Entity& other)
+void Entity::CopyData(const std::shared_ptr<Entity>& other)
 {
-	if (other.physicsComponent.aActor)
+	if (other->physicsComponent.aActor)
 	{
-		physicsComponent.trans = other.physicsComponent.aActor->getGlobalPose();
+		physicsComponent.trans = other->physicsComponent.aActor->getGlobalPose();
 	}
-	else if (other.physicsComponent.aStaticActor)
+	else if (other->physicsComponent.aStaticActor)
 	{
-		physicsComponent.trans = other.physicsComponent.aStaticActor->getGlobalPose();
+		physicsComponent.trans = other->physicsComponent.aStaticActor->getGlobalPose();
 	}
-	model.isTextured = other.model.isTextured;
-	model.animFiles = other.model.animFiles;
-	bRender = other.bRender;
-	filePath = other._filePath;
-	isAI = other.isAI;
-	isAnimated = other.isAnimated;
-	physicsComponent.isCharacter = other.physicsComponent.isCharacter;
-	isfrustumEnabled = other.isfrustumEnabled;
-	isObstacle = other.isObstacle;
-	isPlayer = other.isPlayer;
-	model.isTransparent = other.model.isTransparent;
-	isWalkable = other.isWalkable;
-	physicsComponent.mass = other.physicsComponent.mass;
-	modelPos = other.modelPos;
+	model.isTextured = other->model.isTextured;
+	model.animFiles = other->model.animFiles;
+	bRender = other->bRender;
+	filePath = other->_filePath;
+	isAI = other->isAI;
+	isAnimated = other->isAnimated;
+	physicsComponent.isCharacter = other->physicsComponent.isCharacter;
+	isfrustumEnabled = other->isfrustumEnabled;
+	isObstacle = other->isObstacle;
+	isPlayer = other->isPlayer;
+	model.isTransparent = other->model.isTransparent;
+	isWalkable = other->isWalkable;
+	physicsComponent.mass = other->physicsComponent.mass;
+	modelPos = other->modelPos;
 
-	if (other.physicsComponent.physicsShapeEnum != PhysicsShapeEnum::CONVEXMESH)
-	{
-		physicsComponent.physicsShapeEnum = other.physicsComponent.physicsShapeEnum;
-		physicsComponent.selectedShape = other.physicsComponent.selectedShape;
-	}
-	else
-	{
-		physicsComponent.physicsShapeEnum = PhysicsShapeEnum::NONE;
-		physicsComponent.selectedShape = -1;
-	}
-	physicsComponent.physics_rot = other.physicsComponent.physics_rot;
-	physicsComponent.physics_scale = other.physicsComponent.physics_scale;
-	pos = other.pos;
-	scale = other.scale;
-	rot = other.rot;
-	model.bConvertCordinates = other.model.bConvertCordinates;
-	frustumScale = other.frustumScale;
-	isEmissive = other.isEmissive;
-	emissiveColor = other.emissiveColor;
+	physicsComponent.physicsShapeEnum = other->physicsComponent.physicsShapeEnum;
+	physicsComponent.selectedShape = other->physicsComponent.selectedShape;
+
+	physicsComponent.physics_rot = other->physicsComponent.physics_rot;
+	physicsComponent.physics_scale = other->physicsComponent.physics_scale;
+	pos = other->pos;
+	scale = other->scale;
+	rot = other->rot;
+	model.bConvertCordinates = other->model.bConvertCordinates;
+	frustumScale = other->frustumScale;
+	isEmissive = other->isEmissive;
+	emissiveColor = other->emissiveColor;
 }
 
 bool Entity::Intitialize(const std::string filePath, ID3D11Device* device, ID3D11DeviceContext* deviceContext, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, bool isAnimated)
@@ -412,7 +405,7 @@ void Entity::SetupAttachment(Entity* entity)
 		pos = DirectX::XMFLOAT3(parent->model.worldPos.x, parent->model.worldPos.y, parent->model.worldPos.z);
 	}
 }
-void Entity::DrawGui(physx::PxScene& scene, std::vector<Entity>& entities)
+void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>& entities)
 {
 	if (isDeleted)
 		return;
@@ -546,8 +539,8 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<Entity>& entities)
 				std::vector<const char*> _entitiesData;
 				for (int i = 0; i < entities.size(); ++i)
 				{
-					if (entities[i].isAnimated)
-						_entitiesData.push_back(entities[i].entityName.c_str());
+					if (entities[i]->isAnimated)
+						_entitiesData.push_back(entities[i]->entityName.c_str());
 				}
 				static int listbox_current = -1;
 				ImGui::ListBox("Entities", &listbox_current, _entitiesData.data(), _entitiesData.size());
@@ -557,9 +550,9 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<Entity>& entities)
 					parentName = _entitiesData[listbox_current];
 					for (int i = 0; i < entities.size(); ++i)
 					{
-						if (entities[i].entityName == _entitiesData[listbox_current])
+						if (entities[i]->entityName == _entitiesData[listbox_current])
 						{
-							parent = &entities[i];
+							parent = entities[i].get();
 						}
 					}
 				}

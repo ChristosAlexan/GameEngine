@@ -5,7 +5,7 @@ using namespace DirectX;
 
 Engine::Engine()
 {
-	player = nullptr;
+	//player = nullptr;
 }
 
 bool Engine::Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height)
@@ -21,7 +21,7 @@ bool Engine::Initialize(HINSTANCE hInstance, std::string window_title, std::stri
 	saveSystem.Load();
 	for (int i = 0; i < saveSystem.entitiesCount; ++i)
 	{
-		entities.push_back(Entity());
+		entities.push_back(std::make_shared<Entity>());
 	}
 
 
@@ -32,27 +32,27 @@ bool Engine::Initialize(HINSTANCE hInstance, std::string window_title, std::stri
 
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		if (!entities[i].isDeleted)
+		if (!entities[i]->isDeleted)
 		{
-			if (entities[i].entityName == " ")
+			if (entities[i]->entityName == " ")
 			{
-				entities[i].entityName = "Entity" + std::to_string(i);
+				entities[i]->entityName = "Entity" + std::to_string(i);
 			}
 		}
-		if (entities[i].model.isAttached)
+		if (entities[i]->model.isAttached)
 		{
 			for (int j = 0; j < entities.size(); ++j)
 			{
-				if (entities[i].parentName == entities[j].entityName)
+				if (entities[i]->parentName == entities[j]->entityName)
 				{
-					entities[i].parent = &entities[j];
+					entities[i]->parent = entities[j].get();
 				}
 			}
 			
 		}
-		if (entities[i].physicsComponent.isCharacter && entities[i].isPlayer)
+		if (entities[i]->physicsComponent.isCharacter && entities[i]->isPlayer)
 		{
-			player = &entities[i];
+			player = entities[i];
 		}
 	}
 	if (!renderer.Initialize(this->render_window.GetHWND(), camera, width, height, entities, lights, pointlights))
@@ -230,19 +230,19 @@ void Engine::Update(int width, int height)
 		renderer.listbox_item_current = -1;
 		for (int i = 0; i < entities.size(); ++i)
 		{
-			entities[i].isSelected = false;
-			if (entities[i].physicsComponent.aActor)
+			entities[i]->isSelected = false;
+			if (entities[i]->physicsComponent.aActor)
 			{
 				physx::PxShape* _shape = nullptr;
-				entities[i].physicsComponent.aActor->getShapes(&_shape, entities[i].physicsComponent.aActor->getNbShapes());
+				entities[i]->physicsComponent.aActor->getShapes(&_shape, entities[i]->physicsComponent.aActor->getNbShapes());
 				_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, false);
 
 
 			}
-			else if (entities[i].physicsComponent.aStaticActor)
+			else if (entities[i]->physicsComponent.aStaticActor)
 			{
 				physx::PxShape* _shape = nullptr;
-				entities[i].physicsComponent.aStaticActor->getShapes(&_shape, entities[i].physicsComponent.aStaticActor->getNbShapes());
+				entities[i]->physicsComponent.aStaticActor->getShapes(&_shape, entities[i]->physicsComponent.aStaticActor->getNbShapes());
 				_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, false);
 			}
 		}
@@ -251,15 +251,15 @@ void Engine::Update(int width, int height)
 
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		if (entities[i].bFlagForDeletion)
+		if (entities[i]->bFlagForDeletion)
 		{
-			entities[i].Clear(*physicsHandler.aScene);
+			entities[i]->Clear(*physicsHandler.aScene);
 			if (i < entities.size() - 1)
 			{
 				std::swap(entities.at(i), entities.back());
 			}
 			entities.pop_back();
-			entities[i].bFlagForDeletion = false;
+			entities[i]->bFlagForDeletion = false;
 		}
 	}
 	for (int i = 0; i < lights.size(); ++i)
@@ -299,20 +299,20 @@ void Engine::RenderFrame(float& dt,float& fps)
 
 	if (renderer.bAddEntity)
 	{
-		entities.push_back(Entity());
-		entities[entities.size() - 1].filePath = renderer.inName;
+		entities.push_back(std::make_shared<Entity>());
+		entities[entities.size() - 1]->filePath = renderer.inName;
 		int nameIndex = 0;
 		for (int i = 0; i < entities.size(); ++i)
 		{
-			if (entities[i].entityName == "Entity" + std::to_string(entities.size() + nameIndex))
+			if (entities[i]->entityName == "Entity" + std::to_string(entities.size() + nameIndex))
 			{
 				nameIndex++;
 			}
 		}
-		entities[entities.size() - 1].entityName = "Entity" + std::to_string(entities.size() + nameIndex);
-		entities[entities.size() - 1].model.isTextured = renderer.hasTexture;
-		entities[entities.size() - 1].model.isDDS = renderer.isDDS;
-		entities[entities.size() - 1].model.loadAsync = true;
+		entities[entities.size() - 1]->entityName = "Entity" + std::to_string(entities.size() + nameIndex);
+		entities[entities.size() - 1]->model.isTextured = renderer.hasTexture;
+		entities[entities.size() - 1]->model.isDDS = renderer.isDDS;
+		entities[entities.size() - 1]->model.loadAsync = true;
 
 		AddEntity(renderer.inName, renderer.isAnimated, renderer.bConvertCordinates);
 	
@@ -385,24 +385,24 @@ void Engine::RenderFrame(float& dt,float& fps)
 
 void Engine::AddEntity(std::string& _inName,bool& isAnimated, bool& bConvertCordinates)
 {
-	entities[entities.size() - 1].model.isDDS = renderer.isDDS;
-	entities[entities.size() - 1].model.bConvertCordinates = bConvertCordinates;
-	entities[entities.size() - 1].Intitialize(_inName, renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), renderer.gfx11.cb_vs_vertexshader, isAnimated);
+	entities[entities.size() - 1]->model.isDDS = renderer.isDDS;
+	entities[entities.size() - 1]->model.bConvertCordinates = bConvertCordinates;
+	entities[entities.size() - 1]->Intitialize(_inName, renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), renderer.gfx11.cb_vs_vertexshader, isAnimated);
 }
 
-void Engine::AddPhysicsComp(Entity& entity)
+void Engine::AddPhysicsComp(std::shared_ptr<Entity>& entity)
 {
-	if (entity.physicsComponent.aActor)
+	if (entity->physicsComponent.aActor)
 	{
-		physicsHandler.aScene->removeActor(*entity.physicsComponent.aActor);
+		physicsHandler.aScene->removeActor(*entity->physicsComponent.aActor);
 	}
-	else if (entity.physicsComponent.aStaticActor)
+	else if (entity->physicsComponent.aStaticActor)
 	{
-		physicsHandler.aScene->removeActor(*entity.physicsComponent.aStaticActor);
+		physicsHandler.aScene->removeActor(*entity->physicsComponent.aStaticActor);
 	}
 
-	entity.CreatePhysicsComponent(*physicsHandler.mPhysics, *physicsHandler.aScene);
-	entity.physicsComponent.bCreatePhysicsComp = false;
+	entity->CreatePhysicsComponent(*physicsHandler.mPhysics, *physicsHandler.aScene);
+	entity->physicsComponent.bCreatePhysicsComp = false;
 
 }
 
@@ -446,141 +446,141 @@ void Engine::ObjectsHandler(float& dt)
 {
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		entities[i].model.LoadTextures(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), globalTextureStorage);
+		entities[i]->model.LoadTextures(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), globalTextureStorage);
 
-		if (entities[i].isDeleted)
+		if (entities[i]->isDeleted)
 			continue;
-		if (entities[i].physicsComponent.isCharacter && entities[i].isPlayer)
+		if (entities[i]->physicsComponent.isCharacter && entities[i]->isPlayer)
 		{
-			player = &entities[i];
+			player = entities[i];
 		}
-		if (entities[i].physicsComponent.bCreatePhysicsComp)
+		if (entities[i]->physicsComponent.bCreatePhysicsComp)
 		{
 			AddPhysicsComp(entities[i]);
 		}
-		if (entities[i].physicsComponent.isCharacter)
+		if (entities[i]->physicsComponent.isCharacter)
 		{
-			if (entities[i].bCreateController)
+			if (entities[i]->bCreateController)
 			{
-				//entities[i].entityName = "Entity" + std::to_string(i);
-				entities[i].physicsComponent.CreateController(*physicsHandler.mPhysics, *physicsHandler.aScene, physx::PxVec3(entities[i].pos.x, entities[i].pos.y, entities[i].pos.z), entities[i].entityName);
-				entities[i].bCreateController = false;
+				//entities[i]->entityName = "Entity" + std::to_string(i);
+				entities[i]->physicsComponent.CreateController(*physicsHandler.mPhysics, *physicsHandler.aScene, physx::PxVec3(entities[i]->pos.x, entities[i]->pos.y, entities[i]->pos.z), entities[i]->entityName);
+				entities[i]->bCreateController = false;
 			}
 		}
 		
 
 		if (!renderer.bEnableSimulation)
 		{
-			if (entities[i].physicsComponent.aActor)
+			if (entities[i]->physicsComponent.aActor)
 			{
 				if (!renderer.runPhysics)
 				{
-					entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+					entities[i]->physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
 				}
 
-				if (entities[i].physicsComponent.aActor->getNbShapes() > 0)
+				if (entities[i]->physicsComponent.aActor->getNbShapes() > 0)
 				{
-					entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
+					entities[i]->physicsComponent.aActor->getShapes(&entities[i]->physicsComponent.aShape, entities[i]->physicsComponent.aActor->getNbShapes());
 
-					if (entities[i].physicsComponent.aShape)
-						entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+					if (entities[i]->physicsComponent.aShape)
+						entities[i]->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
 
-					if (entities[i].physicsComponent.aActor)
-						entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+					if (entities[i]->physicsComponent.aActor)
+						entities[i]->physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
 				}
 			}
-			else if (entities[i].physicsComponent.aStaticActor)
+			else if (entities[i]->physicsComponent.aStaticActor)
 			{
 				if (!renderer.runPhysics)
 				{
-					entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+					entities[i]->physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
 				}
 
-				if (entities[i].physicsComponent.aStaticActor->getNbShapes() > 0)
+				if (entities[i]->physicsComponent.aStaticActor->getNbShapes() > 0)
 				{
-					entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
+					entities[i]->physicsComponent.aStaticActor->getShapes(&entities[i]->physicsComponent.aShape, entities[i]->physicsComponent.aStaticActor->getNbShapes());
 
-					if (entities[i].physicsComponent.aShape)
-						entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+					if (entities[i]->physicsComponent.aShape)
+						entities[i]->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
 
-					if (entities[i].physicsComponent.aStaticActor)
-						entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+					if (entities[i]->physicsComponent.aStaticActor)
+						entities[i]->physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
 				}
 				
 			}
 		}
 		else
 		{
-			if (entities[i].physicsComponent.aActor)
+			if (entities[i]->physicsComponent.aActor)
 			{
 				if (renderer.runPhysics)
 				{
-					entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+					entities[i]->physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
 				}
 
-				if (entities[i].physicsComponent.aActor->getNbShapes() > 0)
+				if (entities[i]->physicsComponent.aActor->getNbShapes() > 0)
 				{
-					entities[i].physicsComponent.aActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aActor->getNbShapes());
+					entities[i]->physicsComponent.aActor->getShapes(&entities[i]->physicsComponent.aShape, entities[i]->physicsComponent.aActor->getNbShapes());
 
-					if (entities[i].physicsComponent.aShape)
-						entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+					if (entities[i]->physicsComponent.aShape)
+						entities[i]->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
-					entities[i].physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
+					entities[i]->physicsComponent.aActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
 				}
 				
 			}
-			else if (entities[i].physicsComponent.aStaticActor)
+			else if (entities[i]->physicsComponent.aStaticActor)
 			{
 				if (renderer.runPhysics)
 				{
-					entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+					entities[i]->physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
 				}
-				if (entities[i].physicsComponent.aStaticActor->getNbShapes() > 0)
+				if (entities[i]->physicsComponent.aStaticActor->getNbShapes() > 0)
 				{
-					entities[i].physicsComponent.aStaticActor->getShapes(&entities[i].physicsComponent.aShape, entities[i].physicsComponent.aStaticActor->getNbShapes());
+					entities[i]->physicsComponent.aStaticActor->getShapes(&entities[i]->physicsComponent.aShape, entities[i]->physicsComponent.aStaticActor->getNbShapes());
 
-					if (entities[i].physicsComponent.aShape)
-						entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+					if (entities[i]->physicsComponent.aShape)
+						entities[i]->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
 
-					entities[i].physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
+					entities[i]->physicsComponent.aStaticActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, false);
 				}
 			}
 		}
 
-		entities[i].physicsComponent.UpdatePhysics(*physicsHandler.mPhysics, *physicsHandler.aScene);
-		entities[i].Update(renderer.bEnableSimulation);
+		entities[i]->physicsComponent.UpdatePhysics(*physicsHandler.mPhysics, *physicsHandler.aScene);
+		entities[i]->Update(renderer.bEnableSimulation);
 
-		if (entities[i].model.isAttached)
+		if (entities[i]->model.isAttached)
 		{
-			if (entities[i].parent)
+			if (entities[i]->parent)
 			{
-				if (!entities[i].parentName.empty() && (entities[i].parent->entityName == entities[i].parentName))
-					entities[i].SetupAttachment(entities[i].parent);
+				if (!entities[i]->parentName.empty() && (entities[i]->parent->entityName == entities[i]->parentName))
+					entities[i]->SetupAttachment(entities[i]->parent);
 				else
 				{
 					for (int j = 0; j < entities.size(); ++j)
 					{
-						if (entities[j].entityName == entities[i].parentName)
-							entities[i].SetupAttachment(&entities[j]);
+						if (entities[j]->entityName == entities[i]->parentName)
+							entities[i]->SetupAttachment(entities[j].get());
 					}
 				}
 			}
 		}
 
-		if (entities[i].physicsComponent.aStaticActor)
+		if (entities[i]->physicsComponent.aStaticActor)
 		{
 			if (renderer.bEnableSimulation)
 			{
-				if (entities[i].physicsComponent.physicsShapeEnum == PhysicsShapeEnum::NONE && !entities[i].physicsComponent.isCharacter)
+				if (entities[i]->physicsComponent.physicsShapeEnum == PhysicsShapeEnum::NONE && !entities[i]->physicsComponent.isCharacter)
 				{
-					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+					entities[i]->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
 				}
 			}
 			else
 			{
-				if (entities[i].physicsComponent.physicsShapeEnum == PhysicsShapeEnum::NONE && !entities[i].physicsComponent.isCharacter)
+				if (entities[i]->physicsComponent.physicsShapeEnum == PhysicsShapeEnum::NONE && !entities[i]->physicsComponent.isCharacter)
 				{
-					entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+					entities[i]->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
 				}
 			}
 		}
@@ -630,9 +630,9 @@ void Engine::AIHandler(float& dt)
 				AIEntities.clear();
 				for (int i = 0; i < entities.size(); ++i)
 				{
-					if (entities[i].isAI)
+					if (entities[i]->isAI)
 					{
-						AIEntities.push_back(&entities[i]);
+						AIEntities.push_back(entities[i]);
 					}
 				}
 
@@ -674,17 +674,17 @@ void Engine::AIHandler(float& dt)
 		{
 			for (int i = 0; i < AIEntities.size(); ++i)
 			{
-				if (AIEntities[i])
+				if (auto ai_entity = AIEntities[i].lock())
 				{
-					if (AIEntities[i]->physicsComponent.aActor)
+					if (ai_entity->physicsComponent.aActor)
 					{
 						float gravity = physicsHandler.aScene->getGravity().y;
 						
-						physicsHandler.FallCheck(AIEntities[i]);
-						physicsHandler.LineOfSightToPlayer(AIEntities[i], player);
+						physicsHandler.FallCheck(ai_entity.get());
+						physicsHandler.LineOfSightToPlayer(ai_entity.get(), player.lock().get());
 						
 						if(async_navMesh[i]._Is_ready())
-							navMeshes[i].CalculatePath(dt, AIEntities[i], player, enemyController, grid, gravity);
+							navMeshes[i].CalculatePath(dt, ai_entity.get(), player.lock().get(), enemyController, grid, gravity);
 					}
 				}
 			}
@@ -701,7 +701,7 @@ void Engine::CopyPasteEntity()
 	{
 		for (int i = 0; i < entities.size(); ++i)
 		{
-			if (renderer.listbox_item_current == i || entities[i].isSelected)
+			if (renderer.listbox_item_current == i || entities[i]->isSelected)
 			{
 				entityToCopy = i;
 			}
@@ -710,42 +710,41 @@ void Engine::CopyPasteEntity()
 	if (pasteEntity)
 	{
 
-		entities.push_back(Entity());
-
-		entities[entities.size() - 1].CopyData(entities[entityToCopy]);
+		entities.push_back(std::make_shared<Entity>());
+		entities[entities.size() - 1]->CopyData(entities[entityToCopy]);
 
 		int nameIndex = 0;
 		for (int i = 0; i < entities.size(); ++i)
 		{
-			if (entities[i].entityName == "Entity" + std::to_string(entities.size()+nameIndex))
+			if (entities[i]->entityName == "Entity" + std::to_string(entities.size()+nameIndex))
 			{
 				nameIndex++;
 			}
 		}
-		entities[entities.size() - 1].entityName = "Entity" + std::to_string(entities.size()+ nameIndex);
+		entities[entities.size() - 1]->entityName = "Entity" + std::to_string(entities.size()+ nameIndex);
 
-		if (entities[entities.size() - 1].physicsComponent.physicsShapeEnum == PhysicsShapeEnum::CONVEXMESH ||
-			entities[entities.size() - 1].physicsComponent.physicsShapeEnum == PhysicsShapeEnum::TRIANGLEMESH)
+		if (entities[entities.size() - 1]->physicsComponent.physicsShapeEnum == PhysicsShapeEnum::CONVEXMESH ||
+			entities[entities.size() - 1]->physicsComponent.physicsShapeEnum == PhysicsShapeEnum::TRIANGLEMESH)
 		{
-			entities[entities.size() - 1].model.loadAsync = false;
+			entities[entities.size() - 1]->model.loadAsync = false;
 		}
 		else
-			entities[entities.size() - 1].model.loadAsync = true;
+			entities[entities.size() - 1]->model.loadAsync = true;
 
-		AddEntity(entities[entities.size() - 1].filePath, entities[entities.size() - 1].isAnimated, entities[entities.size() - 1].model.bConvertCordinates);
+		AddEntity(entities[entities.size() - 1]->filePath, entities[entities.size() - 1]->isAnimated, entities[entities.size() - 1]->model.bConvertCordinates);
 	
-		if (entities[entities.size() - 1].physicsComponent.isCharacter)
-			entities[entities.size() - 1].physicsComponent.CreateController(*physicsHandler.mPhysics, *physicsHandler.aScene, physx::PxVec3(entities[entities.size() - 1].pos.x, entities[entities.size() - 1].pos.y, entities[entities.size() - 1].pos.z), entities[entities.size() - 1].entityName);
+		if (entities[entities.size() - 1]->physicsComponent.isCharacter)
+			entities[entities.size() - 1]->physicsComponent.CreateController(*physicsHandler.mPhysics, *physicsHandler.aScene, physx::PxVec3(entities[entities.size() - 1]->pos.x, entities[entities.size() - 1]->pos.y, entities[entities.size() - 1]->pos.z), entities[entities.size() - 1]->entityName);
 		else
-			entities[entities.size() - 1].CreatePhysicsComponent(*physicsHandler.mPhysics, *physicsHandler.aScene);
+			entities[entities.size() - 1]->CreatePhysicsComponent(*physicsHandler.mPhysics, *physicsHandler.aScene);
 
-		if (entities[entities.size() - 1].physicsComponent.aActor)
+		if (entities[entities.size() - 1]->physicsComponent.aActor)
 		{
-			entities[entities.size() - 1].physicsComponent.aActor->setGlobalPose(entities[entities.size() - 1].physicsComponent.trans);
+			entities[entities.size() - 1]->physicsComponent.aActor->setGlobalPose(entities[entities.size() - 1]->physicsComponent.trans);
 		}
-		else if (entities[entities.size() - 1].physicsComponent.aStaticActor)
+		else if (entities[entities.size() - 1]->physicsComponent.aStaticActor)
 		{
-			entities[entities.size() - 1].physicsComponent.aStaticActor->setGlobalPose(entities[entities.size() - 1].physicsComponent.trans);
+			entities[entities.size() - 1]->physicsComponent.aStaticActor->setGlobalPose(entities[entities.size() - 1]->physicsComponent.trans);
 		}
 		//OutputDebugStringA("Data Pasted!!\n");
 	}
@@ -774,30 +773,30 @@ void Engine::CopyPastePointLight()
 
 void Engine::PlayerLogic(float& dt)
 {
-	if (player)
+	if (player.lock())
 	{
 		if (renderer.switchCameraMode == 0)
 		{
-			player->bRender = true;
-			tpsPlayerController.MouseMovement(dt, *player, keyboard, mouse, camera);
-			tpsPlayerController.Movement(dt, physicsHandler.aScene->getGravity().y, *player, keyboard, mouse, camera);
+			player.lock()->bRender = true;
+			tpsPlayerController.MouseMovement(dt, *player.lock(), keyboard, mouse, camera);
+			tpsPlayerController.Movement(dt, physicsHandler.aScene->getGravity().y, *player.lock(), keyboard, mouse, camera);
 			tpsPlayerController.Actions(keyboard, mouse, camera);
 		}
 		else
 		{
-			player->bRender = false;
-			fpsPlayerController.MouseMovement(dt, *player, keyboard, mouse, camera);
-			fpsPlayerController.Movement(dt, physicsHandler.aScene->getGravity().y, player, keyboard, mouse, camera);
+			player.lock()->bRender = false;
+			fpsPlayerController.MouseMovement(dt, *player.lock(), keyboard, mouse, camera);
+			fpsPlayerController.Movement(dt, physicsHandler.aScene->getGravity().y, player.lock().get(), keyboard, mouse, camera);
 		}
 		//physicsHandler.FallCheck(player);
 
-		async_playerFallCheck = std::async(std::launch::async, &PhysicsHandler::FallCheck, &physicsHandler, player);
+		async_playerFallCheck = std::async(std::launch::async, &PhysicsHandler::FallCheck, &physicsHandler, player.lock().get());
 	}
 }
 
 void Engine::GameSounds()
 {
-	tpsPlayerController.UpdateSounds(camera, player);
+	tpsPlayerController.UpdateSounds(camera, player.lock().get());
 	backGroundSound.UpdatePos(camera.GetPositionFloat3(), camera.GetForwardVector(), camera.upDir);
 	backGroundSound.Async_Update();
 
@@ -811,11 +810,11 @@ void Engine::GameSounds()
 
 void Engine::Async_FireRayCast()
 {
-	physicsHandler.CrosshairRayTrace(tpsPlayerController, player, entities, renderer.crosshair, camera);
-	physicsHandler.PlayerFireRayTrace(tpsPlayerController, player, entities, camera);
+	physicsHandler.CrosshairRayTrace(tpsPlayerController, player.lock().get(), entities, renderer.crosshair, camera);
+	physicsHandler.PlayerFireRayTrace(tpsPlayerController, player.lock().get(), entities, camera);
 }
 
-void Engine::CreateNavMesh(GridClass& grid, std::vector<Entity>& entities, std::vector<CollisionObject>& collisionObjects)
+void Engine::CreateNavMesh(GridClass& grid, std::vector<std::shared_ptr<Entity>>& entities, std::vector<CollisionObject>& collisionObjects)
 {
 	grid.InitGrid();
 	/*physicsHandler.NavMeshRayCast(grid, entities, collisionObjects);
@@ -827,7 +826,7 @@ void Engine::Shutdown()
 {
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		entities[i].Clear(*physicsHandler.aScene);
+		entities[i]->Clear(*physicsHandler.aScene);
 	}
 	for (int i = 0; i < lights.size(); ++i)
 	{

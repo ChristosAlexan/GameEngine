@@ -29,7 +29,7 @@ public:
 	void Shutdown();
 private:
 	void AddEntity(std::string& _inName, bool& isAnimated, bool& bConvertCordinates);
-	void AddPhysicsComp(Entity& entity);
+	void AddPhysicsComp(std::shared_ptr<Entity>& entity);
 	void AddLight();
 	void AddPointLight();
 	void AddCollisionObject();
@@ -44,15 +44,15 @@ private:
 
 	void Async_FireRayCast();
 
-	void CreateNavMesh(GridClass& grid, std::vector<Entity>& entities, std::vector<CollisionObject>& collisionObjects);
+	void CreateNavMesh(GridClass& grid, std::vector<std::shared_ptr<Entity>>& entities, std::vector<CollisionObject>& collisionObjects);
 protected:
 	AppTimer timer;
 
 private:
 	Sky sky;
-	std::vector<Entity> entities;
+	std::vector<std::shared_ptr<Entity>> entities;
 
-	std::vector<Entity*> AIEntities;
+	std::vector<std::weak_ptr<Entity>> AIEntities;
 	std::vector<Light> lights;
 	std::vector<Light> pointlights;
 	std::vector<CollisionObject> collisionObjects;
@@ -69,7 +69,7 @@ private:
 	TpsController tpsPlayerController;
 	FpsController fpsPlayerController;
 
-	Entity* player;
+	std::weak_ptr<Entity> player;
 
 	AIController enemyController;
 	std::vector<NavMeshClass> navMeshes;

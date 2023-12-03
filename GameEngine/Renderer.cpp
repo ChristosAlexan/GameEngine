@@ -52,7 +52,7 @@ Renderer::Renderer()
 	ambientStrength = 1.0f;
 }
 
-bool Renderer::Initialize(HWND hwnd, Camera& camera, int width, int height, std::vector<Entity>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights)
+bool Renderer::Initialize(HWND hwnd, Camera& camera, int width, int height, std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights)
 {
 	this->windowWidth = width;
 	this->windowHeight = height;
@@ -78,7 +78,7 @@ bool Renderer::Initialize(HWND hwnd, Camera& camera, int width, int height, std:
 	return true;
 }
 
-void Renderer::InitScene(std::vector<Entity>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera, Sky& sky)
+void Renderer::InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera, Sky& sky)
 {
 	//camera.pos = DirectX::XMFLOAT3(1, 1, 1);
 	//INIT CONSTANT BUFFERS/////////////////////////////
@@ -135,16 +135,16 @@ void Renderer::InitScene(std::vector<Entity>& entities, std::vector<Light>& ligh
 	load_Timer.Start();
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		if (!entities[i].isDeleted)
+		if (!entities[i]->isDeleted)
 		{
-			entities[i].model.loadAsync = true;
-			entities[i].Intitialize(entities[i].filePath, gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader, entities[i].isAnimated);
+			entities[i]->model.loadAsync = true;
+			entities[i]->Intitialize(entities[i]->filePath, gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader, entities[i]->isAnimated);
 		}
-		if (!entities[i].isDeleted)
+		if (!entities[i]->isDeleted)
 		{
-			if (entities[i].entityName == " ")
+			if (entities[i]->entityName == " ")
 			{
-				entities[i].entityName = "Entity" + std::to_string(i);
+				entities[i]->entityName = "Entity" + std::to_string(i);
 			}
 		}
 	}
@@ -218,7 +218,7 @@ void Renderer::ClearScreen()
 }
 
 //****************RENDER ENTITIES DEFERRED***************************************
-void Renderer::RenderDeferred(std::vector<Entity>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera, Sky& sky)
+void Renderer::RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera, Sky& sky)
 {
 	gfx11.deviceContext->VSSetConstantBuffers(0, 1, gfx11.cb_vs_vertexshader.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
@@ -232,12 +232,12 @@ void Renderer::RenderDeferred(std::vector<Entity>& entities, std::vector<Light>&
 	{
 		
 		//bHasFinishedLoading = true; 
-		if (entities[i].model.loadAsync)
+		if (entities[i]->model.loadAsync)
 		{
 
-			if (!entities[i].model._asyncLoad._Is_ready())
+			if (!entities[i]->model._asyncLoad._Is_ready())
 			{
-				//entities[i].model._asyncLoad.wait();
+				//entities[i]->model._asyncLoad.wait();
 				bHasFinishedLoading = true;
 			}
 			else
@@ -250,17 +250,17 @@ void Renderer::RenderDeferred(std::vector<Entity>& entities, std::vector<Light>&
 		
 		
 
-		DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - entities[i].pos.x, camera.GetPositionFloat3().y - entities[i].pos.y, camera.GetPositionFloat3().z - entities[i].pos.z);
+		DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - entities[i]->pos.x, camera.GetPositionFloat3().y - entities[i]->pos.y, camera.GetPositionFloat3().z - entities[i]->pos.z);
 		physx::PxVec3 diffVec = physx::PxVec3(diff.x, diff.y, diff.z);
 		float dist = diffVec.dot(diffVec);
 
 		if (dist < renderDistance)
 		{
-			if (!entities[i].model.isTransparent)
+			if (!entities[i]->model.isTransparent)
 			{
-				if (entities[i].isEmissive)
+				if (entities[i]->isEmissive)
 				{
-					gfx11.cb_ps_materialBuffer.data.emissiveColor = entities[i].emissiveColor;
+					gfx11.cb_ps_materialBuffer.data.emissiveColor = entities[i]->emissiveColor;
 					gfx11.cb_ps_materialBuffer.data.bEmissive = 1.0f;
 					gfx11.cb_ps_materialBuffer.UpdateBuffer();
 				}
@@ -271,7 +271,7 @@ void Renderer::RenderDeferred(std::vector<Entity>& entities, std::vector<Light>&
 					gfx11.cb_ps_materialBuffer.UpdateBuffer();
 				}
 
-				if (entities[i].model.isAnimated)
+				if (entities[i]->model.isAnimated)
 				{
 					gfx11.deviceContext->IASetInputLayout(gfx11.animDeferredVS.GetInputLayout());
 					gfx11.deviceContext->VSSetShader(gfx11.animDeferredVS.GetShader(), nullptr, 0);
@@ -282,16 +282,16 @@ void Renderer::RenderDeferred(std::vector<Entity>& entities, std::vector<Light>&
 					gfx11.deviceContext->VSSetShader(gfx11.deferredVS.GetShader(), nullptr, 0);
 				}
 
-				if (entities[i].model.isAttached)
+				if (entities[i]->model.isAttached)
 				{
-					if (entities[i].parent)
+					if (entities[i]->parent)
 					{
-						if (!entities[i].parentName.empty() && (entities[i].parent->entityName == entities[i].parentName))
-							entities[i].SetupAttachment(entities[i].parent);
+						if (!entities[i]->parentName.empty() && (entities[i]->parent->entityName == entities[i]->parentName))
+							entities[i]->SetupAttachment(entities[i]->parent);
 					}
 				}
 
-				entities[i].Draw(camera, camera.GetViewMatrix(), camera.GetProjectionMatrix(),100.0f, defaultText);
+				entities[i]->Draw(camera, camera.GetViewMatrix(), camera.GetProjectionMatrix(),100.0f, defaultText);
 			}
 
 
@@ -487,7 +487,7 @@ void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& poi
 //**********************************************************************************
 
 
-void Renderer::Render(Camera& camera, std::vector<Entity>& entities, PhysicsHandler& physicsHandler, std::vector<Light>& lights, std::vector<Light>& pointLights, std::vector< CollisionObject>& collisionObjects, GridClass& grid, std::vector<NavMeshClass>& navMeshes, std::vector<SoundComponent*>& sounds, Sky& sky)
+void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& entities, PhysicsHandler& physicsHandler, std::vector<Light>& lights, std::vector<Light>& pointLights, std::vector< CollisionObject>& collisionObjects, GridClass& grid, std::vector<NavMeshClass>& navMeshes, std::vector<SoundComponent*>& sounds, Sky& sky)
 {
 	//float rgb[4];
 	rgb[0] = skyColor.x;
@@ -919,7 +919,7 @@ void Renderer::Render(Camera& camera, std::vector<Entity>& entities, PhysicsHand
 		std::vector<const char*> objNames;
 		for (int i = 0; i < entities.size(); ++i)
 		{
-			objNames.push_back(entities[i].entityName.c_str());
+			objNames.push_back(entities[i]->entityName.c_str());
 		}
 
 		if (listbox_item_current > objNames.size() - 1)
@@ -932,41 +932,41 @@ void Renderer::Render(Camera& camera, std::vector<Entity>& entities, PhysicsHand
 		{
 			for (int i = 0; i < entities.size(); ++i)
 			{
-				if (!entities[i].isDeleted)
+				if (!entities[i]->isDeleted)
 				{
-					if (entities[i].entityName == objNames[listbox_item_current])
+					if (entities[i]->entityName == objNames[listbox_item_current])
 					{
-						if (entities[i].physicsComponent.aActor)
+						if (entities[i]->physicsComponent.aActor)
 						{
 							physx::PxShape* _shape = nullptr;
-							entities[i].physicsComponent.aActor->getShapes(&_shape, entities[i].physicsComponent.aActor->getNbShapes());
+							entities[i]->physicsComponent.aActor->getShapes(&_shape, entities[i]->physicsComponent.aActor->getNbShapes());
 							if (_shape)
 								_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, true);
 		
 		
 						}
-						else if (entities[i].physicsComponent.aStaticActor)
+						else if (entities[i]->physicsComponent.aStaticActor)
 						{
 							physx::PxShape* _shape = nullptr;
-							entities[i].physicsComponent.aStaticActor->getShapes(&_shape, entities[i].physicsComponent.aStaticActor->getNbShapes());
+							entities[i]->physicsComponent.aStaticActor->getShapes(&_shape, entities[i]->physicsComponent.aStaticActor->getNbShapes());
 							if(_shape)
 								_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, true);
 						}
-						entities[i].DrawGui(*physicsHandler.aScene, entities);
+						entities[i]->DrawGui(*physicsHandler.aScene, entities);
 					}
 					else
 					{
-						if (entities[i].physicsComponent.aActor)
+						if (entities[i]->physicsComponent.aActor)
 						{
 							physx::PxShape* _shape = nullptr;
-							entities[i].physicsComponent.aActor->getShapes(&_shape, entities[i].physicsComponent.aActor->getNbShapes());
+							entities[i]->physicsComponent.aActor->getShapes(&_shape, entities[i]->physicsComponent.aActor->getNbShapes());
 							if (_shape)
 								_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, false);
 						}
-						else if (entities[i].physicsComponent.aStaticActor)
+						else if (entities[i]->physicsComponent.aStaticActor)
 						{
 							physx::PxShape* _shape = nullptr;
-							entities[i].physicsComponent.aStaticActor->getShapes(&_shape, entities[i].physicsComponent.aStaticActor->getNbShapes());
+							entities[i]->physicsComponent.aStaticActor->getShapes(&_shape, entities[i]->physicsComponent.aStaticActor->getNbShapes());
 							if (_shape)
 								_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, false);
 						}
@@ -979,16 +979,16 @@ void Renderer::Render(Camera& camera, std::vector<Entity>& entities, PhysicsHand
 		{
 			for (int i = 0; i < entities.size(); ++i)
 			{
-				if (!entities[i].isDeleted)
+				if (!entities[i]->isDeleted)
 				{
-					if (entities[i].isSelected)
+					if (entities[i]->isSelected)
 					{
 						for (int j = 0; j < objNames.size(); ++j)
 						{
-							if (objNames[j] == entities[i].entityName)
+							if (objNames[j] == entities[i]->entityName)
 							{
 								listbox_item_current = j;
-								entities[i].DrawGui(*physicsHandler.aScene, entities);
+								entities[i]->DrawGui(*physicsHandler.aScene, entities);
 							}
 						}
 					}
@@ -1119,7 +1119,7 @@ void Renderer::Render(Camera& camera, std::vector<Entity>& entities, PhysicsHand
 }
 
 
-void Renderer::RenderToEnvProbe(EnvironmentProbe& probe,Camera& camera, std::vector<Entity>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Sky& sky)
+void Renderer::RenderToEnvProbe(EnvironmentProbe& probe,Camera& camera, std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Sky& sky)
 {
 	//UpdateBuffers(lights,pointLights, camera);
 	environmentProbe.UpdateCamera();
@@ -1185,12 +1185,12 @@ void Renderer::RenderToEnvProbe(EnvironmentProbe& probe,Camera& camera, std::vec
 		gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 		for (int i = 0; i < entities.size(); ++i)
 		{
-			//if (entities[i].physicsComponent.mass == 0.0f)
+			//if (entities[i]->physicsComponent.mass == 0.0f)
 			//{
-				if (entities[i].isEmissive)
+				if (entities[i]->isEmissive)
 				{
 					gfx11.deviceContext->PSSetShader(gfx11.lightPS.GetShader(), nullptr, 0);
-					gfx11.cb_ps_materialBuffer.data.emissiveColor = entities[i].emissiveColor;
+					gfx11.cb_ps_materialBuffer.data.emissiveColor = entities[i]->emissiveColor;
 					gfx11.cb_ps_materialBuffer.UpdateBuffer();
 				}
 				else
@@ -1198,14 +1198,14 @@ void Renderer::RenderToEnvProbe(EnvironmentProbe& probe,Camera& camera, std::vec
 
 				gfx11.deviceContext->IASetInputLayout(gfx11.testVS.GetInputLayout());
 				gfx11.deviceContext->VSSetShader(gfx11.testVS.GetShader(), nullptr, 0);
-				entities[i].Draw(probe.camera[face], probe.camera[face].GetViewMatrix(), probe.camera[face].GetProjectionMatrix(), 100.0f, defaultText);
+				entities[i]->Draw(probe.camera[face], probe.camera[face].GetViewMatrix(), probe.camera[face].GetProjectionMatrix(), 100.0f, defaultText);
 			//}
 
 		}
 	}
 }
 
-void Renderer::ForwardPass(std::vector<Entity>& entities, Camera& camera, Sky& sky)
+void Renderer::ForwardPass(std::vector<std::shared_ptr<Entity>>& entities, Camera& camera, Sky& sky)
 {
 	//forwardRenderTexture.SetRenderTarget(gfx11.deviceContext.Get(), gfx11.depthStencilView.Get());
 	//forwardRenderTexture.ClearRenderTarget(gfx11.deviceContext.Get(), gfx11.depthStencilView.Get(), 0, 0, 0, 1, false);
@@ -1220,15 +1220,15 @@ void Renderer::ForwardPass(std::vector<Entity>& entities, Camera& camera, Sky& s
 	gfx11.deviceContext->OMSetBlendState(gfx11.blendState.Get(), NULL, 0xFFFFFFFF);
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		if (entities[i].model.isTransparent)
+		if (entities[i]->model.isTransparent)
 		{
-			DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - entities[i].pos.x, camera.GetPositionFloat3().y - entities[i].pos.y, camera.GetPositionFloat3().z - entities[i].pos.z);
+			DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - entities[i]->pos.x, camera.GetPositionFloat3().y - entities[i]->pos.y, camera.GetPositionFloat3().z - entities[i]->pos.z);
 			physx::PxVec3 diffVec = physx::PxVec3(diff.x, diff.y, diff.z);
 			float dist = diffVec.dot(diffVec);
 
 			if (dist < renderDistance)
 			{
-				if (entities[i].model.isAnimated)
+				if (entities[i]->model.isAnimated)
 				{
 					gfx11.deviceContext->IASetInputLayout(gfx11.animDeferredVS.GetInputLayout());
 					gfx11.deviceContext->VSSetShader(gfx11.animDeferredVS.GetShader(), nullptr, 0);
@@ -1238,20 +1238,20 @@ void Renderer::ForwardPass(std::vector<Entity>& entities, Camera& camera, Sky& s
 					gfx11.deviceContext->IASetInputLayout(gfx11.deferredVS.GetInputLayout());
 					gfx11.deviceContext->VSSetShader(gfx11.deferredVS.GetShader(), nullptr, 0);
 				}
-				if (entities[i].model.isAttached)
+				if (entities[i]->model.isAttached)
 				{
-					if (entities[i].parent)
+					if (entities[i]->parent)
 					{
-						if (!entities[i].parentName.empty() && (entities[i].parent->entityName == entities[i].parentName))
-							entities[i].SetupAttachment(entities[i].parent);
+						if (!entities[i]->parentName.empty() && (entities[i]->parent->entityName == entities[i]->parentName))
+							entities[i]->SetupAttachment(entities[i]->parent);
 					}
 				}
 
-				entities[i].Draw(camera, camera.GetViewMatrix(), camera.GetProjectionMatrix(), 100.0f, defaultText);
+				entities[i]->Draw(camera, camera.GetViewMatrix(), camera.GetProjectionMatrix(), 100.0f, defaultText);
 			}
 		}
 
-		if (bDrawFrustums && entities[i].isfrustumEnabled)
+		if (bDrawFrustums && entities[i]->isfrustumEnabled)
 		{
 			gfx11.deviceContext->RSSetState(gfx11.rasterizerStateFront.Get());
 			gfx11.deviceContext->PSSetShaderResources(0, 1, &gBuffer.m_shaderResourceViewArray[4]);
@@ -1259,7 +1259,7 @@ void Renderer::ForwardPass(std::vector<Entity>& entities, Camera& camera, Sky& s
 			gfx11.deviceContext->VSSetShader(gfx11.testVS.GetShader(), nullptr, 0);
 			gfx11.deviceContext->PSSetShader(gfx11.alphaBlendPS.GetShader(), nullptr, 0);
 		
-			entities[i].FrustumDraw(camera, gfx11.deviceContext.Get(), camera.GetViewMatrix(), camera.GetProjectionMatrix(), gfx11.cb_vs_vertexshader,true);
+			entities[i]->FrustumDraw(camera, gfx11.deviceContext.Get(), camera.GetViewMatrix(), camera.GetProjectionMatrix(), gfx11.cb_vs_vertexshader,true);
 		}
 		gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 	}

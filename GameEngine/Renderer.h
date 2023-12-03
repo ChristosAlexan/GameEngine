@@ -23,16 +23,16 @@ class Renderer
 {
 public:
 	Renderer();
-	bool Initialize(HWND hwnd, Camera& camera, int width, int height,std::vector<Entity>& entities,std::vector<Light>& lights, std::vector<Light>& pointLights);
-	void Render(Camera& camera, std::vector<Entity>& entity, PhysicsHandler& physicsHandler, std::vector<Light>& lights, std::vector<Light>& pointLights, std::vector<CollisionObject>& collisionObjects, GridClass& grid, std::vector<NavMeshClass>& navMeshes, std::vector<SoundComponent*>& sounds, Sky& sky);
-	void InitScene(std::vector<Entity>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera,Sky& sky);
+	bool Initialize(HWND hwnd, Camera& camera, int width, int height,std::vector<std::shared_ptr<Entity>>& entities,std::vector<Light>& lights, std::vector<Light>& pointLights);
+	void Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& entity, PhysicsHandler& physicsHandler, std::vector<Light>& lights, std::vector<Light>& pointLights, std::vector<CollisionObject>& collisionObjects, GridClass& grid, std::vector<NavMeshClass>& navMeshes, std::vector<SoundComponent*>& sounds, Sky& sky);
+	void InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera,Sky& sky);
 
 private:
 	void ClearScreen();
-	void RenderDeferred(std::vector<Entity>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera, Sky& sky);
+	void RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera, Sky& sky);
 	void UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera);
-	void RenderToEnvProbe(EnvironmentProbe& probe, Camera& camera, std::vector<Entity>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Sky& sky);
-	void ForwardPass(std::vector<Entity>& entities, Camera& camera, Sky& sky);
+	void RenderToEnvProbe(EnvironmentProbe& probe, Camera& camera, std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Sky& sky);
+	void ForwardPass(std::vector<std::shared_ptr<Entity>>& entities, Camera& camera, Sky& sky);
 	void SkyRender(Camera& camera, Sky& sky, float envMapStrengthMultiplier);
 	void DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, GridClass& grid, PhysicsHandler& physicsHandler, std::vector<NavMeshClass>& navMeshes, std::vector<Light>& lights);
 

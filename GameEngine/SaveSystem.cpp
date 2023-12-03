@@ -6,7 +6,7 @@ SaveSystem::SaveSystem()
 {
 }
 
-void SaveSystem::Save(std::vector<Entity>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, std::vector<CollisionObject>& collisionObject)
+void SaveSystem::Save(std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, std::vector<CollisionObject>& collisionObject)
 {
 	std::ofstream outfile;
 	outfile = std::ofstream("Files/File/GeneralSettings.txt");
@@ -40,98 +40,98 @@ void SaveSystem::Save(std::vector<Entity>& entities, std::vector<Light>& lights,
 
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		if (entities[i].isDeleted)
+		if (entities[i]->isDeleted)
 			continue;
 		outfile = std::ofstream("Files/File/Entities/Entity" + std::to_string(i) + ".txt");
 
 		if (outfile.is_open())
 		{
-			outfile << "mass= " << entities[i].physicsComponent.mass << "\n";
+			outfile << "mass= " << entities[i]->physicsComponent.mass << "\n";
 
-			if (entities[i].physicsComponent.aActor || entities[i].physicsComponent.aStaticActor || entities[i].physicsComponent.isCharacter)
+			if (entities[i]->physicsComponent.aActor || entities[i]->physicsComponent.aStaticActor || entities[i]->physicsComponent.isCharacter)
 			{
-				outfile << "posX= " << entities[i].physicsComponent.trans.p.x << "\n";
-				outfile << "posY= " << entities[i].physicsComponent.trans.p.y << "\n";
-				outfile << "posZ= " << entities[i].physicsComponent.trans.p.z << "\n";
+				outfile << "posX= " << entities[i]->physicsComponent.trans.p.x << "\n";
+				outfile << "posY= " << entities[i]->physicsComponent.trans.p.y << "\n";
+				outfile << "posZ= " << entities[i]->physicsComponent.trans.p.z << "\n";
 			}
 			else
 			{
-				outfile << "posX= " << entities[i].pos.x << "\n";
-				outfile << "posY= " << entities[i].pos.y << "\n";
-				outfile << "posZ= " << entities[i].pos.z << "\n";
+				outfile << "posX= " << entities[i]->pos.x << "\n";
+				outfile << "posY= " << entities[i]->pos.y << "\n";
+				outfile << "posZ= " << entities[i]->pos.z << "\n";
 			}
 			
-			outfile << "rotX= " << entities[i].rot.x << "\n";
-			outfile << "rotY= " << entities[i].rot.y << "\n";
-			outfile << "rotZ= " << entities[i].rot.z << "\n";
+			outfile << "rotX= " << entities[i]->rot.x << "\n";
+			outfile << "rotY= " << entities[i]->rot.y << "\n";
+			outfile << "rotZ= " << entities[i]->rot.z << "\n";
 
-			outfile << "scaleX= " << entities[i].scale.x << "\n";
-			outfile << "scaleY= " << entities[i].scale.y << "\n";
-			outfile << "scaleZ= " << entities[i].scale.z << "\n";
+			outfile << "scaleX= " << entities[i]->scale.x << "\n";
+			outfile << "scaleY= " << entities[i]->scale.y << "\n";
+			outfile << "scaleZ= " << entities[i]->scale.z << "\n";
 
-			outfile << "modelPosX= " << entities[i].modelPos.x << "\n";
-			outfile << "modelPosY= " << entities[i].modelPos.y << "\n";
-			outfile << "modelPosZ= " << entities[i].modelPos.z << "\n";
-
-
-			outfile << "physicsRotX= " << entities[i].physicsComponent.physics_rot.x << "\n";
-			outfile << "physicsRotY= " << entities[i].physicsComponent.physics_rot.y << "\n";
-			outfile << "physicsRotZ= " << entities[i].physicsComponent.physics_rot.z << "\n";
-			outfile << "physicsRotW= " << entities[i].physicsComponent.physics_rot.w << "\n";
-
-			outfile << "physicsScaleX= " << entities[i].physicsComponent.physics_scale.x << "\n";
-			outfile << "physicsScaleY= " << entities[i].physicsComponent.physics_scale.y << "\n";
-			outfile << "physicsScaleZ= " << entities[i].physicsComponent.physics_scale.z << "\n";
+			outfile << "modelPosX= " << entities[i]->modelPos.x << "\n";
+			outfile << "modelPosY= " << entities[i]->modelPos.y << "\n";
+			outfile << "modelPosZ= " << entities[i]->modelPos.z << "\n";
 
 
-			outfile << "frustumScaleX= " << entities[i].frustumScale.x << "\n";
-			outfile << "frustumScaleY= " << entities[i].frustumScale.y << "\n";
-			outfile << "frustumScaleZ= " << entities[i].frustumScale.z << "\n";
+			outfile << "physicsRotX= " << entities[i]->physicsComponent.physics_rot.x << "\n";
+			outfile << "physicsRotY= " << entities[i]->physicsComponent.physics_rot.y << "\n";
+			outfile << "physicsRotZ= " << entities[i]->physicsComponent.physics_rot.z << "\n";
+			outfile << "physicsRotW= " << entities[i]->physicsComponent.physics_rot.w << "\n";
 
-			outfile << "emissiveColorX= " << entities[i].emissiveColor.x << "\n";
-			outfile << "emissiveColorY= " << entities[i].emissiveColor.y << "\n";
-			outfile << "emissiveColorZ= " << entities[i].emissiveColor.z << "\n";
+			outfile << "physicsScaleX= " << entities[i]->physicsComponent.physics_scale.x << "\n";
+			outfile << "physicsScaleY= " << entities[i]->physicsComponent.physics_scale.y << "\n";
+			outfile << "physicsScaleZ= " << entities[i]->physicsComponent.physics_scale.z << "\n";
 
-			outfile << "isCharacter= " << entities[i].physicsComponent.isCharacter << "\n";
-			outfile << "isPlayer= " << entities[i].isPlayer << "\n";
-			outfile << "isAI= " << entities[i].isAI << "\n";
-			outfile << "isWalkable= " << entities[i].isWalkable << "\n";
-			outfile << "isObstacle= " << entities[i].isObstacle << "\n";
-			outfile << "Render= " << entities[i].bRender << "\n";
-			outfile << "isAnimated= " << entities[i].isAnimated << "\n";
-			outfile << "ConvertCordinates= " << entities[i].model.bConvertCordinates << "\n";
-			outfile << "isAttached= " << entities[i].model.isAttached << "\n";
-			outfile << "Frustum= " << entities[i].isfrustumEnabled << "\n";
-			outfile << "isDeleted= " << entities[i].isDeleted << "\n";
-			outfile << "isEmissive= " << entities[i].isEmissive << "\n";
-			outfile << "isTransparent= " << entities[i].model.isTransparent << "\n";
-			outfile << "isTextured= " << entities[i].model.isTextured << "\n";
-			outfile << "isDDS= " << entities[i].model.isDDS << "\n";
-			outfile << "physicsShape= " << entities[i].physicsComponent.physicsShapeEnum << "\n";
-			outfile << "animFilesCount= " << entities[i].model.animFiles.size() << "\n";
 
-			outfile << "entityName= " << entities[i].entityName << "\n";
-			if (entities[i].model.isAttached)
+			outfile << "frustumScaleX= " << entities[i]->frustumScale.x << "\n";
+			outfile << "frustumScaleY= " << entities[i]->frustumScale.y << "\n";
+			outfile << "frustumScaleZ= " << entities[i]->frustumScale.z << "\n";
+
+			outfile << "emissiveColorX= " << entities[i]->emissiveColor.x << "\n";
+			outfile << "emissiveColorY= " << entities[i]->emissiveColor.y << "\n";
+			outfile << "emissiveColorZ= " << entities[i]->emissiveColor.z << "\n";
+
+			outfile << "isCharacter= " << entities[i]->physicsComponent.isCharacter << "\n";
+			outfile << "isPlayer= " << entities[i]->isPlayer << "\n";
+			outfile << "isAI= " << entities[i]->isAI << "\n";
+			outfile << "isWalkable= " << entities[i]->isWalkable << "\n";
+			outfile << "isObstacle= " << entities[i]->isObstacle << "\n";
+			outfile << "Render= " << entities[i]->bRender << "\n";
+			outfile << "isAnimated= " << entities[i]->isAnimated << "\n";
+			outfile << "ConvertCordinates= " << entities[i]->model.bConvertCordinates << "\n";
+			outfile << "isAttached= " << entities[i]->model.isAttached << "\n";
+			outfile << "Frustum= " << entities[i]->isfrustumEnabled << "\n";
+			outfile << "isDeleted= " << entities[i]->isDeleted << "\n";
+			outfile << "isEmissive= " << entities[i]->isEmissive << "\n";
+			outfile << "isTransparent= " << entities[i]->model.isTransparent << "\n";
+			outfile << "isTextured= " << entities[i]->model.isTextured << "\n";
+			outfile << "isDDS= " << entities[i]->model.isDDS << "\n";
+			outfile << "physicsShape= " << entities[i]->physicsComponent.physicsShapeEnum << "\n";
+			outfile << "animFilesCount= " << entities[i]->model.animFiles.size() << "\n";
+
+			outfile << "entityName= " << entities[i]->entityName << "\n";
+			if (entities[i]->model.isAttached)
 			{
-				if(entities[i].parent && !entities[i].parent->entityName.empty())
-					outfile << "attachedEntityName= " << entities[i].parent->entityName << "\n";
+				if(entities[i]->parent && !entities[i]->parent->entityName.empty())
+					outfile << "attachedEntityName= " << entities[i]->parent->entityName << "\n";
 
-				if(!entities[i].attachedBone.empty())
-					outfile << "attachedBone= " << entities[i].attachedBone << "\n";
+				if(!entities[i]->attachedBone.empty())
+					outfile << "attachedBone= " << entities[i]->attachedBone << "\n";
 			}
 			std::string _path;
 
-			size_t npos = entities[i].filePath.find("Data");
-			_path = entities[i].filePath.substr(npos);
+			size_t npos = entities[i]->filePath.find("Data");
+			_path = entities[i]->filePath.substr(npos);
 
 			outfile << "filePath= " << ".//" << _path << "\n";
 
-			for (int j = 0; j < entities[i].model.animFiles.size(); ++j)
+			for (int j = 0; j < entities[i]->model.animFiles.size(); ++j)
 			{
 				std::string _path;
 
-				size_t npos = entities[i].model.animFiles[j].find("Data");
-				_path = entities[i].model.animFiles[j].substr(npos);
+				size_t npos = entities[i]->model.animFiles[j].find("Data");
+				_path = entities[i]->model.animFiles[j].substr(npos);
 
 				outfile << "animFiles" + std::to_string(j) + "= " <<".//" << _path << "\n";
 			}
@@ -301,11 +301,11 @@ void SaveSystem::Load()
 	}
 }
 
-void SaveSystem::LoadEntityData(std::vector<Entity>& entities)
+void SaveSystem::LoadEntityData(std::vector<std::shared_ptr<Entity>>& entities)
 {
 	for (int i = 0; i < entitiesCount; ++i)
 	{
-		//entities[i].entityName = "Entity" + std::to_string(i);
+		//entities[i]->entityName = "Entity" + std::to_string(i);
 		std::ifstream f;
 		std::string path="";
 		float val = 0;
@@ -320,188 +320,188 @@ void SaveSystem::LoadEntityData(std::vector<Entity>& entities)
 				{
 					if (path == "mass=")
 					{
-						entities[i].physicsComponent.mass = (float)val;
+						entities[i]->physicsComponent.mass = (float)val;
 					}
 					if (path == "posX=")
 					{
-						entities[i].pos.x = (float)val;
+						entities[i]->pos.x = (float)val;
 					}
 					if (path == "posY=")
 					{
-						entities[i].pos.y = (float)val;
+						entities[i]->pos.y = (float)val;
 					}
 					if (path == "posZ=")
 					{
-						entities[i].pos.z = (float)val;
+						entities[i]->pos.z = (float)val;
 					}
 					
 
 					//if (i == 2)
-					//	OutputDebugStringA(("POS = " + std::to_string(entities[i].pos.x) + "\n").c_str());
+					//	OutputDebugStringA(("POS = " + std::to_string(entities[i]->pos.x) + "\n").c_str());
 					
 					if (path == "rotX=")
 					{
-						entities[i].rot.x = (float)val;
+						entities[i]->rot.x = (float)val;
 					}
 					if (path == "rotY=")
 					{
-						entities[i].rot.y = (float)val;
+						entities[i]->rot.y = (float)val;
 					}
 					if (path == "rotZ=")
 					{
-						entities[i].rot.z = (float)val;
+						entities[i]->rot.z = (float)val;
 					}
 
 					if (path == "scaleX=")
 					{
-						entities[i].scale.x = (float)val;
+						entities[i]->scale.x = (float)val;
 					}
 					if (path == "scaleY=")
 					{
-						entities[i].scale.y = (float)val;
+						entities[i]->scale.y = (float)val;
 					}
 					if (path == "scaleZ=")
 					{
-						entities[i].scale.z = (float)val;
+						entities[i]->scale.z = (float)val;
 					}
 
 					if (path == "modelPosX=")
 					{
-						entities[i].modelPos.x = (float)val;
+						entities[i]->modelPos.x = (float)val;
 					}
 					if (path == "modelPosY=")
 					{
-						entities[i].modelPos.y = (float)val;
+						entities[i]->modelPos.y = (float)val;
 					}
 					if (path == "modelPosZ=")
 					{
-						entities[i].modelPos.z = (float)val;
+						entities[i]->modelPos.z = (float)val;
 					}
 
 					if (path == "physicsRotX=")
 					{
-						entities[i].physicsComponent.physics_rot.x = (float)val;
+						entities[i]->physicsComponent.physics_rot.x = (float)val;
 					}
 					if (path == "physicsRotY=")
 					{
-						entities[i].physicsComponent.physics_rot.y = (float)val;
+						entities[i]->physicsComponent.physics_rot.y = (float)val;
 					}
 					if (path == "physicsRotZ=")
 					{
-						entities[i].physicsComponent.physics_rot.z = (float)val;
+						entities[i]->physicsComponent.physics_rot.z = (float)val;
 					}
 					if (path == "physicsRotW=")
 					{
-						entities[i].physicsComponent.physics_rot.w = (float)val;
+						entities[i]->physicsComponent.physics_rot.w = (float)val;
 					}
 					if (path == "physicsScaleX=")
 					{
-						entities[i].physicsComponent.physics_scale.x = (float)val;
+						entities[i]->physicsComponent.physics_scale.x = (float)val;
 					}
 					if (path == "physicsScaleY=")
 					{
-						entities[i].physicsComponent.physics_scale.y = (float)val;
+						entities[i]->physicsComponent.physics_scale.y = (float)val;
 					}
 					if (path == "physicsScaleZ=")
 					{
-						entities[i].physicsComponent.physics_scale.z = (float)val;
+						entities[i]->physicsComponent.physics_scale.z = (float)val;
 					}
 
 					if (path == "frustumScaleX=")
 					{
-						entities[i].frustumScale.x = (float)val;
+						entities[i]->frustumScale.x = (float)val;
 					}
 					if (path == "frustumScaleY=")
 					{
-						entities[i].frustumScale.y = (float)val;
+						entities[i]->frustumScale.y = (float)val;
 					}
 					if (path == "frustumScaleZ=")
 					{
-						entities[i].frustumScale.z = (float)val;
+						entities[i]->frustumScale.z = (float)val;
 					}
 
 					if (path == "emissiveColorX=")
 					{
-						entities[i].emissiveColor.x = (float)val;
+						entities[i]->emissiveColor.x = (float)val;
 					}
 					if (path == "emissiveColorY=")
 					{
-						entities[i].emissiveColor.y = (float)val;
+						entities[i]->emissiveColor.y = (float)val;
 					}
 					if (path == "emissiveColorZ=")
 					{
-						entities[i].emissiveColor.z = (float)val;
+						entities[i]->emissiveColor.z = (float)val;
 					}
 
 					if (path == "isCharacter=")
 					{
-						entities[i].physicsComponent.isCharacter = (int)val;
+						entities[i]->physicsComponent.isCharacter = (int)val;
 					}
 					if (path == "isPlayer=")
 					{
-						entities[i].isPlayer = (int)val;
+						entities[i]->isPlayer = (int)val;
 					}
 					if (path == "isAI=")
 					{
-						entities[i].isAI = (int)val;
+						entities[i]->isAI = (int)val;
 					}
 					if (path == "isWalkable=")
 					{
-						entities[i].isWalkable = (int)val;
+						entities[i]->isWalkable = (int)val;
 					}
 					if (path == "isObstacle=")
 					{
-						entities[i].isObstacle = (int)val;
+						entities[i]->isObstacle = (int)val;
 					}
 					if (path == "Render=")
 					{
-						entities[i].bRender = (int)val;
+						entities[i]->bRender = (int)val;
 					}
 					if (path == "isAnimated=")
 					{
-						entities[i].isAnimated = (int)val;
+						entities[i]->isAnimated = (int)val;
 					}
 					if (path == "ConvertCordinates=")
 					{
-						entities[i].model.bConvertCordinates = (int)val;
+						entities[i]->model.bConvertCordinates = (int)val;
 					}
 					if (path == "isAttached=")
 					{
-						entities[i].model.isAttached = (int)val;
+						entities[i]->model.isAttached = (int)val;
 					}
 					if (path == "Frustum=")
 					{
-						entities[i].isfrustumEnabled = (int)val;
+						entities[i]->isfrustumEnabled = (int)val;
 					}
 					if (path == "isDeleted=")
 					{
-						entities[i].isDeleted = (int)val;
+						entities[i]->isDeleted = (int)val;
 					}
 					if (path == "isEmissive=")
 					{
-						entities[i].isEmissive = (int)val;
+						entities[i]->isEmissive = (int)val;
 					}
 					if (path == "isTransparent=")
 					{
-						entities[i].model.isTransparent = (int)val;
+						entities[i]->model.isTransparent = (int)val;
 					}
 					if (path == "isTextured=")
 					{
-						entities[i].model.isTextured = (int)val;
+						entities[i]->model.isTextured = (int)val;
 					}
 					if (path == "isDDS=")
 					{
-						entities[i].model.isDDS = (int)val;
+						entities[i]->model.isDDS = (int)val;
 					}
 					if (path == "physicsShape=")
 					{
-						entities[i].physicsComponent.physicsShapeEnum = (PhysicsShapeEnum)val;
-						entities[i].physicsComponent.selectedShape = (int)val;
+						entities[i]->physicsComponent.physicsShapeEnum = (PhysicsShapeEnum)val;
+						entities[i]->physicsComponent.selectedShape = (int)val;
 					}
 					
 					if (path == "animFilesCount=")
 					{
-						entities[i].model.animFiles.resize((int)val);
+						entities[i]->model.animFiles.resize((int)val);
 					}
 				}
 				f.close();
@@ -519,27 +519,27 @@ void SaveSystem::LoadEntityData(std::vector<Entity>& entities)
 				{
 					if (path == "entityName=")
 					{
-						entities[i].entityName = "Entity"+std::to_string(i);
+						entities[i]->entityName = "Entity"+std::to_string(i);
 					}
 					if (path == "attachedEntityName=")
 					{
-						entities[i].parentName = str;
+						entities[i]->parentName = str;
 					}
 					if (path == "attachedBone=")
 					{
-						entities[i].attachedBone = str;
+						entities[i]->attachedBone = str;
 					}
 					if (path == "filePath=")
 					{
-						entities[i].filePath = str;
+						entities[i]->filePath = str;
 					}
-					for (int j = 0; j < entities[i].model.animFiles.size(); ++j)
+					for (int j = 0; j < entities[i]->model.animFiles.size(); ++j)
 					{
 						if (path == "animFiles" + std::to_string(j) + "=")
 						{
 							//OutputDebugStringA(str.c_str());
 							//OutputDebugStringA("\n");
-							entities[i].model.animFiles[j] = str;
+							entities[i]->model.animFiles[j] = str;
 						}
 					}
 				}

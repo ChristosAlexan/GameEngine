@@ -72,17 +72,17 @@ void PhysicsHandler::Initialize(Camera& camera)
 	//aScene->setVisualizationParameter(physx::PxVisualizationParameter::eCULL_BOX, 2.0f);
 }
 
-void PhysicsHandler::CreatePhysicsComponents(std::vector<Entity>& entities, std::vector<CollisionObject>& collisionObject)
+void PhysicsHandler::CreatePhysicsComponents(std::vector<std::shared_ptr<Entity>>& entities, std::vector<CollisionObject>& collisionObject)
 {
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		if (!entities[i].physicsComponent.isCharacter)
+		if (!entities[i]->physicsComponent.isCharacter)
 		{
-			entities[i].CreatePhysicsComponent(*mPhysics, *aScene);
+			entities[i]->CreatePhysicsComponent(*mPhysics, *aScene);
 		}
-		if (entities[i].physicsComponent.isCharacter)
+		if (entities[i]->physicsComponent.isCharacter)
 		{
-			entities[i].physicsComponent.CreateController(*mPhysics, *aScene, physx::PxVec3(entities[i].pos.x, entities[i].pos.y, entities[i].pos.z), entities[i].entityName);
+			entities[i]->physicsComponent.CreateController(*mPhysics, *aScene, physx::PxVec3(entities[i]->pos.x, entities[i]->pos.y, entities[i]->pos.z), entities[i]->entityName);
 		}
 	}
 
@@ -92,7 +92,7 @@ void PhysicsHandler::CreatePhysicsComponents(std::vector<Entity>& entities, std:
 	}
 }
 
-void PhysicsHandler::MouseRayCast(std::vector<Entity>& entities, Camera& camera, Mouse& mouse, Keyboard& keyboard, int& width, int& height, int& selected_list_object)
+void PhysicsHandler::MouseRayCast(std::vector<std::shared_ptr<Entity>>& entities, Camera& camera, Mouse& mouse, Keyboard& keyboard, int& width, int& height, int& selected_list_object)
 {
 	float pointX, pointY;
 	DirectX::XMMATRIX viewMatrix, inverseViewMatrix;
@@ -147,20 +147,20 @@ void PhysicsHandler::MouseRayCast(std::vector<Entity>& entities, Camera& camera,
 
 			for (int i = 0; i < entities.size(); ++i)
 			{
-				if (!entities[i].isDeleted)
+				if (!entities[i]->isDeleted)
 				{
-					if (entities[i].physicsComponent.aActor)
+					if (entities[i]->physicsComponent.aActor)
 					{
-						if (entities[i].physicsComponent.aActor->getName() == hit.block.actor->getName())
+						if (entities[i]->physicsComponent.aActor->getName() == hit.block.actor->getName())
 						{
-							entities[i].isSelected = true;
+							entities[i]->isSelected = true;
 						}
 					}
-					else if (entities[i].physicsComponent.aStaticActor)
+					else if (entities[i]->physicsComponent.aStaticActor)
 					{
-						if (entities[i].physicsComponent.aStaticActor->getName() == hit.block.actor->getName())
+						if (entities[i]->physicsComponent.aStaticActor->getName() == hit.block.actor->getName())
 						{
-							entities[i].isSelected = true;
+							entities[i]->isSelected = true;
 						}
 					}
 				}
@@ -180,21 +180,21 @@ void PhysicsHandler::MouseRayCast(std::vector<Entity>& entities, Camera& camera,
 
 			for (int i = 0; i < entities.size(); ++i)
 			{
-				if (!entities[i].isDeleted)
+				if (!entities[i]->isDeleted)
 				{
-					if (entities[i].physicsComponent.aActor)
+					if (entities[i]->physicsComponent.aActor)
 					{
-						if (entities[i].physicsComponent.aActor->getName() == hit.block.actor->getName())
+						if (entities[i]->physicsComponent.aActor->getName() == hit.block.actor->getName())
 						{
-							entities[i].isSelected = false;
+							entities[i]->isSelected = false;
 							//bMousePicked = false;
 						}
 					}
-					else if (entities[i].physicsComponent.aStaticActor)
+					else if (entities[i]->physicsComponent.aStaticActor)
 					{
-						if (entities[i].physicsComponent.aStaticActor->getName() == hit.block.actor->getName())
+						if (entities[i]->physicsComponent.aStaticActor->getName() == hit.block.actor->getName())
 						{
-							entities[i].isSelected = false;
+							entities[i]->isSelected = false;
 							//bMousePicked = false;
 						}
 					}
@@ -246,7 +246,7 @@ void PhysicsHandler::FallCheck(Entity* character)
 
 }
 
-void PhysicsHandler::NavMeshRayCast(GridClass& grid, std::vector<Entity>& entities, std::vector<CollisionObject>& collisionObjects)
+void PhysicsHandler::NavMeshRayCast(GridClass& grid, std::vector<std::shared_ptr<Entity>>& entities, std::vector<CollisionObject>& collisionObjects)
 {
 	if (!aScene)
 		return;
@@ -288,10 +288,10 @@ void PhysicsHandler::NavMeshRayCast(GridClass& grid, std::vector<Entity>& entiti
 
 		for (int j = 0; j < entities.size(); ++j)
 		{
-			if (entities[j].model.isAttached)
+			if (entities[j]->model.isAttached)
 				continue;
 		
-			if (!entities[j].physicsComponent.aStaticActor)
+			if (!entities[j]->physicsComponent.aStaticActor)
 			{
 				continue;
 			}
@@ -299,29 +299,29 @@ void PhysicsHandler::NavMeshRayCast(GridClass& grid, std::vector<Entity>& entiti
 			{
 				if (status[k])
 				{
-					if (entities[j].physicsComponent.aStaticActor && hit[k].block.actor)
+					if (entities[j]->physicsComponent.aStaticActor && hit[k].block.actor)
 					{
-						if (entities[j].physicsComponent.physicsShapeEnum == PhysicsShapeEnum::NONE && !entities[j].physicsComponent.isCharacter)
+						if (entities[j]->physicsComponent.physicsShapeEnum == PhysicsShapeEnum::NONE && !entities[j]->physicsComponent.isCharacter)
 						{
-							if (entities[j].physicsComponent.aStaticActor)
+							if (entities[j]->physicsComponent.aStaticActor)
 							{
-								if (entities[j].physicsComponent.aStaticActor == hit[k].block.actor)
+								if (entities[j]->physicsComponent.aStaticActor == hit[k].block.actor)
 								{
-									entities[j].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+									entities[j]->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
 									continue;
 								}
 							}
 						}
 					}
-					if (entities[j].physicsComponent.physicsShapeEnum != PhysicsShapeEnum::NONE)
+					if (entities[j]->physicsComponent.physicsShapeEnum != PhysicsShapeEnum::NONE)
 					{
-						if (entities[j].physicsComponent.aStaticActor && hit[k].block.actor)
+						if (entities[j]->physicsComponent.aStaticActor && hit[k].block.actor)
 						{
-							if (entities[j].physicsComponent.aStaticActor == hit[k].block.actor)
+							if (entities[j]->physicsComponent.aStaticActor == hit[k].block.actor)
 							{
-								if (hit[k].block.actor->getName() == entities[j].physicsComponent.aStaticActor->getName())
+								if (hit[k].block.actor->getName() == entities[j]->physicsComponent.aStaticActor->getName())
 								{
-									if (entities[j].isWalkable)
+									if (entities[j]->isWalkable)
 									{
 										grid.nodes[i].isValidPath = true;
 									}
@@ -329,7 +329,7 @@ void PhysicsHandler::NavMeshRayCast(GridClass& grid, std::vector<Entity>& entiti
 									{
 										grid.nodes[i].isValidPath = false;
 									}
-									if (entities[j].isObstacle)
+									if (entities[j]->isObstacle)
 									{
 										grid.nodes[i].isValidPath = false;
 									}
@@ -422,30 +422,30 @@ void PhysicsHandler::LineOfSightToPlayer(Entity* character, Entity* player)
 	hit.finalizeQuery();
 }
 
-void PhysicsHandler::PlayerFireRayTrace(TpsController& tpsPlayerController,Entity* player, std::vector<Entity>& entities, Camera& camera)
+void PhysicsHandler::PlayerFireRayTrace(TpsController& tpsPlayerController, Entity* player, std::vector<std::shared_ptr<Entity>>& entities, Camera& camera)
 {
 	if (tpsPlayerController.isFiring)
 	{
 
 		DirectX::XMFLOAT3 forwardDir;
 		DirectX::XMStoreFloat3(&forwardDir, camera.GetForwardVector());
-	
+
 		//const physx::PxVec3 origin = physx::PxVec3(camera.GetPositionFloat3().x, camera.GetPositionFloat3().y, camera.GetPositionFloat3().z);
-		
+
 		physx::PxVec3 origin;
-		
-		if(player)
+
+		if (player)
 			player->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
 
-		Entity* playerWeapon = nullptr;
+		std::weak_ptr<Entity> playerWeapon;
 		for (int i = 0; i < entities.size(); ++i)
 		{
-			if (entities[i].model.isAttached && entities[i].parent == player)
+			if (entities[i]->model.isAttached && entities[i]->parent == player)
 			{
-				origin = physx::PxVec3(entities[i].pos.x, entities[i].pos.y + 0.15, entities[i].pos.z);
-				entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+				origin = physx::PxVec3(entities[i]->pos.x, entities[i]->pos.y + 0.15, entities[i]->pos.z);
+				entities[i]->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
 
-				playerWeapon = &entities[i];
+				playerWeapon = entities[i];
 				break;
 			}
 		}
@@ -458,7 +458,7 @@ void PhysicsHandler::PlayerFireRayTrace(TpsController& tpsPlayerController,Entit
 		DirectX::XMStoreFloat3(&upDir, camera.upDir);
 
 		physx::PxVec3 unitDir;
-		unitDir = physx::PxVec3(forwardDir.x + (rightDir.x/ rayDist), forwardDir.y + upDir.y/ rayDist, forwardDir.z  + (rightDir.z/ rayDist));
+		unitDir = physx::PxVec3(forwardDir.x + (rightDir.x / rayDist), forwardDir.y + upDir.y / rayDist, forwardDir.z + (rightDir.z / rayDist));
 
 		unitDir.normalize();
 
@@ -484,13 +484,13 @@ void PhysicsHandler::PlayerFireRayTrace(TpsController& tpsPlayerController,Entit
 
 			for (int i = 0; i < entities.size(); ++i)
 			{
-				//if(entities[i].isPlayer)
-				//	entities[i].physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
-				if (hit.block.actor->getName() == entities[i].entityName)
+				//if(entities[i]->isPlayer)
+				//	entities[i]->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+				if (hit.block.actor->getName() == entities[i]->entityName)
 				{
-					if (entities[i].physicsComponent.aActor)
+					if (entities[i]->physicsComponent.aActor)
 					{
-						entities[i].physicsComponent.aActor->addForce(physx::PxVec3(unitDir.x * 5.0, unitDir.y * 5.0, unitDir.z * 5.0),physx::PxForceMode::eIMPULSE);
+						entities[i]->physicsComponent.aActor->addForce(physx::PxVec3(unitDir.x * 5.0, unitDir.y * 5.0, unitDir.z * 5.0), physx::PxForceMode::eIMPULSE);
 						hit.finalizeQuery();
 						break;
 					}
@@ -500,24 +500,20 @@ void PhysicsHandler::PlayerFireRayTrace(TpsController& tpsPlayerController,Entit
 
 		if (player)
 			player->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
-		if (playerWeapon)
+		if (auto playerWeapon_shared = playerWeapon.lock())
 		{
-			playerWeapon->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
-			playerWeapon = nullptr;
-			delete playerWeapon;
+			playerWeapon_shared->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
 		}
-			
+
 	}
 }
 
-void PhysicsHandler::CrosshairRayTrace(TpsController& tpsPlayerController, Entity* player, std::vector<Entity>& entities, RectShape& crosshair, Camera& camera)
+void PhysicsHandler::CrosshairRayTrace(TpsController& tpsPlayerController, Entity* player, std::vector<std::shared_ptr<Entity>>& entities, RectShape& crosshair, Camera& camera)
 {
 	if (!player || !player->physicsComponent.aActor || !player->physicsComponent.aShape)
 		return;
 	DirectX::XMFLOAT3 forwardDir;
 	DirectX::XMStoreFloat3(&forwardDir, camera.GetForwardVector());
-
-	//const physx::PxVec3 origin = physx::PxVec3(camera.GetPositionFloat3().x, camera.GetPositionFloat3().y, camera.GetPositionFloat3().z);
 
 	physx::PxVec3 origin;
 

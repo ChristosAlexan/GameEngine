@@ -15,7 +15,7 @@ public:
 	Entity();
 	//Entity(const Entity& other);
 
-	void CopyData(const Entity& other);
+	void CopyData(const std::shared_ptr<Entity>& other);
 
 	bool Intitialize(const std::string filePath, ID3D11Device* device, ID3D11DeviceContext* deviceContex, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, bool isAnimated);
 	//void LoadAnimation();
@@ -26,7 +26,7 @@ public:
 	void FrustumDraw(Camera& camera, ID3D11DeviceContext* deviceContex, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, bool bCheckFrustum);
 	void AttachController(physx::PxController& characterController,bool& runPhysics);
 	void SetupAttachment(Entity* entity);
-	void DrawGui(physx::PxScene& scene, std::vector<Entity>& entities);
+	void DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>& entities);
 	void Input(Mouse& mouse, Keyboard& keyboard);
 	void Clear(physx::PxScene& scene);
 public:

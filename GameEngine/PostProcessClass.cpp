@@ -8,7 +8,7 @@ float lerp(float a, float b, float f)
 
 PostProcessClass::PostProcessClass()
 {
-	radius = 0.002f;
+	radius = 0.003f;
 	bias = 0.5f;
 	sharpness = 16.f;
 	powerExponent = 4.f;
@@ -16,7 +16,7 @@ PostProcessClass::PostProcessClass()
 	largeScaleAO = 2.0f;
 	smallScaleAO = 2.0f;
 	decodeBias = 1.0f;
-	decodeScale = 2.0f;
+	decodeScale = 1.0f;
 }
 
 void PostProcessClass::Initialize(DX11& gfx11, int width, int height)
@@ -111,7 +111,7 @@ void PostProcessClass::HbaoPlusRender(DX11& gfx11, RectShape& rect, Camera& came
 	Params.LargeScaleAO = largeScaleAO;
 	Params.SmallScaleAO = smallScaleAO;
 	Params.StepCount = GFSDK_SSAO_STEP_COUNT_8;
-	Params.DepthClampMode = GFSDK_SSAO_DepthClampMode::GFSDK_SSAO_CLAMP_TO_EDGE;//GFSDK_SSAO_DepthClampMode::GFSDK_SSAO_CLAMP_TO_BORDER;
+	Params.DepthClampMode = GFSDK_SSAO_DepthClampMode::GFSDK_SSAO_CLAMP_TO_BORDER;
 	Params.Radius = radius;
 	Params.Bias = bias;
 	Params.PowerExponent = powerExponent;

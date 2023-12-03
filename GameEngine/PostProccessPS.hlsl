@@ -40,7 +40,7 @@ float4 main(PS_INPUT input) : SV_TARGET
   
     sampleColor *= hbaoPlus;
     sampleColor += bloom * bloomStrength;
-    //sampleColor += forwardColor;
+
     sampleColor = ReinhardToneMapping(sampleColor, exposure);
     sampleColor = pow(sampleColor, float3(1.0f / gamma, 1.0f / gamma, 1.0f / gamma));
     

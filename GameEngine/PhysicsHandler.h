@@ -22,13 +22,13 @@ public:
 	~PhysicsHandler();
 
 	void Initialize(Camera& camera);
-	void CreatePhysicsComponents(std::vector<Entity>& entities, std::vector<CollisionObject>& collisionObject);
-	void MouseRayCast(std::vector<Entity>& entities, Camera& camera, Mouse& mouse, Keyboard& keyboard, int& width, int& height, int& selected_list_object);
+	void CreatePhysicsComponents(std::vector<std::shared_ptr<Entity>>& entities, std::vector<CollisionObject>& collisionObject);
+	void MouseRayCast(std::vector<std::shared_ptr<Entity>>& entities, Camera& camera, Mouse& mouse, Keyboard& keyboard, int& width, int& height, int& selected_list_object);
 	void FallCheck(Entity* character);
-	void NavMeshRayCast(GridClass& grid, std::vector<Entity>& entities, std::vector<CollisionObject>& collisionObjects);
+	void NavMeshRayCast(GridClass& grid, std::vector<std::shared_ptr<Entity>>& entities, std::vector<CollisionObject>& collisionObjects);
 	void LineOfSightToPlayer(Entity* character, Entity* player);
-	void PlayerFireRayTrace(TpsController& tpsPlayerController, Entity* player, std::vector<Entity>& entities, Camera& camera);
-	void CrosshairRayTrace(TpsController& tpsPlayerController, Entity* player, std::vector<Entity>& entities, RectShape& crosshair, Camera& camera);
+	void PlayerFireRayTrace(TpsController& tpsPlayerController, Entity* player, std::vector<std::shared_ptr<Entity>>& entities, Camera& camera);
+	void CrosshairRayTrace(TpsController& tpsPlayerController, Entity* player, std::vector<std::shared_ptr<Entity>>& entities, RectShape& crosshair, Camera& camera);
 	bool advance(float& dt, float& fps, Camera& camera);
 	void DrawDebugLine(DX11& gfx11, PhysicsDebugDraw& physicsDebugDraw, Camera& camera);
 	void ShutDown();
