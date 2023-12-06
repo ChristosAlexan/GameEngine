@@ -15,6 +15,7 @@
 #include "PhysicsDebugDraw.h"
 #include "RectShape.h"
 
+#include <NvBlastTk.h>
 class PhysicsHandler
 {
 public:

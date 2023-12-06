@@ -30,6 +30,8 @@ Light::Light()
 	bShadow = true;
 	isLightEnabled = true;
 	lightType = 1.0f;
+
+	shadowRenderDist = 35.0f;
 }
 
 void Light::CopyData(const Light& other)
@@ -82,11 +84,17 @@ void Light::SetupCamera(int windowWidth, int windowHeight)
 void Light::UpdateCamera()
 {
 	camera->SetPosition(pos);
-	//camera[i].pos = pos;
+
 	if (lightType == 2.0f)
 	{
-		camera->OrthographicFov(m_screenWidth / shadowRenderDist, m_screenHeight / shadowRenderDist, nearZ, farZ);
-		camera->SetLookAtPos(DirectX::XMFLOAT3(direction.x + pos.x, direction.y + pos.y, direction.z + pos.z));
+		camera->OrthographicFov(shadowRenderDist + offset.x, shadowRenderDist + offset.y, nearZ, farZ);
+		DirectX::XMFLOAT3 look_dir = DirectX::XMFLOAT3(direction.x + pos.x , direction.y + pos.y, direction.z + pos.z);
+		DirectX::XMFLOAT3 look_target = DirectX::XMFLOAT3(pos.x, pos.y, pos.z);
+
+		DirectX::XMVECTOR focus_vec = DirectX::XMLoadFloat3(&look_dir);
+		DirectX::XMVECTOR eye_vec = DirectX::XMLoadFloat3(&look_target);
+		camera->viewMatrix = DirectX::XMMatrixLookAtLH(eye_vec, focus_vec, DirectX::XMVECTOR{0,1,0});
+		
 	}
 	else 
 	{
@@ -137,6 +145,7 @@ void Light::DrawGui(std::string name)
 	{
 		ImGui::DragFloat("frustumScreenDepth", &frustumScreenDepth, 1.0f);
 		ImGui::DragFloat("shadowRenderDist", &shadowRenderDist, 1.0f);
+		ImGui::DragFloat3("offset", &offset.x, 0.05f);
 		ImGui::DragFloat("radius", &radius, 0.05f);
 	}
 

@@ -42,6 +42,7 @@ public:
 	bool PossessCharacter = false;
 	DirectX::XMFLOAT3 pos;
 
+	DirectX::XMMATRIX viewMatrix;
 private:
 	void UpdateViewMatrix();
 
@@ -49,7 +50,7 @@ private:
 	DirectX::XMVECTOR rotVector;
 
 
-	DirectX::XMMATRIX viewMatrix;
+	//DirectX::XMMATRIX viewMatrix;
 	DirectX::XMMATRIX projectionMatrix;
 
 	const DirectX::XMVECTOR DEFAULT_FORWARD_VECTOR = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
