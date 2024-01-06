@@ -327,7 +327,7 @@ float3 Shadows(float4 worldPos, Texture2D depthMapTexture, PS_INPUT input, int i
     if ((saturate(projCoords.x) == projCoords.x) && (saturate(projCoords.y) == projCoords.y))
     {
         int PCF_RANGE = 2;
-        int SUN_PCF_RANGE = 4;
+        int SUN_PCF_RANGE = 6;
         
         if(lightTypeEnableShadows[index].x == 2.0f)
         {

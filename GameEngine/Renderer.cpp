@@ -164,7 +164,7 @@ void Renderer::InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::ve
 		lights[i].Initialize(gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader);
 		if (lights[i].lightType == 2.0f)
 		{
-			lights[i].m_shadowMap.InitializeShadow(gfx11.device.Get(), gfx11.deviceContext.Get(), 1024*4, 1024*4, DXGI_FORMAT::DXGI_FORMAT_R16_FLOAT);
+			lights[i].m_shadowMap.InitializeShadow(gfx11.device.Get(), gfx11.deviceContext.Get(), 8192, 8192, DXGI_FORMAT::DXGI_FORMAT_R16_FLOAT);
 		}
 		else
 		{
@@ -230,25 +230,6 @@ void Renderer::RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, st
 	for (int i = 0; i < entities.size(); ++i)
 	{
 		
-		//bHasFinishedLoading = true; 
-		if (entities[i]->model.loadAsync)
-		{
-
-			if (!entities[i]->model._asyncLoad._Is_ready())
-			{
-				//entities[i]->model._asyncLoad.wait();
-				bHasFinishedLoading = true;
-			}
-			else
-			{
-				bHasFinishedLoading = false;
-			}
-		}
-		bHasFinishedLoading = true;
-		//skyEntity.pos = camera.pos;
-		
-		
-
 		DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - entities[i]->pos.x, camera.GetPositionFloat3().y - entities[i]->pos.y, camera.GetPositionFloat3().z - entities[i]->pos.z);
 		physx::PxVec3 diffVec = physx::PxVec3(diff.x, diff.y, diff.z);
 		float dist = diffVec.dot(diffVec);
@@ -538,24 +519,22 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 
 
 	
-	if (bHasFinishedLoading)
+	if (environmentProbe.recalculate)
 	{
-		if (environmentProbe.recalculate)
-		{
 		
 			
-			ClearScreen();
+		ClearScreen();
 
-			environmentProbe.prevPos = environmentProbe.pos;
-			environmentProbe.UpdateCamera();
+		environmentProbe.prevPos = environmentProbe.pos;
+		environmentProbe.UpdateCamera();
 
-			RenderToEnvProbe(environmentProbe, camera, entities, lights, pointLights, sky);
-			pbr.PbrRender(gfx11,rect,debugCube,environmentProbe,camera,rgb);
-			environmentProbe.pos = environmentProbe.prevPos;
-			environmentProbe.recalculate = false;
+		RenderToEnvProbe(environmentProbe, camera, entities, lights, pointLights, sky);
+		pbr.PbrRender(gfx11,rect,debugCube,environmentProbe,camera,rgb);
+		environmentProbe.pos = environmentProbe.prevPos;
+		environmentProbe.recalculate = false;
 
-		}
 	}
+
 
 	gBuffer.GeometryPass(gfx11, camera, gfx11.depthStencilView.Get(), rgb);
 	RenderDeferred(entities, lights, pointLights, camera,sky);

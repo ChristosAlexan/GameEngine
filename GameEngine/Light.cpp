@@ -31,7 +31,7 @@ Light::Light()
 	isLightEnabled = true;
 	lightType = 1.0f;
 
-	shadowRenderDist = 35.0f;
+	shadowRenderDist = 80.0f;
 }
 
 void Light::CopyData(const Light& other)

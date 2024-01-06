@@ -106,9 +106,6 @@ public:
 
 	DirectX::XMFLOAT3 skyColor;
 
-
-	bool bHasFinishedLoading = false;
-
 	RectShape crosshair;
 private:
 	int windowWidth, windowHeight;
