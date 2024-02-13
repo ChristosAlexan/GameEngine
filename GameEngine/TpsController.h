@@ -5,8 +5,9 @@
 #include "Camera.h"
 #include "SoundComponent.h"
 #include "AppTimer.h"
+#include "Controller.h"
 
-class TpsController
+class TpsController : public Controller
 {
 public:
 	TpsController();
@@ -17,24 +18,14 @@ public:
 	void SetCharacterRotation(Entity& entity, Camera& camera);
 	void Actions(Keyboard& keyboard, Mouse& mouse, Camera& camera);
 	void UpdateSounds(Camera& camera, Entity* player);
-	physx::PxVec3 GetForwardVec(physx::PxQuat& _rot, physx::PxVec3& _pos);
+
 public:
 	bool isFiring = false;
 
 	SoundComponent rifleFireSound;
 
 private:
-	enum RotationEnum
-	{
-		UP = 0,
-		RIGHT_UP = 1,
-		RIGHT = 2,
-		RIGHT_DOWN = 3,
-		DOWN = 4,
-		LEFT_DOWN = 5,
-		LEFT = 6,
-		LEFT_UP = 7,
-	};
+
 	RotationEnum currRotation;
 	RotationEnum prevRotation;
 

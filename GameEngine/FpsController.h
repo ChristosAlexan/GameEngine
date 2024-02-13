@@ -3,8 +3,9 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Camera.h"
+#include "Controller.h"
 
-class FpsController
+class FpsController : public Controller
 {
 public:
 	FpsController();
@@ -13,17 +14,7 @@ public:
 	void Movement(float& dt, float gravity, Entity* entity, Keyboard& keyboard, Mouse& mouse, Camera& camera);
 
 private:
-	enum RotationEnum
-	{
-		UP = 0,
-		RIGHT_UP = 1,
-		RIGHT = 2,
-		RIGHT_DOWN = 3,
-		DOWN = 4,
-		LEFT_DOWN = 5,
-		LEFT = 6,
-		LEFT_UP = 7,
-	};
+
 	RotationEnum currRotation;
 	RotationEnum prevRotation;
 
@@ -36,7 +27,6 @@ private:
 	bool canJump = true;
 	bool isJumping = false;
 	bool jumpkeyIsPressed = false;
-	//float gravity = -0.1f;
 
 private:
 	bool canPressSpace = true;

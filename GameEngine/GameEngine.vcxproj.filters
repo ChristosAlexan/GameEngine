@@ -288,6 +288,9 @@
     <ClCompile Include="ImGui\binary_to_compressed_c.cpp">
       <Filter>ImGui\Source files</Filter>
     </ClCompile>
+    <ClCompile Include="Controller.cpp">
+      <Filter>Characters\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowContainer.h">
@@ -511,6 +514,9 @@
     </ClInclude>
     <ClInclude Include="SoundComponent.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller.h">
+      <Filter>Characters\Header files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

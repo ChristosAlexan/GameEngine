@@ -333,35 +333,36 @@ void TpsController::Movement(float& dt, float gravity, Entity& entity, Keyboard&
 
 void TpsController::SetCharacterRotation(Entity& entity, Camera& camera)
 {
+	const float PI = 3.14f;
+	const float HALF_PI = PI / 2.0f;
+
 	float rotSpeed = 0.15f;
 	switch (currRotation)
 	{
 	case UP:
-		entity.rotationDir = 0.0f;
+		entity.rotationDir = 0.0f;  // Facing forward
 		break;
 	case DOWN:
-		entity.rotationDir = 3.14f;
+		entity.rotationDir = PI;  // Facing backward
 		break;
 	case RIGHT:
-		entity.rotationDir = 1.57f;
+		entity.rotationDir = HALF_PI;  // Facing right
 		break;
 	case LEFT:
-		entity.rotationDir = -1.57f;
+		entity.rotationDir = -HALF_PI;  // Facing left
 		break;
 	case RIGHT_UP:
-		entity.rotationDir = 0.79f;
+		entity.rotationDir = HALF_PI / 2.0f;  // Facing right-up
 		break;
 	case RIGHT_DOWN:
-		entity.rotationDir = 2.42f;
+		entity.rotationDir = 3.0f * HALF_PI / 2.0f;  // Facing right-down
 		break;
 	case LEFT_UP:
-		entity.rotationDir = -0.62f;
+		entity.rotationDir = -HALF_PI / 2.0f;  // Facing left-up
 		break;
 	case LEFT_DOWN:
-		entity.rotationDir = -2.5f;
+		entity.rotationDir = -3.0f * HALF_PI / 2.0f;  // Facing left-down
 		break;
-
-
 	}
 }
 
@@ -410,29 +411,4 @@ void TpsController::UpdateSounds(Camera& camera, Entity* player)
 		rifleFireSound.Async_Update();
 		rifleFireSound.Async_Play();
 	}
-}
-
-
-
-physx::PxVec3 TpsController::GetForwardVec(physx::PxQuat& _rot, physx::PxVec3& _pos)
-{
-	float num1 = _rot.x * 2.0f;
-	float num2 = _rot.y * 2.0f;
-	float num3 = _rot.z * 2.0f;
-	float num4 = _rot.x * num1;
-	float num5 = _rot.y * num2;
-	float num6 = _rot.z * num3;
-	float num7 = _rot.x * num2;
-	float num8 = _rot.x * num3;
-	float num9 = _rot.y * num3;
-	float num10 = _rot.w * num1;
-	float num11 = _rot.w * num2;
-	float num12 = _rot.w * num3;
-
-	physx::PxVec3 vector3;
-	vector3.x = (float)((1.0 - ((double)num5 + (double)num6)) * (double)_pos.x + ((double)num7 - (double)num12) * (double)_pos.y + ((double)num8 + (double)num11) * (double)_pos.z);
-	vector3.y = (float)(((double)num7 + (double)num12) * (double)_pos.x + (1.0 - ((double)num4 + (double)num6)) * (double)_pos.y + ((double)num9 - (double)num10) * (double)_pos.z);
-	vector3.z = (float)(((double)num8 - (double)num11) * (double)_pos.x + ((double)num9 + (double)num10) * (double)_pos.y + (1.0 - ((double)num4 + (double)num5)) * (double)_pos.z);
-
-	return vector3;
 }

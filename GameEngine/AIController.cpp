@@ -16,16 +16,12 @@ void AIController::MoveTo(float& dt, Entity* start, Entity* end, float& gravity)
 	radius = 8.0f;
 
 	physx::PxVec3 moveVec;
-	//physx::PxVec3 moveVec = Move(dt, start,gravity);
-	//physx::PxVec3 moveVec = MoveDirectlyTo(dt, v1, v2);
 	float angle;
 	if (start->physicsComponent.hasLineOfSight)
 	{
 		moveVec = Move(dt, start, gravity);
-		//***Rotate to face next node
-		angle = atan2(start->locToMove.x - v1.x, start->locToMove.z - v1.z);
 		//***Rotate to face player
-		//angle = atan2(end->pos.x - v1.x, end->pos.z - v1.z);
+		angle = atan2(end->pos.x - v1.x, end->pos.z - v1.z);
 	}
 	else
 	{

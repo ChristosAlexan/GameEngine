@@ -166,6 +166,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CollisionObject.cpp" />
     <ClCompile Include="COMException.cpp" />
+    <ClCompile Include="Controller.cpp" />
     <ClCompile Include="CubeShape.cpp" />
     <ClCompile Include="DX11.cpp" />
     <ClCompile Include="Engine.cpp" />
@@ -234,6 +235,7 @@
     <ClInclude Include="COMException.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ConstantBufferTypes.h" />
+    <ClInclude Include="Controller.h" />
     <ClInclude Include="CubeShape.h" />
     <ClInclude Include="DX11.h" />
     <ClInclude Include="DX11Includes.h" />
