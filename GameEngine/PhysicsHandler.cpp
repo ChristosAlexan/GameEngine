@@ -144,7 +144,7 @@ void PhysicsHandler::MouseRayCast(std::vector<std::shared_ptr<Entity>>& entities
 			hit.block.actor->getShapes(&_shape, hit.block.actor->getNbShapes());
 
 			_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, true);
-
+	
 			for (int i = 0; i < entities.size(); ++i)
 			{
 				if (!entities[i]->isDeleted)
@@ -166,7 +166,9 @@ void PhysicsHandler::MouseRayCast(std::vector<std::shared_ptr<Entity>>& entities
 				}
 				
 			}
+			_shape->release();
 		}
+
 	}
 	if (mouse.IsRightDown())
 	{
@@ -201,6 +203,7 @@ void PhysicsHandler::MouseRayCast(std::vector<std::shared_ptr<Entity>>& entities
 				}
 				
 			}
+			_shape->release();
 		}
 	}
 }
@@ -478,9 +481,6 @@ void PhysicsHandler::PlayerFireRayTrace(TpsController& tpsPlayerController, Enti
 
 			rayOriginOut.push_back(origin);
 			rayDestOut.push_back(hit.block.position);
-
-			physx::PxShape* _shape = nullptr;
-			hit.block.actor->getShapes(&_shape, hit.block.actor->getNbShapes());
 
 			for (int i = 0; i < entities.size(); ++i)
 			{

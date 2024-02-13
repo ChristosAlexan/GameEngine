@@ -5,13 +5,13 @@
 
 DX11::DX11()
 {
+	this->bFullScreen = false;
 }
 
 bool DX11::Initialize(HWND hwnd, Camera& camera, int width, int height)
 {
 	this->windowWidth = width;
 	this->windowHeight = height;
-	this->bFullScreen = false;
 
 	if (!InitializeDirectX(hwnd))
 		return false;

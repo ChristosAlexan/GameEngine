@@ -30,8 +30,6 @@ void GridClass::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, Microso
 	_deviceContext = deviceContext;
 	_transformMatrix = transformMatrix;
 	_cb_vs_vertexshader = cb_vs_vertexshader;
-
-	//m_async = std::async(std::launch::async, &GridClass::InitThread, this);
 }
 
 void GridClass::DrawGrid(ID3D11DeviceContext* deviceContext, Camera& camera, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, std::vector<NodeClass>& validNodes)
@@ -54,18 +52,16 @@ void GridClass::DrawBounds(ID3D11DeviceContext* deviceContext, Camera& camera, C
 
 void GridClass::FindNeighbours(NodeClass& currentNode, std::vector<NodeClass>& validNodes)
 {
-	for (int i = 0; i < validNodes.size(); ++i)
+	for (auto& node : validNodes)
 	{
-
-		if (currentNode.pos.x >= validNodes[i].pos.x - 1 && currentNode.pos.x <= validNodes[i].pos.x + 1 &&
-			currentNode.pos.y >= validNodes[i].pos.y - 1 && currentNode.pos.y <= validNodes[i].pos.y + 1 &&
-			currentNode.pos.z >= validNodes[i].pos.z - 1 && currentNode.pos.z <= validNodes[i].pos.z + 1)
+		//Use abs values to calculate both negative and positive bounds
+		if (std::abs(currentNode.pos.x - node.pos.x) <= 1 &&
+			std::abs(currentNode.pos.y - node.pos.y) <= 1 &&
+			std::abs(currentNode.pos.z - node.pos.z) <= 1 &&
+			&currentNode != &node)
 		{
-			currentNode.neighbours.push_back(&validNodes[i]);
+			currentNode.neighbours.push_back(&node);
 		}
-
-
-		//OutputDebugStringA(("Size = " + std::to_string(nodes[i].neighbours.size()) + "\n").c_str());
 	}
 }
 
@@ -89,9 +85,6 @@ void GridClass::CreatePathGrid(std::vector<NodeClass>& validNodes)
 				FindNeighbours(validNodes[i], validNodes);
 		}
 	}
-
-	//hasFinished = true;
-	//OutputDebugStringA("GRID CREATED!!!\n");
 }
 
 void GridClass::SetupGridBounds()
@@ -107,19 +100,18 @@ void GridClass::DrawGUI()
 
 void GridClass::InitGrid()
 {
-	for (int y = -bounds.y; y < bounds.y; ++y)
-	{
-		for (int z = -bounds.z; z < bounds.z; ++z)
-		{
-			for (int x = -bounds.x; x < bounds.x; ++x)
-			{
-				nodes.push_back(NodeClass());
-				nodes[nodes.size() - 1].pos = DirectX::XMFLOAT3(pos.x - x, pos.y - y, pos.z - z);
-				nodes[nodes.size() - 1].Initialize(_device, _deviceContext, _transformMatrix, _cb_vs_vertexshader, true);
-				
+	//Compute bounds in both positive and negative axis
+	int totalNodes = (2 * bounds.x + 1) * (2 * bounds.y + 1) * (2 * bounds.z + 1);
 
-				//nodes[nodes.size() - 1].shape.pos = nodes[nodes.size() - 1].pos;
-			}
-		}
+	for (int i = 0; i < totalNodes; ++i)
+	{
+		//modulo ensures that index cycles within - and + bounds
+		int x = -(int)bounds.x + (i % (2 * (int)bounds.x + 1));
+		int y = -(int)bounds.y + ((i / (2 * (int)bounds.x + 1)) % (2 * (int)bounds.y + 1));
+		int z = -(int)bounds.z + (i / ((2 * (int)bounds.x + 1) * (2 * (int)bounds.y + 1)));
+
+		nodes.push_back(NodeClass());
+		nodes.back().pos = DirectX::XMFLOAT3(pos.x - x, pos.y - y, pos.z - z);
+		nodes.back().Initialize(_device, _deviceContext, _transformMatrix, _cb_vs_vertexshader, true);
 	}
 }
