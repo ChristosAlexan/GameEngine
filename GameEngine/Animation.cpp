@@ -63,25 +63,16 @@ bool Animation::SetAnimIndex(unsigned int index, bool updateBoth, float blendDur
 
 void Animation::AttachTo(std::string& boneName, DirectX::XMMATRIX& trans)
 {
-	//attachedBone = boneName;
-	
 	std::vector<DirectX::XMMATRIX>Transforms;
 	Transforms.resize(m_NumBones);
 
-	for (unsigned int i = 0; i < m_NumBones; i++) {
+	if (BoneMapping.find(boneName) != BoneMapping.end())
+	{
+		int index = BoneMapping.find(boneName)->second;
 
-
-		Transforms[i] = m_BoneInfo[i].FinalTransformation;
-		if (!boneNames.empty())
-		{
-			if (boneNames[i] == boneName)
-			{
-				DirectX::XMMATRIX _invMat = DirectX::XMMatrixInverse(nullptr, m_BoneInfo[i].BoneOffset);
-				trans = _invMat * Transforms[i];
-				return;
-			}
-		}
-		
+		Transforms[index] = m_BoneInfo[index].FinalTransformation;
+		trans = bones_inverseMatrices[index] * Transforms[index];
+		return;
 	}
 }
 
@@ -110,7 +101,8 @@ bool Animation::LoadBones(aiMesh* mesh, std::vector<VertexBoneData>& bones, std:
 
 			m_BoneInfo[BoneIndex].BoneOffset = DirectX::XMMatrixTranspose(DirectX::XMMATRIX(&offset.a1));
 			BoneMapping[BoneName] = BoneIndex;
-
+			DirectX::XMMATRIX _invMat = DirectX::XMMatrixInverse(nullptr, m_BoneInfo[BoneIndex].BoneOffset);
+			bones_inverseMatrices.emplace(BoneIndex, _invMat); // performance optimization: Precompute bone's inverse matrix
 		}
 		else
 		{

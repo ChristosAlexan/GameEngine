@@ -46,6 +46,7 @@ public:
 	std::map<std::string, unsigned int> BoneMapping;
 
 	std::vector<std::unordered_map<std::string, const aiNodeAnim*>> node_anims;
+	std::unordered_map<unsigned int, DirectX::XMMATRIX> bones_inverseMatrices;
 
 	std::vector<std::map<std::string, DirectX::XMFLOAT3>> boneRotations;
 
