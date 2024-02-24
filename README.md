@@ -27,7 +27,9 @@ https://nvidia-omniverse.github.io/PhysX/physx/5.3.0
 
 - Deferred rendering
   
+![Sponza](https://github.com/xristosgr/GameEngine/assets/32782134/808dc5a0-87ea-4c9d-840e-c96ebd4b3416)
 
+<br />
  ![Screenshot 2022-04-15 210117](https://user-images.githubusercontent.com/32782134/163605102-f6d7a1ae-bdf9-4cc6-98e7-78a331b48cc6.jpg)   1000 point lights
 <br />
 
