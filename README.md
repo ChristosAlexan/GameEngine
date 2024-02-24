@@ -16,7 +16,9 @@ https://nvidia-omniverse.github.io/PhysX/physx/5.3.0
 
 
  - Physically based rendering(PBR)
- 
+   
+![Sponza](https://github.com/xristosgr/GameEngine/assets/32782134/808dc5a0-87ea-4c9d-840e-c96ebd4b3416)
+
  https://user-images.githubusercontent.com/32782134/163597456-cf06261a-3dc9-4537-982a-0a3b27334b76.mp4
 
  https://user-images.githubusercontent.com/32782134/163598252-fb64da9d-0af7-45a9-b233-c65698e7984b.mp4
@@ -26,9 +28,9 @@ https://nvidia-omniverse.github.io/PhysX/physx/5.3.0
 <br />
 
 - Deferred rendering
-  
 
  ![Screenshot 2022-04-15 210117](https://user-images.githubusercontent.com/32782134/163605102-f6d7a1ae-bdf9-4cc6-98e7-78a331b48cc6.jpg)   1000 point lights
+ 
 <br />
 
 <br />
