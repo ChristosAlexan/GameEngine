@@ -52,7 +52,7 @@ private:
 	Sky sky;
 	std::vector<std::shared_ptr<Entity>> entities;
 
-	std::vector<std::weak_ptr<Entity>> AIEntities;
+	std::vector<std::shared_ptr<Entity>> AIEntities;
 	std::vector<Light> lights;
 	std::vector<Light> pointlights;
 	std::vector<CollisionObject> collisionObjects;
@@ -69,7 +69,7 @@ private:
 	TpsController tpsPlayerController;
 	FpsController fpsPlayerController;
 
-	std::weak_ptr<Entity> player;
+	std::shared_ptr<Entity> player;
 
 	AIController enemyController;
 	std::vector<NavMeshClass> navMeshes;

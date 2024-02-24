@@ -673,22 +673,17 @@ void Engine::AIHandler(float& dt)
 	{
 		for (int i = 0; i < AIEntities.size(); ++i)
 		{
-			if (auto ai_entity = AIEntities[i].lock())
+			if (AIEntities[i]->physicsComponent.aActor)
 			{
-				if (ai_entity->physicsComponent.aActor)
-				{
-					float gravity = physicsHandler.aScene->getGravity().y;
+				float gravity = physicsHandler.aScene->getGravity().y;
 						
-					physicsHandler.FallCheck(ai_entity.get());
-					physicsHandler.LineOfSightToPlayer(ai_entity.get(), player.lock().get());
+				physicsHandler.FallCheck(AIEntities[i].get());
+				physicsHandler.LineOfSightToPlayer(AIEntities[i].get(), player.get());
 						
-					if(async_navMesh[i]._Is_ready())
-						navMeshes[i].CalculatePath(dt, ai_entity.get(), player.lock().get(), enemyController, grid, gravity);
-				}
+				if(async_navMesh[i]._Is_ready())
+					navMeshes[i].CalculatePath(dt, AIEntities[i].get(), player.get(), enemyController, grid, gravity);
 			}
 		}
-
-
 	}
 }
 
@@ -770,28 +765,28 @@ void Engine::CopyPastePointLight()
 
 void Engine::PlayerLogic(float& dt)
 {
-	if (player.lock())
+	if (player)
 	{
 		if (renderer.switchCameraMode == 0)
 		{
-			player.lock()->bRender = true;
-			tpsPlayerController.MouseMovement(dt, *player.lock(), keyboard, mouse, camera);
-			tpsPlayerController.Movement(dt, physicsHandler.aScene->getGravity().y, *player.lock(), keyboard, mouse, camera);
+			player->bRender = true;
+			tpsPlayerController.MouseMovement(dt, *player, keyboard, mouse, camera);
+			tpsPlayerController.Movement(dt, physicsHandler.aScene->getGravity().y, *player, keyboard, mouse, camera);
 			tpsPlayerController.Actions(keyboard, mouse, camera);
 		}
 		else
 		{
-			player.lock()->bRender = false;
-			fpsPlayerController.MouseMovement(dt, *player.lock(), keyboard, mouse, camera);
-			fpsPlayerController.Movement(dt, physicsHandler.aScene->getGravity().y, player.lock().get(), keyboard, mouse, camera);
+			player->bRender = false;
+			fpsPlayerController.MouseMovement(dt, *player, keyboard, mouse, camera);
+			fpsPlayerController.Movement(dt, physicsHandler.aScene->getGravity().y, player.get(), keyboard, mouse, camera);
 		}
-		async_playerFallCheck = std::async(std::launch::async, &PhysicsHandler::FallCheck, &physicsHandler, player.lock().get());
+		async_playerFallCheck = std::async(std::launch::async, &PhysicsHandler::FallCheck, &physicsHandler, player.get());
 	}
 }
 
 void Engine::GameSounds()
 {
-	tpsPlayerController.UpdateSounds(camera, player.lock().get());
+	tpsPlayerController.UpdateSounds(camera, player.get());
 	backGroundSound.UpdatePos(camera.GetPositionFloat3(), camera.GetForwardVector(), camera.upDir);
 	backGroundSound.Async_Update();
 
@@ -805,8 +800,8 @@ void Engine::GameSounds()
 
 void Engine::Async_FireRayCast()
 {
-	physicsHandler.CrosshairRayTrace(tpsPlayerController, player.lock().get(), entities, renderer.crosshair, camera);
-	physicsHandler.PlayerFireRayTrace(tpsPlayerController, player.lock().get(), entities, camera);
+	physicsHandler.CrosshairRayTrace(tpsPlayerController, player.get(), entities, renderer.crosshair, camera);
+	physicsHandler.PlayerFireRayTrace(tpsPlayerController, player.get(), entities, camera);
 }
 
 void Engine::CreateNavMesh(GridClass& grid, std::vector<std::shared_ptr<Entity>>& entities, std::vector<CollisionObject>& collisionObjects)

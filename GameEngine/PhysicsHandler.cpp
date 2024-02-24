@@ -440,7 +440,7 @@ void PhysicsHandler::PlayerFireRayTrace(TpsController& tpsPlayerController, Enti
 		if (player)
 			player->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
 
-		std::weak_ptr<Entity> playerWeapon;
+		std::shared_ptr<Entity> playerWeapon;
 		for (int i = 0; i < entities.size(); ++i)
 		{
 			if (entities[i]->model.isAttached && entities[i]->parent == player)
@@ -448,7 +448,8 @@ void PhysicsHandler::PlayerFireRayTrace(TpsController& tpsPlayerController, Enti
 				origin = physx::PxVec3(entities[i]->pos.x, entities[i]->pos.y + 0.15, entities[i]->pos.z);
 				entities[i]->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
 
-				playerWeapon = entities[i];
+				if(playerWeapon)
+					playerWeapon = entities[i];
 				break;
 			}
 		}
@@ -500,10 +501,10 @@ void PhysicsHandler::PlayerFireRayTrace(TpsController& tpsPlayerController, Enti
 
 		if (player)
 			player->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
-		if (auto playerWeapon_shared = playerWeapon.lock())
-		{
-			playerWeapon_shared->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
-		}
+
+		if(playerWeapon)
+			playerWeapon->physicsComponent.aShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+		
 
 	}
 }
