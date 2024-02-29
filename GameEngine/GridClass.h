@@ -29,6 +29,7 @@ public:
 	bool bInitGrid;
 	//bool hasFinished;
 	int showMode;
+	float acceptedRadius;
 
 	CubeShape cubeBoundsVolume;
 

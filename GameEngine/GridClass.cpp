@@ -2,6 +2,7 @@
 
 GridClass::GridClass()
 {
+	acceptedRadius = 1.3f;
 	showGrid = false;
 	bCreateOnInit = true;
 
@@ -96,6 +97,7 @@ void GridClass::DrawGUI()
 {
 	ImGui::DragFloat3("Bounds", &bounds.x, 0.1f);
 	ImGui::InputInt("mode", &showMode);
+	ImGui::DragFloat("accepted radius", &acceptedRadius, 0.02f);
 }
 
 void GridClass::InitGrid()

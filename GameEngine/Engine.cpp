@@ -680,8 +680,12 @@ void Engine::AIHandler(float& dt)
 				physicsHandler.FallCheck(AIEntities[i].get());
 				physicsHandler.LineOfSightToPlayer(AIEntities[i].get(), player.get());
 						
-				if(async_navMesh[i]._Is_ready())
-					navMeshes[i].CalculatePath(dt, AIEntities[i].get(), player.get(), enemyController, grid, gravity);
+				if (async_navMesh[i]._Is_ready())
+				{
+					if (!navMeshes[i].CalculatePath(dt, AIEntities[i].get(), player.get(), enemyController, grid, gravity))
+						OutputDebugStringA("Error in A* calculations!\n");
+				}
+					
 			}
 		}
 	}
