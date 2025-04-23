@@ -10,7 +10,6 @@ public:
 	void OrthographicFov(int screenWidth, int screenHeight, float nearZ, float farZ);
 
 	DirectX::XMMATRIX& GetViewMatrix();
-	DirectX::XMMATRIX& GetBaseViewMatrix();
 	DirectX::XMMATRIX& GetProjectionMatrix();
 
 	const DirectX::XMVECTOR& GetPositionVector() const;
@@ -43,6 +42,9 @@ public:
 	DirectX::XMFLOAT3 pos;
 
 	DirectX::XMMATRIX viewMatrix;
+	float m_nearZ;
+	float m_farZ;
+
 private:
 	void UpdateViewMatrix();
 

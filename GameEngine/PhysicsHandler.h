@@ -40,7 +40,7 @@ public:
 	physx::PxControllerManager* manager;
 	bool isMouseHover;
 	bool bRenderCollisionShape;
-	bool bDebugLineOfSight;
+	bool bDebugLines;
 
 	std::vector<physx::PxVec3> rayOriginOut;
 	std::vector<physx::PxVec3> rayDestOut;

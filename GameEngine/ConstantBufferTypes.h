@@ -13,6 +13,10 @@ struct CB_VS_vertexshader
 	DirectX::XMMATRIX bones_transform[100];
 };
 
+struct CB_VS_ssrBuffer
+{
+	DirectX::XMMATRIX viewProjectionMatrix;
+};
 
 struct CB_VS_inverseCoordsBuffer
 {
@@ -43,7 +47,6 @@ struct CB_PS_lightsShader
 	DirectX::XMFLOAT4 dynamicLightPosition[NO_LIGHTS];
 	DirectX::XMFLOAT4 dynamicLightColor[NO_LIGHTS];
 	DirectX::XMFLOAT4 SpotlightDir[NO_LIGHTS];
-	DirectX::XMFLOAT4 cameraPos;
 	DirectX::XMFLOAT4 lightType[NO_LIGHTS];
 	DirectX::XMMATRIX lightViewMatrix[NO_LIGHTS];
 	DirectX::XMMATRIX lightProjectionMatrix[NO_LIGHTS];
@@ -55,7 +58,6 @@ struct CB_PS_pointLightsShader
 {
 	DirectX::XMFLOAT4 dynamicLightPosition;
 	DirectX::XMFLOAT4 dynamicLightColor;
-	DirectX::XMFLOAT4 cameraPos;
 };
 struct CB_PS_pointLightCull
 {
@@ -92,10 +94,19 @@ struct CB_PS_materialBuffer
 	float bEmissive;
 };
 
-struct CB_PS_ssaoBuffer
+struct CB_PS_cameraBuffer
 {
+	DirectX::XMMATRIX viewMatrix;
 	DirectX::XMMATRIX projectionMatrix;
-	DirectX::XMFLOAT4 ssaoKernel[64];
+	DirectX::XMMATRIX viewProjectionMatrix;
+	DirectX::XMMATRIX inverseViewProjectionMatrix;
+	DirectX::XMMATRIX inverseViewMatrix;
+	DirectX::XMMATRIX inverseProjectionMatrix;
+	DirectX::XMFLOAT4 testValues;
+	DirectX::XMFLOAT4 cameraPos;
+	DirectX::XMFLOAT2 screenSize;
+	float nearPlane;
+	float farPlane;
 };
 
 struct CB_PS_skyBuffer
@@ -119,4 +130,10 @@ struct CB_PS_inverseCoordsBuffer
 	DirectX::XMMATRIX invViewMatrix;
 
 	DirectX::XMFLOAT4 cameraPos;
+};
+
+struct CB_PS_ssaoBuffer
+{
+	DirectX::XMFLOAT4 ssaoKernel[64];
+	DirectX::XMFLOAT4 randomRotation[64];
 };

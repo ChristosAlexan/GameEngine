@@ -7,6 +7,8 @@
 #include "Vertex.h"
 #include "Mesh.h"
 #include <PhysX/PxPhysicsAPI.h>
+#include <memory>
+
 class PhysicsDebugDraw
 {
 public:
@@ -16,10 +18,10 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11Device> mDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> mDeviceContext;
 	std::vector<Vertex> vertices;
-	Mesh* mesh;
+	std::unique_ptr<Mesh> mesh;
+	//Mesh* mesh;
 	DirectX::XMMATRIX worldMatrix;
 	DirectX::XMMATRIX viewMatrix;
 	DirectX::XMMATRIX projectionMatrix;
-	ConstantBuffer<CB_VS_vertexshader>* m_cb_vs_vertexshader;
 };
 

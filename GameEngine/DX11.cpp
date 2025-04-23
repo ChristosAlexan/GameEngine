@@ -405,10 +405,7 @@ bool DX11::InitializeShaders()
 	};
 	numElements = ARRAYSIZE(depthLayout);
 	initVSShader(&depthVS, device, L"DepthVS.cso", depthLayout, &numElements);
-	initVSShader(&horizontalBlurVS, device, L"HorizontalBlurVS.cso", depthLayout, &numElements);
-	initVSShader(&verticalBlurVS, device, L"VerticalBlurVS.cso", depthLayout, &numElements);
-	initVSShader(&shadowHorizontalBlurVS, device, L"ShadowHorizontalVS.cso", depthLayout, &numElements);
-	initVSShader(&shadowVerticalBlurVS, device, L"ShadowVerticalVS.cso", depthLayout, &numElements);
+	initVSShader(&gaussianBlurVS, device, L"GaussianBlurVS.cso", depthLayout, &numElements);
 
 	D3D11_INPUT_ELEMENT_DESC shadowLayout[] =
 	{
@@ -434,16 +431,15 @@ bool DX11::InitializeShaders()
 	initPSShader(&brdfPS, device, L"BrdfPS.cso");
 	initPSShader(&prefilterPS, device, L"PrefilterPS.cso");
 	initPSShader(&envProbePS, device, L"envProbePS.cso");
-	initPSShader(&horizontalBlurPS, device, L"HorizontalBlurPS.cso");
-	initPSShader(&verticalBlurPS, device, L"VerticalBlurPS.cso");
+	initPSShader(&horizontalGaussianBlurPS, device, L"HorizontalGaussianBlurPS.cso");
+	initPSShader(&verticalGaussianBlurPS, device, L"VerticalGaussianBlurPS.cso");
+	initPSShader(&downSampleBlurPS, device, L"DownSampleBlurPS.cso");
 	initPSShader(&bloomLightPS, device, L"BloomLightPS.cso");
 	initPSShader(&volumetricLightPS, device, L"VolumetricLightPS.cso");
 	initPSShader(&postProccessPS, device, L"PostProccessPS.cso");
 	initPSShader(&volumeGPassPS, device, L"VolumeGPassPS.cso");
 	initPSShader(&deferredPS, device, L"DeferredPS.cso");
 	initPSShader(&shadowPS, device, L"ShadowPS.cso");
-	initPSShader(&shadowHorizontalBlurPS, device, L"ShadowHorizontalPS.cso");
-	initPSShader(&shadowVerticalBlurPS, device, L"ShadowVerticalPS.cso");
 	initPSShader(&ssaoPS, device, L"SsaoPS.cso");
 	initPSShader(&skyPS, device, L"SkyPS.cso");
 	initPSShader(&ssrPS, device, L"SSR_PS.cso");

@@ -8,7 +8,7 @@ public:
 	RectShape();
 	~RectShape();
 
-	void Initialize(ID3D11Device* device, UINT32 windowWidth, UINT32 windowHeight);
+	void Initialize(ID3D11Device* device, float aspectRatio);
 
 	virtual void CreateTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const std::string& filePath) override;
 	virtual void SetRenderTexture(ID3D11DeviceContext* deviceContext, RenderTexture& renderTexture) override;

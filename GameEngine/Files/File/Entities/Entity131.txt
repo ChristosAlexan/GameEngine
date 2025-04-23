@@ -1,6 +1,6 @@
 mass= 5
 posX= -866.164
-posY= -3.5603e+06
+posY= -3.74607e+06
 posZ= -784.715
 rotX= -1.6
 rotY= 0

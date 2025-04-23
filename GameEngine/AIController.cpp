@@ -66,16 +66,19 @@ void AIController::MoveTo(float& dt, Entity* start, Entity* end, float& gravity)
 		start->physicsComponent.aActor->setLinearVelocity(physx::PxVec3(moveVec.x, 0.0f, moveVec.z));
 	}
 
-	if (moveVec.x != 0 || moveVec.z != 0)
-	{
-		start->model.SetAnimIndex(1,true,4.2f);
-	}
+	if (start->physicsComponent.hasLineOfSight == false)
+		start->model.SetAnimIndex(0, true, 4.2f);
 	else
 	{
-		//start->m_index = 0;
-		start->model.SetAnimIndex(0, true, 4.2f);
+		if (moveVec.x != 0 || moveVec.z != 0)
+		{
+			start->model.SetAnimIndex(1, true, 4.2f);
+		}
+		else
+		{
+			start->model.SetAnimIndex(0, true, 4.2f);
+		}
 	}
-	//start->model.Update();
 }
 
 physx::PxVec3 AIController::MoveDirectlyTo(float& dt, physx::PxExtendedVec3& v1, physx::PxExtendedVec3& v2)

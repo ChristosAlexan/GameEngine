@@ -1,14 +1,31 @@
 cbuffer screenEffectBuffer : register(b4)
 {
     float gamma;
+    float bloomBrightness;
+    float bloomStrength;
+    float ambientStrength;
+    float exposure;
+    float envMapStrength;
 }
 
 cbuffer pointLightBuffer : register(b1)
 {
     float4 pointdynamicLightPosition;
     float4 pointdynamicLightColor;
-    float4 cameraPos;
 }
+
+cbuffer cameraBuffer : register(b2)
+{
+    float4x4 viewMatrix; // View matrix
+    float4x4 projectionMatrix; // Projection matrix
+    float4x4 viewProjectionMatrix; // Combined view-projection matrix
+    float4x4 inverseViewProjectionMatrix;
+    float4x4 inverseViewMatrix;
+    float4x4 inverseProjectionMatrix; // Inverse projection matrix
+    float4 testValues;
+    float4 cameraPos;
+    float2 screenSize;
+};
 
 cbuffer pointLightCull : register(b7)
 {
@@ -40,24 +57,27 @@ float DistributionGGX(float3 N, float3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(float3 N, float3 V, float3 L, float roughness);
 float3 pointLight(PS_INPUT input, float3 albedo, float3 pos, float3 color, float4 _cutOff, float3 bumpNormal, float roughness, float metallic, float3 V, float3 F0, float3 worldPos);
+float3 ReinhardToneMapping(float3 color, float exposure)
+{
+    float3 mappedColor = color / (color + 1.0);
+    mappedColor = pow(mappedColor, float3(1.0 / exposure, 1.0 / exposure, 1.0 / exposure));
+    return mappedColor;
+}
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
-    int3 sampleIndices = int3(input.inPosition.xy, 0);
- 
-    float4 albedo = objTexture.Load(sampleIndices);
-    //float4 albedo = float4(pow(objTexture.Load(sampleIndices), gamma));
-    float3 bumpNormal = normalTexture.Load(sampleIndices).rgb;
+    float2 texCoords = input.inPosition.xy / float2(screenSize.x, screenSize.y);
+    
+    float4 albedo = objTexture.Sample(SampleTypeWrap, texCoords);
+    float4 bumpNormal = normalTexture.Sample(SampleTypeWrap, texCoords);
     if (bumpNormal.r == -1 && bumpNormal.g == -1 && bumpNormal.b == -1)
     {
         float3 color = albedo.rgb;
         return float4(color, 1.0f);
     }
-    
-    float metallic = roughnessMetalicTexture.Load(sampleIndices).b;
-    float roughness = roughnessMetalicTexture.Load(sampleIndices).g;
-    float3 worldPos = worldPositionTexture.Load(sampleIndices).xyz;
-
+    float metallic = roughnessMetalicTexture.Sample(SampleTypeWrap, texCoords).b;
+    float roughness = roughnessMetalicTexture.Sample(SampleTypeWrap, texCoords).g;
+    float3 worldPos = worldPositionTexture.Sample(SampleTypeWrap, texCoords).xyz;
     
     float3 V = normalize(cameraPos.xyz - worldPos);
 
@@ -73,8 +93,8 @@ float4 main(PS_INPUT input) : SV_TARGET
     
     float3 color = Lo;
     
-    //color = color / (color + float3(1.0, 1.0f, 1.0f));
-    //color = pow(color, float3(1.0f / gamma, 1.0f / gamma, 1.0f / gamma));
+    color = ReinhardToneMapping(color, exposure);
+    color = pow(color, float3(1.0f / gamma, 1.0f / gamma, 1.0f / gamma));
 
     return float4(color, 1.0);
    

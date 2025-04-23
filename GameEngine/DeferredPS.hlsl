@@ -9,6 +9,22 @@ cbuffer materialBuffer : register(b6)
     float bEmissive;
 }
 
+
+cbuffer cameraBuffer : register(b2)
+{
+    float4x4 viewMatrix; // View matrix
+    float4x4 projectionMatrix; // Projection matrix
+    float4x4 viewProjectionMatrix; // Combined view-projection matrix
+    float4x4 inverseViewProjectionMatrix;
+    float4x4 inverseViewMatrix;
+    float4x4 inverseProjectionMatrix; // Inverse projection matrix
+    float4 testValues;
+    float4 cameraPos;
+    float2 screenSize;
+    float nearPlane;
+    float farPlane;
+};
+
 struct PS_INPUT
 {
     float4 inPosition : SV_POSITION;
@@ -52,11 +68,7 @@ PS_OUTPUT main(PS_INPUT input) : SV_TARGET
        
         
        output.normal = normalTexture.Sample(SampleTypeWrap, input.inTexCoord);
-       //output.ssao_normal = float4(output.normal.rgb, 1.0f);
-        
        output.normal = (output.normal * 2.0f) - 1.0f;
-       output.ssao_normal = output.normal;
-        
        float3 bumpNormal = (output.normal.x * input.inTangent) + (output.normal.y * input.inBinormal) + (output.normal.z * input.inNormal);
        bumpNormal = normalize(bumpNormal);
        output.normal = float4(bumpNormal, 1.0f);
@@ -67,12 +79,12 @@ PS_OUTPUT main(PS_INPUT input) : SV_TARGET
     {
         output.albedo = float4(color.r, color.g, color.b, 1.0f);
         output.normal = float4(-1, -1, -1, 1.0f);
-        output.roughnessMetalic = float4(-1, -1, -1, 1.0f);
+        //output.roughnessMetalic = float4(-1, -1, -1, 1.0f);
     }
     output.worldPosition = float4(input.inWorldPos, 1.0f);
     
-    float depthValue = input.inPosition.z / input.inPosition.w;
-    output.depth = float4(depthValue, depthValue, depthValue,1.0f);
+    float depth = input.inPosition.z / input.inPosition.w; // Clip space depth
+    output.depth = float4(depth, depth, depth, 1.0f);
    
     return output;
 }

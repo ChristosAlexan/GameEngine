@@ -67,13 +67,10 @@ public:
 	VertexShader animVS;
 	VertexShader depthAnimVS;
 	VertexShader depthVS;
-	VertexShader horizontalBlurVS;
-	VertexShader verticalBlurVS;
+	VertexShader gaussianBlurVS;
 	VertexShader deferredVS;
 	VertexShader animDeferredVS;
 	VertexShader shadowVS;
-	VertexShader shadowHorizontalBlurVS;
-	VertexShader shadowVerticalBlurVS;
 	VertexShader deferredLightPassVS;
 	VertexShader ssrVS;
 
@@ -89,16 +86,13 @@ public:
 	PixelShader brdfPS;
 	PixelShader prefilterPS;
 	PixelShader envProbePS;
-	PixelShader horizontalBlurPS;
-	PixelShader verticalBlurPS;
+	PixelShader downSampleBlurPS, horizontalGaussianBlurPS, verticalGaussianBlurPS;
 	PixelShader bloomLightPS;
 	PixelShader volumetricLightPS;
 	PixelShader postProccessPS;
 	PixelShader volumeGPassPS;
 	PixelShader deferredPS;
 	PixelShader shadowPS;
-	PixelShader shadowHorizontalBlurPS;
-	PixelShader shadowVerticalBlurPS;
 	PixelShader deferredLightPassPS;
 	PixelShader deferredSpotLightPS;
 	PixelShader ssaoPS;
@@ -110,6 +104,7 @@ public:
 
 	//CONSTANT BUFFERS
 	ConstantBuffer<CB_VS_vertexshader> cb_vs_vertexshader;
+	ConstantBuffer<CB_VS_ssrBuffer> cb_vs_ssrBuffer;
 	ConstantBuffer<CB_VS_lightsShader> cb_vs_lightsShader;
 	ConstantBuffer<CB_VS_windowParams> cb_vs_windowParams;
 	ConstantBuffer<CB_VS_instanceShader> cb_vs_instanceShader;
@@ -123,11 +118,12 @@ public:
 	ConstantBuffer<CB_PS_screenEffectBuffer> cb_ps_screenEffectBuffer;
 	ConstantBuffer<CB_PS_pbrBuffer> cb_ps_pbrBuffer;
 	ConstantBuffer<CB_PS_materialBuffer> cb_ps_materialBuffer;
-	ConstantBuffer<CB_PS_ssaoBuffer> cb_ps_ssaoBuffer;
+	ConstantBuffer<CB_PS_cameraBuffer> cb_ps_cameraBuffer;
 	ConstantBuffer<CB_PS_skyBuffer> cb_ps_skyBuffer;
 	ConstantBuffer<CB_PS_shadowsBuffer> cb_ps_shadowsBuffer;
-
 	ConstantBuffer<CB_PS_inverseCoordsBuffer> cb_ps_inverseCoordsBuffer;
+	ConstantBuffer<CB_PS_ssaoBuffer> cb_ps_ssaoBuffer;
+
 	RenderTexture renderTexture;
 
 	bool bFullScreen;

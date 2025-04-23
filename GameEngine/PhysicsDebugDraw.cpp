@@ -22,12 +22,13 @@ void PhysicsDebugDraw::DebugDraw(ID3D11Device* device, ID3D11DeviceContext* devi
 
 	if (vertices.size() > 0)
 	{
-		mesh = new Mesh(mDevice, mDeviceContext, vertices, DirectX::XMMatrixIdentity());
+		mesh = std::make_unique<Mesh>(Mesh(mDevice, mDeviceContext, vertices, DirectX::XMMatrixIdentity()));
+		//mesh = new Mesh(mDevice, mDeviceContext, vertices, DirectX::XMMatrixIdentity());
 		this->mDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		cb_vs_vertexshader->UpdateBuffer();
 
 		mesh->Draw();
 		vertices.clear();
-		delete mesh;
+		//delete mesh;
 	}
 }

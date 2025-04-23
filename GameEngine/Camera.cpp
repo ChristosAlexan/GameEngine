@@ -15,6 +15,8 @@ Camera::Camera()
 
 void Camera::PerspectiveFov(float fovDegrees, float aspectRatio, float nearZ, float farZ)
 {
+	m_nearZ = nearZ;
+	m_farZ = farZ;
 	//float fovRadians = XM_PI / 2.0f;
 	float fovRadians = (fovDegrees / 360.0f) * DirectX::XM_2PI;
 

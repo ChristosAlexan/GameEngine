@@ -565,10 +565,7 @@
     <FxCompile Include="EnvProbePS.hlsl">
       <Filter>Shaders\Pixel</Filter>
     </FxCompile>
-    <FxCompile Include="VerticalBlurPS.hlsl">
-      <Filter>Shaders\Pixel</Filter>
-    </FxCompile>
-    <FxCompile Include="HorizontalBlurPS.hlsl">
+    <FxCompile Include="HorizontalGaussianBlurPS.hlsl">
       <Filter>Shaders\Pixel</Filter>
     </FxCompile>
     <FxCompile Include="VerticalBlurVS.hlsl">
@@ -591,9 +588,6 @@
     </FxCompile>
     <FxCompile Include="VolumeGPassPS.hlsl">
       <Filter>Shaders\Pixel</Filter>
-    </FxCompile>
-    <FxCompile Include="HorizontalBlurVS.hlsl">
-      <Filter>Shaders\Vertex</Filter>
     </FxCompile>
     <FxCompile Include="DeferredVS.hlsl">
       <Filter>Shaders\Vertex</Filter>
@@ -651,6 +645,15 @@
     </FxCompile>
     <FxCompile Include="SSR_VS.hlsl">
       <Filter>Shaders\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="GaussianBlurVS.hlsl">
+      <Filter>Shaders\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="DownSampleBlurPS.hlsl">
+      <Filter>Shaders\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="VerticalGaussianBlurPS.hlsl">
+      <Filter>Shaders\Pixel</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

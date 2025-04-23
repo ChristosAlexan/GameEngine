@@ -6,7 +6,7 @@ SaveSystem::SaveSystem()
 {
 }
 
-void SaveSystem::Save(std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, std::vector<CollisionObject>& collisionObject)
+void SaveSystem::Save(std::vector<std::shared_ptr<Entity>>& entities, std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, std::vector<CollisionObject>& collisionObject)
 {
 	std::ofstream outfile;
 	outfile = std::ofstream("Files/File/GeneralSettings.txt");
@@ -152,42 +152,42 @@ void SaveSystem::Save(std::vector<std::shared_ptr<Entity>>& entities, std::vecto
 		if (outfile.is_open())
 		{
 
-			outfile << "posX= " << lights[i].pos.x << "\n";
-			outfile << "posY= " << lights[i].pos.y << "\n";
-			outfile << "posZ= " << lights[i].pos.z << "\n";
+			outfile << "posX= " << lights[i]->pos.x << "\n";
+			outfile << "posY= " << lights[i]->pos.y << "\n";
+			outfile << "posZ= " << lights[i]->pos.z << "\n";
 			
-			outfile << "scaleX= " << lights[i].scale.x << "\n";
-			outfile << "scaleY= " << lights[i].scale.y << "\n";
-			outfile << "scaleZ= " << lights[i].scale.z << "\n";
+			outfile << "scaleX= " << lights[i]->scale.x << "\n";
+			outfile << "scaleY= " << lights[i]->scale.y << "\n";
+			outfile << "scaleZ= " << lights[i]->scale.z << "\n";
 
-			outfile << "colorX= " << lights[i].lightColor.x << "\n";
-			outfile << "colorY= " << lights[i].lightColor.y << "\n";
-			outfile << "colorZ= " << lights[i].lightColor.z << "\n";
-			outfile << "colorW= " << lights[i].lightColor.w << "\n";
+			outfile << "colorX= " << lights[i]->lightColor.x << "\n";
+			outfile << "colorY= " << lights[i]->lightColor.y << "\n";
+			outfile << "colorZ= " << lights[i]->lightColor.z << "\n";
+			outfile << "colorW= " << lights[i]->lightColor.w << "\n";
 
-			outfile << "emissionColorX= " << lights[i].emissionColor.x << "\n";
-			outfile << "emissionColorY= " << lights[i].emissionColor.y << "\n";
-			outfile << "emissionColorZ= " << lights[i].emissionColor.z << "\n";
+			outfile << "emissionColorX= " << lights[i]->emissionColor.x << "\n";
+			outfile << "emissionColorY= " << lights[i]->emissionColor.y << "\n";
+			outfile << "emissionColorZ= " << lights[i]->emissionColor.z << "\n";
 
-			outfile << "directionX= " << lights[i].direction.x << "\n";
-			outfile << "directionY= " << lights[i].direction.y << "\n";
-			outfile << "directionZ= " << lights[i].direction.z << "\n";
+			outfile << "directionX= " << lights[i]->direction.x << "\n";
+			outfile << "directionY= " << lights[i]->direction.y << "\n";
+			outfile << "directionZ= " << lights[i]->direction.z << "\n";
 
-			outfile << "spotDirX= " << lights[i].SpotDir.x << "\n";
-			outfile << "spotDirY= " << lights[i].SpotDir.y << "\n";
-			outfile << "spotDirZ= " << lights[i].SpotDir.z << "\n";
+			outfile << "spotDirX= " << lights[i]->SpotDir.x << "\n";
+			outfile << "spotDirY= " << lights[i]->SpotDir.y << "\n";
+			outfile << "spotDirZ= " << lights[i]->SpotDir.z << "\n";
 
-			outfile << "shadowsSoftness= " << lights[i].shadowsSoftnessBias.x << "\n";
-			outfile << "shadowBias= " << lights[i].shadowsSoftnessBias.y << "\n";
+			outfile << "shadowsSoftness= " << lights[i]->shadowsSoftnessBias.x << "\n";
+			outfile << "shadowBias= " << lights[i]->shadowsSoftnessBias.y << "\n";
 
-			outfile << "radius= " << lights[i].radius << "\n";
-			outfile << "cutOff= " << lights[i].cutOff << "\n";
+			outfile << "radius= " << lights[i]->radius << "\n";
+			outfile << "cutOff= " << lights[i]->cutOff << "\n";
 
-			outfile << "lightType= " << lights[i].lightType << "\n";
-			outfile << "dimensions= " << lights[i].dimensions << "\n";
-			outfile << "nearZ= " << lights[i].nearZ << "\n";
-			outfile << "farZ= " << lights[i].farZ << "\n";
-			outfile << "fov= " << lights[i].fov << "\n";
+			outfile << "lightType= " << lights[i]->lightType << "\n";
+			outfile << "dimensions= " << lights[i]->dimensions << "\n";
+			outfile << "nearZ= " << lights[i]->nearZ << "\n";
+			outfile << "farZ= " << lights[i]->farZ << "\n";
+			outfile << "fov= " << lights[i]->fov << "\n";
 			outfile.close();
 		}
 	}
@@ -199,37 +199,37 @@ void SaveSystem::Save(std::vector<std::shared_ptr<Entity>>& entities, std::vecto
 		if (outfile.is_open())
 		{
 
-			outfile << "posX= " << pointLights[i].pos.x << "\n";
-			outfile << "posY= " << pointLights[i].pos.y << "\n";
-			outfile << "posZ= " << pointLights[i].pos.z << "\n";
+			outfile << "posX= " << pointLights[i]->pos.x << "\n";
+			outfile << "posY= " << pointLights[i]->pos.y << "\n";
+			outfile << "posZ= " << pointLights[i]->pos.z << "\n";
 
-			outfile << "scaleX= " << pointLights[i].scale.x << "\n";
-			outfile << "scaleY= " << pointLights[i].scale.y << "\n";
-			outfile << "scaleZ= " << pointLights[i].scale.z << "\n";
+			outfile << "scaleX= " << pointLights[i]->scale.x << "\n";
+			outfile << "scaleY= " << pointLights[i]->scale.y << "\n";
+			outfile << "scaleZ= " << pointLights[i]->scale.z << "\n";
 
-			outfile << "colorX= " << pointLights[i].lightColor.x << "\n";
-			outfile << "colorY= " << pointLights[i].lightColor.y << "\n";
-			outfile << "colorZ= " << pointLights[i].lightColor.z << "\n";
+			outfile << "colorX= " << pointLights[i]->lightColor.x << "\n";
+			outfile << "colorY= " << pointLights[i]->lightColor.y << "\n";
+			outfile << "colorZ= " << pointLights[i]->lightColor.z << "\n";
 		
 
-			outfile << "emissionColorX= " << pointLights[i].emissionColor.x << "\n";
-			outfile << "emissionColorY= " << pointLights[i].emissionColor.y << "\n";
-			outfile << "emissionColorZ= " << pointLights[i].emissionColor.z << "\n";
+			outfile << "emissionColorX= " << pointLights[i]->emissionColor.x << "\n";
+			outfile << "emissionColorY= " << pointLights[i]->emissionColor.y << "\n";
+			outfile << "emissionColorZ= " << pointLights[i]->emissionColor.z << "\n";
 
-			outfile << "directionX= " << pointLights[i].direction.x << "\n";
-			outfile << "directionY= " << pointLights[i].direction.y << "\n";
-			outfile << "directionZ= " << pointLights[i].direction.z << "\n";
+			outfile << "directionX= " << pointLights[i]->direction.x << "\n";
+			outfile << "directionY= " << pointLights[i]->direction.y << "\n";
+			outfile << "directionZ= " << pointLights[i]->direction.z << "\n";
 
-			outfile << "spotDirX= " << pointLights[i].SpotDir.x << "\n";
-			outfile << "spotDirY= " << pointLights[i].SpotDir.y << "\n";
-			outfile << "spotDirZ= " << pointLights[i].SpotDir.z << "\n";
+			outfile << "spotDirX= " << pointLights[i]->SpotDir.x << "\n";
+			outfile << "spotDirY= " << pointLights[i]->SpotDir.y << "\n";
+			outfile << "spotDirZ= " << pointLights[i]->SpotDir.z << "\n";
 
-			outfile << "radius= " << pointLights[i].radius << "\n";
-			outfile << "cutOff= " << pointLights[i].cutOff << "\n";
+			outfile << "radius= " << pointLights[i]->radius << "\n";
+			outfile << "cutOff= " << pointLights[i]->cutOff << "\n";
 
-			outfile << "lightType= " << pointLights[i].lightType << "\n";
-			outfile << "dimensions= " << pointLights[i].dimensions << "\n";
-			outfile << "fov= " << pointLights[i].fov << "\n";
+			outfile << "lightType= " << pointLights[i]->lightType << "\n";
+			outfile << "dimensions= " << pointLights[i]->dimensions << "\n";
+			outfile << "fov= " << pointLights[i]->fov << "\n";
 			outfile.close();
 		}
 	}
@@ -248,9 +248,9 @@ void SaveSystem::Save(std::vector<std::shared_ptr<Entity>>& entities, std::vecto
 				outfile << "posZ= " << collisionObject[i].physicsComponent.aStaticActor->getGlobalPose().p.z << "\n";
 			}
 
-			//outfile << "posX= " << lights[i].pos.x << "\n";
-			//outfile << "posY= " << lights[i].pos.y << "\n";
-			//outfile << "posZ= " << lights[i].pos.z << "\n";
+			//outfile << "posX= " << lights[i]->pos.x << "\n";
+			//outfile << "posY= " << lights[i]->pos.y << "\n";
+			//outfile << "posZ= " << lights[i]->pos.z << "\n";
 
 			outfile << "scaleX= " << collisionObject[i].cube.scale.x << "\n";
 			outfile << "scaleY= " << collisionObject[i].cube.scale.y << "\n";
@@ -303,7 +303,7 @@ void SaveSystem::Load()
 
 void SaveSystem::LoadEntityData(std::vector<std::shared_ptr<Entity>>& entities)
 {
-	for (int i = 0; i < entitiesCount; ++i)
+	for (int i = 0; i < entities.size(); ++i)
 	{
 		//entities[i]->entityName = "Entity" + std::to_string(i);
 		std::ifstream f;
@@ -552,10 +552,10 @@ void SaveSystem::LoadEntityData(std::vector<std::shared_ptr<Entity>>& entities)
 	
 }
 
-void SaveSystem::LoadLightData(std::vector<Light>& lights, std::vector<Light>& pointLights)
+void SaveSystem::LoadLightData(std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights)
 {
-	lights.resize(lightsCount);
-	for (int i = 0; i < lightsCount; ++i)
+	//lights.resize(lightsCount);
+	for (int i = 0; i < lights.size(); ++i)
 	{
 		std::ifstream f;
 		std::string path = "";
@@ -571,124 +571,124 @@ void SaveSystem::LoadLightData(std::vector<Light>& lights, std::vector<Light>& p
 				{
 					if (path == "posX=")
 					{
-						lights[i].pos.x = (float)val;
+						lights[i]->pos.x = (float)val;
 					}
 					if (path == "posY=")
 					{
-						lights[i].pos.y = (float)val;
+						lights[i]->pos.y = (float)val;
 					}
 					if (path == "posZ=")
 					{
-						lights[i].pos.z = (float)val;
+						lights[i]->pos.z = (float)val;
 					}
 					
 					if (path == "scaleX=")
 					{
-						lights[i].scale.x = (float)val;
+						lights[i]->scale.x = (float)val;
 					}
 					if (path == "scaleY=")
 					{
-						lights[i].scale.y = (float)val;
+						lights[i]->scale.y = (float)val;
 					}
 					if (path == "scaleZ=")
 					{
-						lights[i].scale.z = (float)val;
+						lights[i]->scale.z = (float)val;
 					}
 
 					if (path == "colorX=")
 					{
-						lights[i].lightColor.x = (float)val;
+						lights[i]->lightColor.x = (float)val;
 					}
 					if (path == "colorY=")
 					{
-						lights[i].lightColor.y = (float)val;
+						lights[i]->lightColor.y = (float)val;
 					}
 					if (path == "colorZ=")
 					{
-						lights[i].lightColor.z = (float)val;
+						lights[i]->lightColor.z = (float)val;
 					}
 					if (path == "colorW=")
 					{
-						lights[i].lightColor.w = (float)val;
+						lights[i]->lightColor.w = (float)val;
 					}
 
 					if (path == "emissionColorX=")
 					{
-						lights[i].emissionColor.x = (float)val;
+						lights[i]->emissionColor.x = (float)val;
 					}
 					if (path == "emissionColorY=")
 					{
-						lights[i].emissionColor.y = (float)val;
+						lights[i]->emissionColor.y = (float)val;
 					}
 					if (path == "emissionColorZ=")
 					{
-						lights[i].emissionColor.z = (float)val;
+						lights[i]->emissionColor.z = (float)val;
 					}
 
 					if (path == "directionX=")
 					{
-						lights[i].direction.x = (float)val;
+						lights[i]->direction.x = (float)val;
 					}
 					if (path == "directionY=")
 					{
-						lights[i].direction.y = (float)val;
+						lights[i]->direction.y = (float)val;
 					}
 					if (path == "directionZ=")
 					{
-						lights[i].direction.z = (float)val;
+						lights[i]->direction.z = (float)val;
 					}
 
 					if (path == "spotDirX=")
 					{
-						lights[i].SpotDir.x = (float)val;
+						lights[i]->SpotDir.x = (float)val;
 					}
 					if (path == "spotDirY=")
 					{
-						lights[i].SpotDir.y = (float)val;
+						lights[i]->SpotDir.y = (float)val;
 					}
 					if (path == "spotDirZ=")
 					{
-						lights[i].SpotDir.z = (float)val;
+						lights[i]->SpotDir.z = (float)val;
 					}
 
 					if (path == "shadowsSoftness=")
 					{
-						lights[i].shadowsSoftnessBias.x = (float)val;
+						lights[i]->shadowsSoftnessBias.x = (float)val;
 					}
 					if (path == "shadowBias=")
 					{
-						lights[i].shadowsSoftnessBias.y = (float)val;
+						lights[i]->shadowsSoftnessBias.y = (float)val;
 					}
 
 					if (path == "radius=")
 					{
-						lights[i].radius = (float)val;
+						lights[i]->radius = (float)val;
 					}
 					
 					if (path == "cutOff=")
 					{
-						lights[i].cutOff = (float)val;
+						lights[i]->cutOff = (float)val;
 					}
 
 					if (path == "lightType=")
 					{
-						lights[i].lightType = (float)val;
+						lights[i]->lightType = (float)val;
 					}
 					if (path == "dimensions=")
 					{
-						lights[i].dimensions = (float)val;
+						lights[i]->dimensions = (float)val;
 					}
 					if (path == "nearZ=")
 					{
-						lights[i].nearZ = (float)val;
+						lights[i]->nearZ = (float)val;
 					}
 					if (path == "farZ=")
 					{
-						lights[i].farZ = (float)val;
+						lights[i]->farZ = (float)val;
 					}
 					if (path == "fov=")
 					{
-						lights[i].fov = (float)val;
+						lights[i]->fov = (float)val;
 					}
 
 				}
@@ -705,8 +705,8 @@ void SaveSystem::LoadLightData(std::vector<Light>& lights, std::vector<Light>& p
 
 
 
-	pointLights.resize(pointLightsCount);
-	for (int i = 0; i < pointLightsCount; ++i)
+	//pointLights.resize(pointLightsCount);
+	for (int i = 0; i < pointLights.size(); ++i)
 	{
 		std::ifstream f;
 		std::string path = "";
@@ -722,103 +722,103 @@ void SaveSystem::LoadLightData(std::vector<Light>& lights, std::vector<Light>& p
 				{
 					if (path == "posX=")
 					{
-						pointLights[i].pos.x = (float)val;
+						pointLights[i]->pos.x = (float)val;
 					}
 					if (path == "posY=")
 					{
-						pointLights[i].pos.y = (float)val;
+						pointLights[i]->pos.y = (float)val;
 					}
 					if (path == "posZ=")
 					{
-						pointLights[i].pos.z = (float)val;
+						pointLights[i]->pos.z = (float)val;
 					}
 
 					if (path == "scaleX=")
 					{
-						pointLights[i].scale.x = (float)val;
+						pointLights[i]->scale.x = (float)val;
 					}
 					if (path == "scaleY=")
 					{
-						pointLights[i].scale.y = (float)val;
+						pointLights[i]->scale.y = (float)val;
 					}
 					if (path == "scaleZ=")
 					{
-						pointLights[i].scale.z = (float)val;
+						pointLights[i]->scale.z = (float)val;
 					}
 
 					if (path == "colorX=")
 					{
-						pointLights[i].lightColor.x = (float)val;
+						pointLights[i]->lightColor.x = (float)val;
 					}
 					if (path == "colorY=")
 					{
-						pointLights[i].lightColor.y = (float)val;
+						pointLights[i]->lightColor.y = (float)val;
 					}
 					if (path == "colorZ=")
 					{
-						pointLights[i].lightColor.z = (float)val;
+						pointLights[i]->lightColor.z = (float)val;
 					}
 
 					if (path == "emissionColorX=")
 					{
-						pointLights[i].emissionColor.x = (float)val;
+						pointLights[i]->emissionColor.x = (float)val;
 					}
 					if (path == "emissionColorY=")
 					{
-						pointLights[i].emissionColor.y = (float)val;
+						pointLights[i]->emissionColor.y = (float)val;
 					}
 					if (path == "emissionColorZ=")
 					{
-						pointLights[i].emissionColor.z = (float)val;
+						pointLights[i]->emissionColor.z = (float)val;
 					}
 
 					if (path == "directionX=")
 					{
-						pointLights[i].direction.x = (float)val;
+						pointLights[i]->direction.x = (float)val;
 					}
 					if (path == "directionY=")
 					{
-						pointLights[i].direction.y = (float)val;
+						pointLights[i]->direction.y = (float)val;
 					}
 					if (path == "directionZ=")
 					{
-						pointLights[i].direction.z = (float)val;
+						pointLights[i]->direction.z = (float)val;
 					}
 
 					if (path == "spotDirX=")
 					{
-						pointLights[i].SpotDir.x = (float)val;
+						pointLights[i]->SpotDir.x = (float)val;
 					}
 					if (path == "spotDirY=")
 					{
-						pointLights[i].SpotDir.y = (float)val;
+						pointLights[i]->SpotDir.y = (float)val;
 					}
 					if (path == "spotDirZ=")
 					{
-						pointLights[i].SpotDir.z = (float)val;
+						pointLights[i]->SpotDir.z = (float)val;
 					}
 
 					if (path == "radius=")
 					{
-						pointLights[i].radius = (float)val;
+						pointLights[i]->radius = (float)val;
 					}
 
 					if (path == "cutOff=")
 					{
-						pointLights[i].cutOff = (float)val;
+						pointLights[i]->cutOff = (float)val;
 					}
 
 					if (path == "lightType=")
 					{
-						pointLights[i].lightType = (float)val;
+						pointLights[i]->lightType = (float)val;
 					}
 					if (path == "dimensions=")
 					{
-						pointLights[i].dimensions = (float)val;
+						pointLights[i]->dimensions = (float)val;
 					}
 					if (path == "fov=")
 					{
-						pointLights[i].fov = (float)val;
+						pointLights[i]->fov = (float)val;
 					}
 
 				}

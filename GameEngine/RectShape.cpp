@@ -3,31 +3,20 @@
 RectShape::RectShape()
 {
 	scale = DirectX::XMFLOAT3(1.f, 1.0f, 1.0f);
-	rot = DirectX::XMFLOAT3(0, 0,10.99555);
-	pos = DirectX::XMFLOAT3(0, 0, 0.4285);
-
 }
 
 RectShape::~RectShape()
 {
 }
 
-void RectShape::Initialize(ID3D11Device* device, UINT32 windowWidth, UINT32 windowHeight)
+void RectShape::Initialize(ID3D11Device* device, float aspectRatio)
 {
-	//Vertex v[] =
-	//{
-	//	Vertex(-0.5f,-0.5f,0.0f,0.0f, 0.0f),
-	//	Vertex(-0.5f, 0.5f,0.0f,1.0,0.0f),
-	//	Vertex( 0.5f,  0.5f,0.0f,1.0f,1.0f),
-	//	Vertex( 0.5f, -0.5f,0.0f, 0.0f,1.0f)
-	//};
-	float fov = 16.0f / 9.0f;
 	Vertex v[] =
 	{
-		Vertex(-1.0f,-1.0f*fov,1.0f,0.0f, 0.0f),
-		Vertex(-1.0f, 1.0f*fov,1.0f,1.0,0.0f),
-		Vertex( 1.0f,  1.0f*fov,1.0f,1.0f,1.0f),
-		Vertex( 1.0f, -1.0f*fov,1.0f, 0.0f,1.0f)
+	Vertex(-1.0f * aspectRatio , -1.0f, 1.0f, 0.0f, 1.0f), // Bottom-left
+	Vertex(-1.0f * aspectRatio ,  1.0f, 1.0f, 0.0f, 0.0f), // Top-left
+	Vertex(1.0f * aspectRatio ,  1.0f, 1.0f, 1.0f, 0.0f), // Top-right
+	Vertex(1.0f * aspectRatio , -1.0f, 1.0f, 1.0f, 1.0f)  // Bottom-right
 	};
 
 	std::vector<DWORD> indices;

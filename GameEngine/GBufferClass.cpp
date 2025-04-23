@@ -42,7 +42,7 @@ void GBufferClass::GeometryPass(DX11& gfx11, Camera& camera, ID3D11DepthStencilV
 	ClearRenderTargets(gfx11, depthView, rgb);
 }
 
-void GBufferClass::LightPass(DX11& gfx11, RectShape& rect, Camera& camera, std::vector<Light*>& culledShadowLights, std::vector<Light>& pointLights, float& acceptedDist)
+void GBufferClass::LightPass(DX11& gfx11, RectShape& rect, Camera& camera, std::vector<std::shared_ptr<Light>>& culledShadowLights, std::vector<std::shared_ptr<Light>>& pointLights, float& acceptedDist)
 {
 	gfx11.renderTexture.SetRenderTarget(gfx11.deviceContext.Get(), gfx11.depthStencilView.Get());
 	gfx11.renderTexture.ClearRenderTarget(gfx11.deviceContext.Get(), gfx11.depthStencilView.Get(), 0, 0, 0, 1,true);
@@ -63,36 +63,32 @@ void GBufferClass::LightPass(DX11& gfx11, RectShape& rect, Camera& camera, std::
 	gfx11.deviceContext->VSSetShader(gfx11.deferredLightPassVS.GetShader(), nullptr, 0);
 	for (int i = 0; i < pointLights.size(); ++i)
 	{
-		DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - pointLights[i].pos.x, camera.GetPositionFloat3().y - pointLights[i].pos.y, camera.GetPositionFloat3().z - pointLights[i].pos.z);
+		DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - pointLights[i]->pos.x, camera.GetPositionFloat3().y - pointLights[i]->pos.y, camera.GetPositionFloat3().z - pointLights[i]->pos.z);
 		physx::PxVec3 diffVec = physx::PxVec3(diff.x, diff.y, diff.z);
 		float dist = diffVec.dot(diffVec);
 	
 		if (dist < acceptedDist)
 		{
-			gfx11.cb_ps_pointLightsShader.data.dynamicLightColor = DirectX::XMFLOAT4(pointLights[i].lightColor.x, pointLights[i].lightColor.y, pointLights[i].lightColor.z, 1.0f);
-			gfx11.cb_ps_pointLightsShader.data.dynamicLightPosition = DirectX::XMFLOAT4(pointLights[i].pos.x, pointLights[i].pos.y, pointLights[i].pos.z, 1.0f);
-			gfx11.cb_ps_pointLightsShader.data.cameraPos.x = camera.pos.x;
-			gfx11.cb_ps_pointLightsShader.data.cameraPos.y = camera.pos.y;
-			gfx11.cb_ps_pointLightsShader.data.cameraPos.z = camera.pos.z;
-			gfx11.cb_ps_pointLightsShader.data.cameraPos.w = 1.0f;
+			gfx11.cb_ps_pointLightsShader.data.dynamicLightColor = DirectX::XMFLOAT4(pointLights[i]->lightColor.x, pointLights[i]->lightColor.y, pointLights[i]->lightColor.z, 1.0f);
+			gfx11.cb_ps_pointLightsShader.data.dynamicLightPosition = DirectX::XMFLOAT4(pointLights[i]->pos.x, pointLights[i]->pos.y, pointLights[i]->pos.z, 1.0f);
 
-			gfx11.cb_ps_pointLightCull.data.RadiusAndcutOff.x = pointLights[i].radius;
-			gfx11.cb_ps_pointLightCull.data.RadiusAndcutOff.y = pointLights[i].cutOff;
+			gfx11.cb_ps_pointLightCull.data.RadiusAndcutOff.x = pointLights[i]->radius;
+			gfx11.cb_ps_pointLightCull.data.RadiusAndcutOff.y = pointLights[i]->cutOff;
 			gfx11.cb_ps_pointLightCull.data.RadiusAndcutOff.z = 0.0f;
 			gfx11.cb_ps_pointLightCull.data.RadiusAndcutOff.w = 0.0f;
 
 			gfx11.cb_ps_pointLightsShader.UpdateBuffer();
 			gfx11.cb_ps_pointLightCull.UpdateBuffer();
 
-			gfx11.cb_ps_materialBuffer.data.emissiveColor = pointLights[i].emissionColor;
+			gfx11.cb_ps_materialBuffer.data.emissiveColor = pointLights[i]->emissionColor;
 			gfx11.cb_ps_materialBuffer.data.bEmissive = 1.0f;
 			gfx11.cb_ps_materialBuffer.UpdateBuffer();
 	
 	
-			DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - pointLights[i].pos.x, camera.GetPositionFloat3().y - pointLights[i].pos.y, camera.GetPositionFloat3().z - pointLights[i].pos.z);
+			DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - pointLights[i]->pos.x, camera.GetPositionFloat3().y - pointLights[i]->pos.y, camera.GetPositionFloat3().z - pointLights[i]->pos.z);
 			physx::PxVec3 diffVec = physx::PxVec3(diff.x, diff.y, diff.z);
 			float dist = diffVec.dot(diffVec);
-			pointLights[i].DrawVolume(camera);
+			pointLights[i]->DrawVolume(camera);
 		}
 	}
 
@@ -117,6 +113,7 @@ void GBufferClass::LightPass(DX11& gfx11, RectShape& rect, Camera& camera, std::
 	gfx11.deviceContext->VSSetShader(gfx11.pbrVS.GetShader(), nullptr, 0);
 	rect.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
 
+	
 
 	gfx11.deviceContext->OMSetBlendState(gfx11.blendState.Get(), NULL, 0xFFFFFFFF);
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState.Get(), 0);

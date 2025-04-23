@@ -394,7 +394,7 @@ void PhysicsHandler::LineOfSightToPlayer(Entity* character, Entity* player)
 
 	if (status)
 	{
-		if (bDebugLineOfSight)
+		if (bDebugLines)
 		{
 			origin.y = origin.y + 0.5f;
 			rayOriginOut.push_back(origin);
@@ -599,7 +599,7 @@ void PhysicsHandler::DrawDebugLine(DX11& gfx11, PhysicsDebugDraw& physicsDebugDr
 		physicsDebugDraw.DebugDraw(gfx11.device.Get(), gfx11.deviceContext.Get(), &gfx11.cb_vs_vertexshader, line, camera);
 	}
 
-	if (bDebugLineOfSight)
+	if (bDebugLines)
 	{
 		for (int i = 0; i < rayOriginOut.size(); ++i)
 		{

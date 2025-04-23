@@ -23,18 +23,18 @@ class Renderer
 {
 public:
 	Renderer();
-	bool Initialize(HWND hwnd, Camera& camera, int width, int height,std::vector<std::shared_ptr<Entity>>& entities,std::vector<Light>& lights, std::vector<Light>& pointLights);
-	void Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& entity, PhysicsHandler& physicsHandler, std::vector<Light>& lights, std::vector<Light>& pointLights, std::vector<CollisionObject>& collisionObjects, GridClass& grid, std::vector<NavMeshClass>& navMeshes, std::vector<SoundComponent*>& sounds, Sky& sky);
-	void InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera,Sky& sky);
+	bool Initialize(HWND hwnd, Camera& camera, int width, int height,std::vector<std::shared_ptr<Entity>>& entities,std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights);
+	void Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& entity, PhysicsHandler& physicsHandler, std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, std::vector<CollisionObject>& collisionObjects, GridClass& grid, std::vector<NavMeshClass>& navMeshes, std::vector<SoundComponent*>& sounds, Sky& sky);
+	void InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, Camera& camera,Sky& sky);
 
 private:
 	void ClearScreen();
-	void RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera, Sky& sky);
-	void UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera);
-	void RenderToEnvProbe(EnvironmentProbe& probe, Camera& camera, std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Sky& sky);
+	void RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, Camera& camera, Sky& sky);
+	void UpdateBuffers(std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, Camera& camera);
+	void RenderToEnvProbe(EnvironmentProbe& probe, Camera& camera, std::vector<std::shared_ptr<Entity>>& entities, std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, Sky& sky);
 	void ForwardPass(std::vector<std::shared_ptr<Entity>>& entities, Camera& camera, Sky& sky);
 	void SkyRender(Camera& camera, Sky& sky, float envMapStrengthMultiplier);
-	void DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, GridClass& grid, PhysicsHandler& physicsHandler, std::vector<NavMeshClass>& navMeshes, std::vector<Light>& lights);
+	void DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, GridClass& grid, PhysicsHandler& physicsHandler, std::vector<NavMeshClass>& navMeshes, std::vector<std::shared_ptr<Light>>& lights);
 
 private:
 	float rgb[4];
@@ -122,7 +122,7 @@ private:
 	float exposure;
 	float envMapStrength;
 	bool bRenderCollision;
-
+	float aspectRatio;
 
 	RenderTexture forwardRenderTexture;
 
@@ -134,7 +134,7 @@ private:
 	RenderTexture finalImage;
 
 
-	std::vector<Light*> culledShadowLights;
+	std::vector<std::shared_ptr<Light>> culledShadowLights;
 
 
 	//shadows params

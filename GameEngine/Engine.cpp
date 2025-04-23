@@ -23,7 +23,14 @@ bool Engine::Initialize(HINSTANCE hInstance, std::string window_title, std::stri
 	{
 		entities.push_back(std::make_shared<Entity>());
 	}
-
+	for (int i = 0; i < saveSystem.lightsCount; ++i)
+	{
+		lights.push_back(std::make_shared<Light>());
+	}
+	for (int i = 0; i < saveSystem.pointLightsCount; ++i)
+	{
+		pointlights.push_back(std::make_shared<Light>());
+	}
 
 	physicsHandler.Initialize(camera);
 	saveSystem.LoadEntityData(entities);
@@ -264,29 +271,29 @@ void Engine::Update(int width, int height)
 	}
 	for (int i = 0; i < lights.size(); ++i)
 	{
-		if (lights[i].bFlagForDeletion)
+		if (lights[i]->bFlagForDeletion)
 		{
-			lights[i].Clear();
+			lights[i]->Clear();
 			if (i < lights.size() - 1)
 			{
 				std::swap(lights[i], lights.back());
 			}
 			lights.pop_back();
-			lights[i].bFlagForDeletion = false;
+			lights[i]->bFlagForDeletion = false;
 		}
 	}
 
 	for (int i = 0; i < pointlights.size(); ++i)
 	{
-		if (pointlights[i].bFlagForDeletion)
+		if (pointlights[i]->bFlagForDeletion)
 		{
-			pointlights[i].Clear();
+			pointlights[i]->Clear();
 			if (i < pointlights.size() - 1)
 			{
 				std::swap(pointlights[i], pointlights.back());
 			}
 			pointlights.pop_back();
-			pointlights[i].bFlagForDeletion = false;
+			pointlights[i]->bFlagForDeletion = false;
 		}
 	}
 
@@ -413,7 +420,7 @@ void Engine::AddLight()
 
 	int width, height;
 
-	if (lights[lights.size() - 1].lightType == 2)
+	if (lights[lights.size() - 1]->lightType == 2)
 	{
 		width = 2048 * 2;
 		height = 2048 * 2;
@@ -425,14 +432,14 @@ void Engine::AddLight()
 	}
 	width = 2048 * 4;
 	height = 2048 * 4;
-	lights[lights.size() - 1].Initialize(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), renderer.gfx11.cb_vs_vertexshader);
-	lights[lights.size() - 1].m_shadowMap.InitializeShadow(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), width, height, DXGI_FORMAT_R16_FLOAT);
-	lights[lights.size() - 1].SetupCamera(renderer.gfx11.windowWidth, renderer.gfx11.windowHeight);
+	lights[lights.size() - 1]->Initialize(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), renderer.gfx11.cb_vs_vertexshader);
+	lights[lights.size() - 1]->m_shadowMap.InitializeShadow(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), width, height, DXGI_FORMAT_R16_FLOAT);
+	lights[lights.size() - 1]->SetupCamera(renderer.gfx11.windowWidth, renderer.gfx11.windowHeight);
 }
 void Engine::AddPointLight()
 {
-	pointlights.push_back(Light());
-	pointlights[pointlights.size() - 1].Initialize(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), renderer.gfx11.cb_vs_vertexshader);
+	pointlights.push_back(std::make_shared<Light>());
+	pointlights[pointlights.size() - 1]->Initialize(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), renderer.gfx11.cb_vs_vertexshader);
 }
 
 void Engine::AddCollisionObject()
@@ -647,7 +654,7 @@ void Engine::AIHandler(float& dt)
 
 		if (!grid.bRayCastStage)
 		{
-			async_rayCastNavMesh = std::async(std::launch::async, &Engine::CreateNavMesh, this, std::ref(grid), std::ref(entities), std::ref(collisionObjects));
+			async_rayCastNavMesh = std::async(std::launch::async, &GridClass::InitGrid, std::ref(grid));
 			grid.bRayCastStage = true;
 		}
 
@@ -750,9 +757,9 @@ void Engine::CopyPasteEntity()
 
 void Engine::CopyPasteLight()
 {
-	lights.push_back(Light());
+	lights.push_back(std::make_shared<Light>());
 	//AddLight();
-	lights[lights.size() - 1].CopyData(lights[renderer.selectedLight]);
+	lights[lights.size() - 1]->CopyData(lights[renderer.selectedLight]);
 	AddLight();
 	renderer.copyLight = false;
 }
@@ -762,7 +769,7 @@ void Engine::CopyPastePointLight()
 {
 	AddPointLight();
 
-	pointlights[pointlights.size() - 1].CopyData(pointlights[renderer.selectedPointLight]);
+	pointlights[pointlights.size() - 1]->CopyData(pointlights[renderer.selectedPointLight]);
 	renderer.copyPointLight = false;
 
 }
@@ -808,14 +815,6 @@ void Engine::Async_FireRayCast()
 	physicsHandler.PlayerFireRayTrace(tpsPlayerController, player.get(), entities, camera);
 }
 
-void Engine::CreateNavMesh(GridClass& grid, std::vector<std::shared_ptr<Entity>>& entities, std::vector<CollisionObject>& collisionObjects)
-{
-	grid.InitGrid();
-	/*physicsHandler.NavMeshRayCast(grid, entities, collisionObjects);
-
-	OutputDebugStringA("\nNavMesh Init!!!!!!!\n");*/
-}
-
 void Engine::Shutdown()
 {
 	for (int i = 0; i < entities.size(); ++i)
@@ -824,10 +823,10 @@ void Engine::Shutdown()
 	}
 	for (int i = 0; i < lights.size(); ++i)
 	{
-		lights[i].Clear();
+		lights[i]->Clear();
 	}
 	for (int i = 0; i < pointlights.size(); ++i)
 	{
-		pointlights[i].Clear();
+		pointlights[i]->Clear();
 	}
 }

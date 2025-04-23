@@ -43,8 +43,6 @@ private:
 	void GameSounds();
 
 	void Async_FireRayCast();
-
-	void CreateNavMesh(GridClass& grid, std::vector<std::shared_ptr<Entity>>& entities, std::vector<CollisionObject>& collisionObjects);
 protected:
 	AppTimer timer;
 
@@ -53,8 +51,8 @@ private:
 	std::vector<std::shared_ptr<Entity>> entities;
 
 	std::vector<std::shared_ptr<Entity>> AIEntities;
-	std::vector<Light> lights;
-	std::vector<Light> pointlights;
+	std::vector<std::shared_ptr<Light>> lights;
+	std::vector<std::shared_ptr<Light>> pointlights;
 	std::vector<CollisionObject> collisionObjects;
 	std::vector<SoundComponent*> sounds;
 

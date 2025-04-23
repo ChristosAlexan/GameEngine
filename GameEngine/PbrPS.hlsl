@@ -5,25 +5,28 @@ cbuffer lightBuffer : register(b0)
     float4 dynamicLightPosition[NO_LIGHTS];
     float4 dynamicLightColor[NO_LIGHTS];
     float4 SpotlightDir[NO_LIGHTS];
-    float4 cameraPos;
     float4 lightTypeEnableShadows[NO_LIGHTS];
     float4x4 lightViewMatrix[NO_LIGHTS];
     float4x4 lightProjectionMatrix[NO_LIGHTS];
     uint lightsSize;
 }
+cbuffer cameraBuffer : register(b2)
+{
+    float4x4 viewMatrix; // View matrix
+    float4x4 projectionMatrix; // Projection matrix
+    float4x4 viewProjectionMatrix; // Combined view-projection matrix
+    float4x4 inverseViewProjectionMatrix;
+    float4x4 inverseViewMatrix;
+    float4x4 inverseProjectionMatrix; // Inverse projection matrix
+    float4 testValues;
+    float4 cameraPos;
+    float2 screenSize;
+};
 
 cbuffer shadowsbuffer : register(b9)
 {
     float4 shadowsSoftnessBias[NO_LIGHTS];
     double bias;
-}
-cbuffer ssrBuffer : register(b10)
-{
-    float4x4 ssrViewMatrix;
-    float4x4 ssrProjectionMatrix;
-    float4x4 ssrInvViewMatrix;
-    float4x4 ssrInvProjectionMatrix;
-    float4 ssrCameraPos;
 }
 
 cbuffer lightCull : register(b3)
@@ -75,10 +78,21 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness);
 float3 pointLight(PS_INPUT input, float3 albedo, float3 pos, float3 color, float4 _cutOff, float3 bumpNormal, float roughness, float metallic, float3 V, float3 F0, float3 worldPos);
 float3 spotLight(PS_INPUT input, float3 albedo, float3 bumpNormal, float roughness, float metallic, float3 V, float3 F0, float3 worldPos, int index);
 float3 dirLight(PS_INPUT input, float3 albedo, float3 bumpNormal, float roughness, float metallic, float3 V, float3 F0, float3 worldPos, int index);
+float3 ReinhardToneMapping(float3 color, float exposure)
+{
+    float3 mappedColor = color / (color + 1.0);
+    mappedColor = pow(mappedColor, float3(1.0 / exposure, 1.0 / exposure, 1.0 / exposure));
+    return mappedColor;
+}
+
+
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
-    int3 sampleIndices = int3(input.inPosition.xy, 0);
+    uint2 textureSize;
+    // Retrieve dimensions of the world position texture
+    worldPositionTexture.GetDimensions(textureSize.x, textureSize.y);
+    int2 sampleIndices = int2(input.inTexCoord * float2(textureSize.x, textureSize.y));
     
     float4 albedo = objTexture.Sample(SampleTypeWrap, input.inTexCoord);
     //float4 albedo = float4(pow(objTexture.Sample(SampleTypeWrap, input.inTexCoord), gamma));
@@ -90,7 +104,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     }
     float metallic = roughnessMetalicTexture.Sample(SampleTypeWrap, input.inTexCoord).b;
     float roughness = roughnessMetalicTexture.Sample(SampleTypeWrap, input.inTexCoord).g;
-    float4 worldPos = worldPositionTexture.Load(sampleIndices);
+    float4 worldPos = worldPositionTexture.Load(int3(sampleIndices,0));
     
     
     float3 V = normalize(cameraPos.xyz - worldPos.xyz);
@@ -155,7 +169,9 @@ float4 main(PS_INPUT input) : SV_TARGET
     float3 specular = prefilteredColor * (F * brdf.x + brdf.y);
     ambient = (kD * diffuse + specular) * ambientStrength;
     float3 color = ambient + Lo;
-   
+    
+    color = ReinhardToneMapping(color, exposure);
+    color = pow(color, float3(1.0f / gamma, 1.0f / gamma, 1.0f / gamma));
     return float4(color, 1.0);
 }
 
@@ -305,8 +321,8 @@ float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 float3 Shadows(float4 worldPos, Texture2D depthMapTexture, PS_INPUT input, int index)
 {
     float4 lightViewPosition = worldPos;
-    lightViewPosition = mul(lightViewPosition, transpose(lightViewMatrix[index]));
-    lightViewPosition = mul(lightViewPosition, transpose(lightProjectionMatrix[index]));
+    lightViewPosition = mul(lightViewPosition,lightViewMatrix[index]);
+    lightViewPosition = mul(lightViewPosition,lightProjectionMatrix[index]);
     
     float shadow = 0.0f;
     int width;
@@ -327,7 +343,7 @@ float3 Shadows(float4 worldPos, Texture2D depthMapTexture, PS_INPUT input, int i
     if ((saturate(projCoords.x) == projCoords.x) && (saturate(projCoords.y) == projCoords.y))
     {
         int PCF_RANGE = 2;
-        int SUN_PCF_RANGE = 6;
+        int SUN_PCF_RANGE = 4;
         
         if(lightTypeEnableShadows[index].x == 2.0f)
         {

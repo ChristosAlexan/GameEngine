@@ -34,6 +34,7 @@ Renderer::Renderer()
 	copyLight = false;
 	copyPointLight = false;
 	bEnableShadows = true;
+	enablePostProccess = true;
 	bGuiEnabled = true;
 	bDrawFrustums = false;
 	bEnableSimulation = false;
@@ -45,14 +46,19 @@ Renderer::Renderer()
 	renderDistance = 6000.0f;
 	shadowLightsDistance = 2000.0f;
 	deferredLightsDistance = 1000.0f;
-	bloomBrightness = 3.0f;
-	bloomStrength = 0.2f;
+	bloomBrightness = 0.4f;
+	bloomStrength = 0.05f;
 	shadowBias = 0.0000001;
+	aspectRatio = 0.0f;
+	ambientStrength = 0.2f;
 
-	ambientStrength = 1.0f;
+	gfx11.cb_ps_cameraBuffer.data.testValues.x = 0;
+	gfx11.cb_ps_cameraBuffer.data.testValues.y = 0;
+	gfx11.cb_ps_cameraBuffer.data.testValues.z = 0;
+	gfx11.cb_ps_cameraBuffer.data.testValues.w = 0;
 }
 
-bool Renderer::Initialize(HWND hwnd, Camera& camera, int width, int height, std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights)
+bool Renderer::Initialize(HWND hwnd, Camera& camera, int width, int height, std::vector<std::shared_ptr<Entity>>& entities, std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights)
 {
 	this->windowWidth = width;
 	this->windowHeight = height;
@@ -71,19 +77,21 @@ bool Renderer::Initialize(HWND hwnd, Camera& camera, int width, int height, std:
 
 	gfx11.deviceContext->RSSetViewports(1, &gfx11.viewport);
 	gfx11.deviceContext->OMSetRenderTargets(1, gfx11.renderTargetView.GetAddressOf(), gfx11.depthStencilView.Get());
-	camera.PerspectiveFov(70.0f, static_cast<float>(this->windowWidth / this->windowHeight) * (16.0f / 9.0f), 0.1f, 1000.0f);
+	aspectRatio = static_cast<float>(this->windowWidth) / static_cast<float>(this->windowHeight);
+	camera.PerspectiveFov(90.0f, aspectRatio, 0.1f, 100.0f);
 	gfx11.deviceContext->ClearRenderTargetView(gfx11.renderTargetView.Get(), rgb);
 	gfx11.deviceContext->ClearDepthStencilView(gfx11.depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	return true;
 }
 
-void Renderer::InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera, Sky& sky)
+void Renderer::InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, Camera& camera, Sky& sky)
 {
 	//camera.pos = DirectX::XMFLOAT3(1, 1, 1);
 	//INIT CONSTANT BUFFERS/////////////////////////////
 	///////////////////////////////////////////////////
 	HRESULT hr = gfx11.cb_vs_vertexshader.Initialize(gfx11.device, gfx11.deviceContext);
+	hr = gfx11.cb_vs_ssrBuffer.Initialize(gfx11.device, gfx11.deviceContext);
 	hr = gfx11.cb_vs_lightsShader.Initialize(gfx11.device, gfx11.deviceContext);
 	hr = gfx11.cb_vs_windowParams.Initialize(gfx11.device, gfx11.deviceContext);
 	hr = gfx11.cb_vs_instanceShader.Initialize(gfx11.device, gfx11.deviceContext);
@@ -95,22 +103,24 @@ void Renderer::InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::ve
 	hr = gfx11.cb_ps_screenEffectBuffer.Initialize(gfx11.device, gfx11.deviceContext);
 	hr = gfx11.cb_ps_pbrBuffer.Initialize(gfx11.device, gfx11.deviceContext);
 	hr = gfx11.cb_ps_materialBuffer.Initialize(gfx11.device, gfx11.deviceContext);
-	hr = gfx11.cb_ps_ssaoBuffer.Initialize(gfx11.device, gfx11.deviceContext);
+	hr = gfx11.cb_ps_cameraBuffer.Initialize(gfx11.device, gfx11.deviceContext);
 	hr = gfx11.cb_ps_pointLightCull.Initialize(gfx11.device, gfx11.deviceContext);
 	hr = gfx11.cb_ps_pointLightsShader.Initialize(gfx11.device, gfx11.deviceContext);
 	hr = gfx11.cb_ps_skyBuffer.Initialize(gfx11.device, gfx11.deviceContext);
 	hr = gfx11.cb_ps_shadowsBuffer.Initialize(gfx11.device, gfx11.deviceContext);
 	hr = gfx11.cb_ps_inverseCoordsBuffer.Initialize(gfx11.device, gfx11.deviceContext);
+	hr = gfx11.cb_ps_ssaoBuffer.Initialize(gfx11.device, gfx11.deviceContext);
 
 	gfx11.deviceContext->VSSetConstantBuffers(0, 1, gfx11.cb_vs_vertexshader.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->VSSetConstantBuffers(1, 1, gfx11.cb_vs_lightsShader.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->VSSetConstantBuffers(2, 1, gfx11.cb_vs_windowParams.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->VSSetConstantBuffers(3, 1, gfx11.cb_vs_instanceShader.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->VSSetConstantBuffers(4, 1, gfx11.cb_vs_inverseCoordsBuffer.GetBuffer().GetAddressOf());
+	gfx11.deviceContext->VSSetConstantBuffers(5, 1, gfx11.cb_vs_ssrBuffer.GetBuffer().GetAddressOf());
 
 	gfx11.deviceContext->PSSetConstantBuffers(0, 1, gfx11.cb_ps_lightsShader.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->PSSetConstantBuffers(1, 1, gfx11.cb_ps_pointLightsShader.GetBuffer().GetAddressOf());
-	gfx11.deviceContext->PSSetConstantBuffers(2, 1, gfx11.cb_ps_ssaoBuffer.GetBuffer().GetAddressOf());
+	gfx11.deviceContext->PSSetConstantBuffers(2, 1, gfx11.cb_ps_cameraBuffer.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->PSSetConstantBuffers(3, 1, gfx11.cb_ps_lightCull.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->PSSetConstantBuffers(4, 1, gfx11.cb_ps_screenEffectBuffer.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->PSSetConstantBuffers(5, 1, gfx11.cb_ps_pbrBuffer.GetBuffer().GetAddressOf());
@@ -120,6 +130,7 @@ void Renderer::InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::ve
 	gfx11.deviceContext->PSSetConstantBuffers(8, 1, gfx11.cb_ps_skyBuffer.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->PSSetConstantBuffers(9, 1, gfx11.cb_ps_shadowsBuffer.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->PSSetConstantBuffers(10, 1, gfx11.cb_ps_inverseCoordsBuffer.GetBuffer().GetAddressOf());
+	gfx11.deviceContext->PSSetConstantBuffers(11, 1, gfx11.cb_ps_ssaoBuffer.GetBuffer().GetAddressOf());
 	//////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////
 	
@@ -153,30 +164,30 @@ void Renderer::InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::ve
 	float val = load_Timer.GetMilisecondsElapsed();
 	std::string v_t_str = std::to_string(val);
 	OutputDebugStringA(("time elapsed = " + v_t_str + "\n").c_str());
-	rect.Initialize(gfx11.device.Get(),gfx11.windowWidth,gfx11.windowHeight);
+	rect.Initialize(gfx11.device.Get(), aspectRatio);
 	//postProcess.rectBloom.Initialize(gfx11.device.Get(), gfx11.windowWidth, gfx11.windowHeight);
-	rectSmall.Initialize(gfx11.device.Get(), windowWidth, gfx11.windowHeight);
+	rectSmall.Initialize(gfx11.device.Get(), aspectRatio);
 	debugCube.Initialize(gfx11.device.Get());
 
 
 	for (int i = 0; i < lights.size(); ++i)
 	{
-		lights[i].Initialize(gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader);
-		if (lights[i].lightType == 2.0f)
+		lights[i]->Initialize(gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader);
+		if (lights[i]->lightType == 2.0f)
 		{
-			lights[i].m_shadowMap.InitializeShadow(gfx11.device.Get(), gfx11.deviceContext.Get(), 8192, 8192, DXGI_FORMAT::DXGI_FORMAT_R16_FLOAT);
+			lights[i]->m_shadowMap.InitializeShadow(gfx11.device.Get(), gfx11.deviceContext.Get(), 8192, 8192, DXGI_FORMAT::DXGI_FORMAT_R16_FLOAT);
 		}
 		else
 		{
-			lights[i].m_shadowMap.InitializeShadow(gfx11.device.Get(), gfx11.deviceContext.Get(), 1024,1024, DXGI_FORMAT_R16_FLOAT);
+			lights[i]->m_shadowMap.InitializeShadow(gfx11.device.Get(), gfx11.deviceContext.Get(), 1024,1024, DXGI_FORMAT_R16_FLOAT);
 		}
 
-		lights[i].SetupCamera(gfx11.windowWidth, gfx11.windowHeight);
+		lights[i]->SetupCamera(gfx11.windowWidth, gfx11.windowHeight);
 	}
 	for (int i = 0; i < pointLights.size(); ++i)
 	{
-		pointLights[i].lightType = 0;
-		pointLights[i].Initialize(gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader);
+		pointLights[i]->lightType = 0;
+		pointLights[i]->Initialize(gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader);
 	}
 
 	environmentProbe.Initialize(gfx11.device.Get(), gfx11.deviceContext.Get(), gfx11.cb_vs_vertexshader, 512, 512);
@@ -184,7 +195,7 @@ void Renderer::InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::ve
 
 
 	//Bloom
-	postProcess.Initialize(gfx11, windowWidth, windowHeight);
+	postProcess.Initialize(gfx11, windowWidth, windowHeight, aspectRatio);
 	postProcess.HbaoPlusInit(gfx11, windowWidth, windowHeight);
 
 	//Volumetric light
@@ -200,10 +211,10 @@ void Renderer::InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::ve
 
 	instancedShape.Initialize(gfx11.device.Get());
 
-	crosshair.Initialize(gfx11.device.Get(), 1, 1);
+	crosshair.Initialize(gfx11.device.Get(), aspectRatio);
 	crosshair.CreateTexture(gfx11.device.Get(), gfx11.deviceContext.Get(), ".//Data/Textures/crosshair.dds");
 	crosshair.pos = DirectX::XMFLOAT3(0.0, 0.0, 9.229);
-	crosshair.scale.x = 0.17f;
+	crosshair.scale.x = 0.1f;
 	crosshair.scale.y = 0.1f;
 	//crosshair.texture.CreateTextureWIC(gfx11.device.Get(), ".//Data/Textures/crosshair.png");
 }
@@ -217,7 +228,7 @@ void Renderer::ClearScreen()
 }
 
 //****************RENDER ENTITIES DEFERRED***************************************
-void Renderer::RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera, Sky& sky)
+void Renderer::RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, Camera& camera, Sky& sky)
 {
 	gfx11.deviceContext->VSSetConstantBuffers(0, 1, gfx11.cb_vs_vertexshader.GetBuffer().GetAddressOf());
 	gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
@@ -282,30 +293,30 @@ void Renderer::RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, st
 	gfx11.deviceContext->VSSetShader(gfx11.deferredVS.GetShader(), nullptr, 0);
 	for (int i = 0; i < lights.size(); ++i)
 	{
-		if (lights[i].lightType != 2.0f)
+		if (lights[i]->lightType != 2.0f)
 		{
-			gfx11.cb_ps_materialBuffer.data.emissiveColor = lights[i].emissionColor;
+			gfx11.cb_ps_materialBuffer.data.emissiveColor = lights[i]->emissionColor;
 			gfx11.cb_ps_materialBuffer.data.bEmissive = 1.0f;
 			gfx11.cb_ps_materialBuffer.UpdateBuffer();
 
-			DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - lights[i].pos.x, camera.GetPositionFloat3().y - lights[i].pos.y, camera.GetPositionFloat3().z - lights[i].pos.z);
+			DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - lights[i]->pos.x, camera.GetPositionFloat3().y - lights[i]->pos.y, camera.GetPositionFloat3().z - lights[i]->pos.z);
 			physx::PxVec3 diffVec = physx::PxVec3(diff.x, diff.y, diff.z);
 			float dist = diffVec.dot(diffVec);
 
 			if (dist < renderDistance)
 			{
-				lights[i].Draw(camera);
+				lights[i]->Draw(camera);
 			}
 		}
 	}
 	
 	for (int i = 0; i < pointLights.size(); ++i)
 	{
-		gfx11.cb_ps_materialBuffer.data.emissiveColor = pointLights[i].emissionColor;
+		gfx11.cb_ps_materialBuffer.data.emissiveColor = pointLights[i]->emissionColor;
 		gfx11.cb_ps_materialBuffer.data.bEmissive = 1.0f;
 		gfx11.cb_ps_materialBuffer.UpdateBuffer();
 	
-		pointLights[i].Draw(camera);
+		pointLights[i]->Draw(camera);
 	}
 
 	gfx11.cb_ps_materialBuffer.data.emissiveColor = DirectX::XMFLOAT3(1.0,10.0,1.0);
@@ -321,7 +332,7 @@ void Renderer::RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, st
 }
 //*************************************************************************
 
-void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& pointLights, Camera& camera)
+void Renderer::UpdateBuffers(std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, Camera& camera)
 {
 	gfx11.cb_vs_windowParams.data.window_width = (float)windowWidth;
 	gfx11.cb_vs_windowParams.data.window_height = (float)windowHeight;
@@ -329,27 +340,27 @@ void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& poi
 	//std::vector<Light*> culledShadowLights;
 	for (int i = 0; i < lights.size(); ++i)
 	{
-		lights[i].UpdateCamera();
+		lights[i]->UpdateCamera();
 
-		if (lights[i].bShadow)
+		if (lights[i]->bShadow)
 		{
 			if (culledShadowLights.size() < NO_LIGHTS - 1)
 			{
-				if (lights[i].lightType == 2.0f)
+				if (lights[i]->lightType == 2.0f)
 				{
-					culledShadowLights.push_back(&lights[i]);
+					culledShadowLights.push_back(lights[i]);
 				}
 				else
 				{
-					DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - lights[i].pos.x, camera.GetPositionFloat3().y - lights[i].pos.y, camera.GetPositionFloat3().z - lights[i].pos.z);
+					DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - lights[i]->pos.x, camera.GetPositionFloat3().y - lights[i]->pos.y, camera.GetPositionFloat3().z - lights[i]->pos.z);
 					physx::PxVec3 diffVec = physx::PxVec3(diff.x, diff.y, diff.z);
 					float dist = diffVec.dot(diffVec);
 
-					if (lights[i].m_shadowMap.m_depthStencilView)
+					if (lights[i]->m_shadowMap.m_depthStencilView)
 					{
 						if (dist < shadowLightsDistance)
 						{
-							culledShadowLights.push_back(&lights[i]);
+							culledShadowLights.push_back(lights[i]);
 						}
 					}
 				}
@@ -359,8 +370,8 @@ void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& poi
 	}
 	for (int i = 0; i < culledShadowLights.size(); ++i)
 	{
-		gfx11.cb_vs_lightsShader.data.lightProjectionMatrix[i] = culledShadowLights[i]->GetCamera()->GetProjectionMatrix();
-		gfx11.cb_vs_lightsShader.data.lightViewMatrix[i] = culledShadowLights[i]->GetCamera()->GetViewMatrix();
+		gfx11.cb_vs_lightsShader.data.lightProjectionMatrix[i] = DirectX::XMMatrixTranspose(culledShadowLights[i]->GetCamera()->GetProjectionMatrix());
+		gfx11.cb_vs_lightsShader.data.lightViewMatrix[i] = DirectX::XMMatrixTranspose(culledShadowLights[i]->GetCamera()->GetViewMatrix());
 	
 		gfx11.cb_ps_lightsShader.data.dynamicLightColor[i] = DirectX::XMFLOAT4(culledShadowLights[i]->lightColor.x, culledShadowLights[i]->lightColor.y, culledShadowLights[i]->lightColor.z, culledShadowLights[i]->lightColor.w);
 	
@@ -370,8 +381,8 @@ void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& poi
 			culledShadowLights[i]->pos.z = camera.pos.z;
 		}
 			
-		gfx11.cb_ps_lightsShader.data.lightProjectionMatrix[i] = culledShadowLights[i]->GetCamera()->GetProjectionMatrix();
-		gfx11.cb_ps_lightsShader.data.lightViewMatrix[i] = culledShadowLights[i]->GetCamera()->GetViewMatrix();
+		gfx11.cb_ps_lightsShader.data.lightProjectionMatrix[i] = DirectX::XMMatrixTranspose((culledShadowLights[i]->GetCamera()->GetProjectionMatrix()));
+		gfx11.cb_ps_lightsShader.data.lightViewMatrix[i] = DirectX::XMMatrixTranspose((culledShadowLights[i]->GetCamera()->GetViewMatrix()));
 
 		gfx11.cb_ps_lightsShader.data.dynamicLightPosition[i] = DirectX::XMFLOAT4(culledShadowLights[i]->pos.x, culledShadowLights[i]->pos.y, culledShadowLights[i]->pos.z, 1.0f);
 		
@@ -411,11 +422,16 @@ void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& poi
 		gfx11.cb_vs_lightsShader.data.lightsSize = 0;
 	}
 	
-	gfx11.cb_ps_lightsShader.data.cameraPos.x = camera.pos.x;
-	gfx11.cb_ps_lightsShader.data.cameraPos.y = camera.pos.y;
-	gfx11.cb_ps_lightsShader.data.cameraPos.z = camera.pos.z;
-	gfx11.cb_ps_lightsShader.data.cameraPos.w = 1.0f;
-
+	gfx11.cb_ps_cameraBuffer.data.viewMatrix = DirectX::XMMatrixTranspose(camera.GetViewMatrix());
+	gfx11.cb_ps_cameraBuffer.data.projectionMatrix = DirectX::XMMatrixTranspose(camera.GetProjectionMatrix());
+	gfx11.cb_ps_cameraBuffer.data.viewProjectionMatrix = DirectX::XMMatrixTranspose((DirectX::XMMatrixMultiply(camera.GetViewMatrix(), camera.GetProjectionMatrix())));
+	gfx11.cb_ps_cameraBuffer.data.inverseViewProjectionMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, DirectX::XMMatrixMultiply(camera.GetViewMatrix(), camera.GetProjectionMatrix())));
+	gfx11.cb_ps_cameraBuffer.data.inverseViewMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, camera.GetViewMatrix()));
+	gfx11.cb_ps_cameraBuffer.data.inverseProjectionMatrix =DirectX::XMMatrixTranspose( DirectX::XMMatrixInverse(nullptr, camera.GetProjectionMatrix()));
+	gfx11.cb_ps_cameraBuffer.data.cameraPos = DirectX::XMFLOAT4(camera.pos.x, camera.pos.y, camera.pos.z, 1.0f);
+	gfx11.cb_ps_cameraBuffer.data.screenSize = DirectX::XMFLOAT2((float)windowWidth, (float)windowHeight);
+	gfx11.cb_ps_cameraBuffer.data.nearPlane = camera.m_nearZ;
+	gfx11.cb_ps_cameraBuffer.data.farPlane = camera.m_farZ;
 
 	gfx11.cb_ps_screenEffectBuffer.data.gamma = gamma;
 	gfx11.cb_ps_screenEffectBuffer.data.bloomBrightness = bloomBrightness;
@@ -429,27 +445,28 @@ void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& poi
 	gfx11.cb_ps_inverseCoordsBuffer.data.projectionMatrix = DirectX::XMMatrixTranspose(camera.GetProjectionMatrix());
 	gfx11.cb_ps_inverseCoordsBuffer.data.viewMatrix = DirectX::XMMatrixTranspose(camera.GetViewMatrix());
 
-	gfx11.cb_ps_inverseCoordsBuffer.data.invProjectionMatrix = DirectX::XMMatrixInverse(nullptr, gfx11.cb_ps_inverseCoordsBuffer.data.projectionMatrix);
-	gfx11.cb_ps_inverseCoordsBuffer.data.invViewMatrix = DirectX::XMMatrixInverse(nullptr, gfx11.cb_ps_inverseCoordsBuffer.data.viewMatrix);
+	gfx11.cb_ps_inverseCoordsBuffer.data.invProjectionMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, gfx11.cb_ps_inverseCoordsBuffer.data.projectionMatrix));
+	gfx11.cb_ps_inverseCoordsBuffer.data.invViewMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, gfx11.cb_ps_inverseCoordsBuffer.data.viewMatrix));
 
 	gfx11.cb_ps_inverseCoordsBuffer.data.cameraPos.x = camera.pos.x;
 	gfx11.cb_ps_inverseCoordsBuffer.data.cameraPos.y = camera.pos.y;
 	gfx11.cb_ps_inverseCoordsBuffer.data.cameraPos.z = camera.pos.z;
 	gfx11.cb_ps_inverseCoordsBuffer.data.cameraPos.w = 1.0f;
 
+	gfx11.cb_vs_inverseCoordsBuffer.data.invProjectionMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, gfx11.cb_ps_inverseCoordsBuffer.data.projectionMatrix));
+	gfx11.cb_vs_inverseCoordsBuffer.data.invViewMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, gfx11.cb_ps_inverseCoordsBuffer.data.viewMatrix));
 
-
-	gfx11.cb_vs_inverseCoordsBuffer.data.invProjectionMatrix = DirectX::XMMatrixInverse(nullptr, gfx11.cb_ps_inverseCoordsBuffer.data.projectionMatrix);
-	gfx11.cb_vs_inverseCoordsBuffer.data.invViewMatrix = DirectX::XMMatrixInverse(nullptr, gfx11.cb_ps_inverseCoordsBuffer.data.viewMatrix);
+	gfx11.cb_vs_ssrBuffer.data.viewProjectionMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixMultiply(camera.GetViewMatrix(), camera.GetProjectionMatrix()));
 
 	gfx11.cb_vs_vertexshader.UpdateBuffer();
 	gfx11.cb_vs_lightsShader.UpdateBuffer();
 	gfx11.cb_vs_windowParams.UpdateBuffer();
 	gfx11.cb_vs_instanceShader.UpdateBuffer();
 	gfx11.cb_vs_inverseCoordsBuffer.UpdateBuffer();
+	gfx11.cb_vs_ssrBuffer.UpdateBuffer();
 
 	gfx11.cb_ps_lightsShader.UpdateBuffer();
-	gfx11.cb_ps_ssaoBuffer.UpdateBuffer();
+	gfx11.cb_ps_cameraBuffer.UpdateBuffer();
 	gfx11.cb_ps_lightCull.UpdateBuffer();
 	gfx11.cb_ps_screenEffectBuffer.UpdateBuffer();
 	gfx11.cb_ps_pbrBuffer.UpdateBuffer();
@@ -460,6 +477,9 @@ void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& poi
 	gfx11.cb_ps_shadowsBuffer.UpdateBuffer();
 
 	gfx11.cb_ps_inverseCoordsBuffer.UpdateBuffer();
+	gfx11.cb_ps_cameraBuffer.UpdateBuffer();
+
+	gfx11.cb_ps_ssaoBuffer.UpdateBuffer();
 }
 
 //********************************PBR*********************************
@@ -467,7 +487,7 @@ void Renderer::UpdateBuffers(std::vector<Light>& lights, std::vector<Light>& poi
 //**********************************************************************************
 
 
-void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& entities, PhysicsHandler& physicsHandler, std::vector<Light>& lights, std::vector<Light>& pointLights, std::vector< CollisionObject>& collisionObjects, GridClass& grid, std::vector<NavMeshClass>& navMeshes, std::vector<SoundComponent*>& sounds, Sky& sky)
+void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& entities, PhysicsHandler& physicsHandler, std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, std::vector< CollisionObject>& collisionObjects, GridClass& grid, std::vector<NavMeshClass>& navMeshes, std::vector<SoundComponent*>& sounds, Sky& sky)
 {
 	//float rgb[4];
 	rgb[0] = skyColor.x;
@@ -500,7 +520,7 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 				if (culledShadowLights[i]->bShadow)
 				{
 					gfx11.deviceContext->RSSetState(shadowRasterizerState.Get());
-					shadowsRenderer.RenderShadows(gfx11, entities, culledShadowLights[i], camera, shadowLightsDistance, i);
+					shadowsRenderer.RenderShadows(gfx11, entities, culledShadowLights[i].get(), camera, shadowLightsDistance, i);
 					gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 					//ClearScreen();
 
@@ -548,7 +568,9 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 	gfx11.deviceContext->PSSetShaderResources(7, 1, &pbr.irradianceCubeMap.shaderResourceView);
 	gfx11.deviceContext->PSSetShaderResources(8, 1, &postProcess.SsrRenderTexture.shaderResourceView);
 
+	ClearScreen();
 	gBuffer.LightPass(gfx11, rect, camera,culledShadowLights,pointLights,deferredLightsDistance);
+	ClearScreen();
 
 	gfx11.deviceContext->OMSetBlendState(nullptr, NULL, 0xFFFFFFFF);
 
@@ -556,19 +578,14 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 	if (enablePostProccess)
 	{
 		postProcess.HbaoPlusRender(gfx11, rect, camera, gBuffer.m_shaderResourceViewArray[4], gBuffer.m_shaderResourceViewArray[5]);
+		ClearScreen();
 		postProcess.BloomRender(gfx11, rect, camera);
-
-		
-		//gfx11.deviceContext->PSSetShaderResources(5, 1, &gfx11.renderTexture.shaderResourceView);
+		ClearScreen();
 		//postProcess.SSR_Render(gfx11, rect, camera, gBuffer);
-
-		
 	}
 	ClearScreen();
 
-
 	////////////////////////////////
-
 	//////////////////////////////////////////////////////
 	
 	if (bGuiEnabled)
@@ -585,9 +602,10 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 
 	gfx11.deviceContext->PSSetShader(gfx11.postProccessPS.GetShader(), nullptr, 0);
 	rect.SetRenderTexture(gfx11.deviceContext.Get(), gfx11.renderTexture);
-	gfx11.deviceContext->PSSetShaderResources(1, 1, &postProcess.BloomHorizontalBlurTexture.shaderResourceView);
+	gfx11.deviceContext->PSSetShaderResources(1, 1, &postProcess.verticalGaussianBlurTexture.shaderResourceView);
 	//gfx11.deviceContext->PSSetShaderResources(2, 1, &forwardRenderTexture.shaderResourceView);
 	gfx11.deviceContext->PSSetShaderResources(3, 1, &postProcess.hbaoTexture.shaderResourceView);
+	gfx11.deviceContext->PSSetShaderResources(4, 1, &postProcess.SsrRenderTexture.shaderResourceView);
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
 	gfx11.deviceContext->IASetInputLayout(gfx11.vs2D.GetInputLayout());
 	gfx11.deviceContext->VSSetShader(gfx11.vs2D.GetShader(), nullptr, 0);
@@ -753,9 +771,11 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 
 		if (ImGui::CollapsingHeader("Options##2"))
 		{
+			ImGui::InputFloat("aspectRatio", &aspectRatio);
 			ImGui::Checkbox("runPhysics", &runPhysics);
 			ImGui::NewLine();
 			ImGui::InputFloat3("Camera", &camera.pos.x);
+			ImGui::Checkbox("DebugLines", &physicsHandler.bDebugLines);
 			ImGui::Checkbox("Show collision", &physicsHandler.bRenderCollisionShape);
 			ImGui::Checkbox("DrawFrustums", &bDrawFrustums);
 			ImGui::Checkbox("Possess", &camera.PossessCharacter);
@@ -774,12 +794,19 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 			ImGui::DragFloat("renderShadowDistance", &shadowLightsDistance, 1.0f);
 			ImGui::DragFloat("deferredLightsDistance", &deferredLightsDistance, 1.0f);
 
+			if (ImGui::CollapsingHeader("SSR"))
+			{
+				ImGui::DragFloat("val1", &gfx11.cb_ps_cameraBuffer.data.testValues.x, 0.01f);
+				ImGui::DragFloat("val2", &gfx11.cb_ps_cameraBuffer.data.testValues.y, 0.01f);
+				ImGui::DragFloat("val3", &gfx11.cb_ps_cameraBuffer.data.testValues.z, 0.01f);
+				ImGui::DragFloat("val4", &gfx11.cb_ps_cameraBuffer.data.testValues.w, 0.01f);
+			}
 			rect.DrawGUI("Rect");
 		}
 		
 		if (ImGui::CollapsingHeader("HBAO+"))
 		{
-			ImGui::DragFloat("Radius", &postProcess.radius, 0.05f, 0.0f, 100.0f);
+			ImGui::DragFloat("Radius", &postProcess.radius, 0.005f, 0.0f, 100.0f);
 			ImGui::DragFloat("Bias", &postProcess.bias, 0.001f, 0, 0.5f);
 			ImGui::DragFloat("Sharpness", &postProcess.sharpness, 1.0f, 0.0f, 100.0f);
 			ImGui::DragFloat("powerExponent", &postProcess.powerExponent, 1.0f, 1.0f, 10.0f);
@@ -823,16 +850,16 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 			for (int i = 0; i < lights.size(); ++i)
 			{
 
-				lights[i].name = "light" + std::to_string(i);
-				lightNames.push_back(lights[i].name.c_str());
+				lights[i]->name = "light" + std::to_string(i);
+				lightNames.push_back(lights[i]->name.c_str());
 			}
 			ImGui::ListBox("Lights", &listbox_light_current, lightNames.data(), lightNames.size());
 			for (int i = 0; i < lights.size(); ++i)
 			{
-				if (lightNames[listbox_light_current] == lights[i].name.c_str())
+				if (lightNames[listbox_light_current] == lights[i]->name.c_str())
 				{
 					selectedLight = i;
-					lights[i].DrawGui("light");
+					lights[i]->DrawGui("light");
 				}
 			}
 			if (ImGui::Button("Add"))
@@ -860,16 +887,16 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 			for (int i = 0; i < pointLights.size(); ++i)
 			{
 
-				pointLights[i].name = "pointLight" + std::to_string(i);
-				lightNames.push_back(pointLights[i].name.c_str());
+				pointLights[i]->name = "pointLight" + std::to_string(i);
+				lightNames.push_back(pointLights[i]->name.c_str());
 			}
 			ImGui::ListBox("pointLights", &listbox_light_current, lightNames.data(), lightNames.size());
 			for (int i = 0; i < pointLights.size(); ++i)
 			{
-				if (lightNames[listbox_light_current] == pointLights[i].name.c_str())
+				if (lightNames[listbox_light_current] == pointLights[i]->name.c_str())
 				{
 					selectedPointLight = i;
-					pointLights[i].DrawGui("pointLight");
+					pointLights[i]->DrawGui("pointLight");
 				}
 			}
 			if (ImGui::Button("Add"))
@@ -988,7 +1015,6 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 		if (ImGui::CollapsingHeader("AI##2"))
 		{
 			grid.DrawGUI();
-			ImGui::Checkbox("DebugLineOfSight", &physicsHandler.bDebugLineOfSight);
 			ImGui::Checkbox("renderNavMesh", &bRenderNavMesh);
 			ImGui::Checkbox("renderNavMeshBounds", &bRenderNavMeshBounds);
 			if (ImGui::Button("Create grid"))
@@ -1097,7 +1123,7 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 }
 
 
-void Renderer::RenderToEnvProbe(EnvironmentProbe& probe,Camera& camera, std::vector<std::shared_ptr<Entity>>& entities, std::vector<Light>& lights, std::vector<Light>& pointLights, Sky& sky)
+void Renderer::RenderToEnvProbe(EnvironmentProbe& probe,Camera& camera, std::vector<std::shared_ptr<Entity>>& entities, std::vector<std::shared_ptr<Light>>& lights, std::vector<std::shared_ptr<Light>>& pointLights, Sky& sky)
 {
 	//UpdateBuffers(lights,pointLights, camera);
 	environmentProbe.UpdateCamera();
@@ -1289,14 +1315,14 @@ void Renderer::SkyRender(Camera& camera, Sky& sky,float envMapStrengthMultiplier
 	gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 }
 
-void Renderer::DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, GridClass& grid, PhysicsHandler& physicsHandler, std::vector<NavMeshClass>& navMeshes, std::vector<Light>& lights)
+void Renderer::DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, GridClass& grid, PhysicsHandler& physicsHandler, std::vector<NavMeshClass>& navMeshes, std::vector<std::shared_ptr<Light>>& lights)
 {
 
 	gfx11.deviceContext->PSSetShader(gfx11.testPS.GetShader(), nullptr, 0);
 	rectSmall.pos = DirectX::XMFLOAT3(2.88, -1.56, 2.878);
-	//gfx11.deviceContext->PSSetShaderResources(0, 1, &postProcess.SsrRenderTexture.shaderResourceView);
+	gfx11.deviceContext->PSSetShaderResources(0, 1, &postProcess.bloomRenderTexture.shaderResourceView);
 	//gfx11.deviceContext->PSSetShaderResources(0, 1, &postProcess.hbaoTexture.shaderResourceView);
-	gfx11.deviceContext->PSSetShaderResources(0, 1, &lights[0].m_shadowMap.shaderResourceView);
+	//gfx11.deviceContext->PSSetShaderResources(0, 1, &lights[0]->m_shadowMap.shaderResourceView);
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
 	gfx11.deviceContext->IASetInputLayout(gfx11.vs2D.GetInputLayout());
 	gfx11.deviceContext->VSSetShader(gfx11.vs2D.GetShader(), nullptr, 0);

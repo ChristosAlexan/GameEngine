@@ -1,7 +1,7 @@
 mass= 10
-posX= -1.61376
-posY= 1.38879e-05
-posZ= -0.636937
+posX= -1.61012
+posY= 1.43647e-05
+posZ= -4.77281
 rotX= 0
 rotY= 0
 rotZ= 0

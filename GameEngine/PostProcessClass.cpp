@@ -8,24 +8,25 @@ float lerp(float a, float b, float f)
 
 PostProcessClass::PostProcessClass()
 {
-	radius = 0.003f;
+	radius = 0.005f;
 	bias = 0.5f;
 	sharpness = 16.f;
-	powerExponent = 4.f;
+	powerExponent = 2.f;
 	metersToViewSpaceUnits = 1.0f;
-	largeScaleAO = 2.0f;
-	smallScaleAO = 2.0f;
+	largeScaleAO = 1.0f;
+	smallScaleAO = 1.0f;
 	decodeBias = 1.0f;
 	decodeScale = 1.0f;
 }
 
-void PostProcessClass::Initialize(DX11& gfx11, int width, int height)
+void PostProcessClass::Initialize(DX11& gfx11, int width, int height, float aspectRatio)
 {
-	BloomHorizontalBlurTexture.Initialize(gfx11.device.Get(), width/2, height/2, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	BloomVerticalBlurTexture.Initialize(gfx11.device.Get(), width/2, height/2, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	downSampleTexture.Initialize(gfx11.device.Get(), width/2, height/2, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	horizontalGaussianBlurTexture.Initialize(gfx11.device.Get(), width / 2, height / 2, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	verticalGaussianBlurTexture.Initialize(gfx11.device.Get(), width / 2, height / 2, DXGI_FORMAT_R16G16B16A16_FLOAT);
 
 	bloomRenderTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	rectBloom.Initialize(gfx11.device.Get(), gfx11.windowWidth, gfx11.windowHeight);
+	rectBloom.Initialize(gfx11.device.Get(), aspectRatio);
 
 	SsrRenderTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
 }
@@ -45,29 +46,41 @@ void PostProcessClass::BloomRender(DX11& gfx11, RectShape& rect, Camera& camera)
 
 	rect.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
 
-	//Vertical bloom
-	gfx11.deviceContext->RSSetViewports(1, &BloomVerticalBlurTexture.m_viewport);
-	BloomVerticalBlurTexture.SetRenderTarget(gfx11.deviceContext.Get(), BloomVerticalBlurTexture.m_depthStencilView);
-	BloomVerticalBlurTexture.ClearRenderTarget(gfx11.deviceContext.Get(), BloomVerticalBlurTexture.m_depthStencilView, 0, 0, 0, 1.0f);
+
+	//Guassian blur downSample
+	gfx11.deviceContext->RSSetViewports(1, &downSampleTexture.m_viewport);
+	downSampleTexture.SetRenderTarget(gfx11.deviceContext.Get(), downSampleTexture.m_depthStencilView);
+	downSampleTexture.ClearRenderTarget(gfx11.deviceContext.Get(), downSampleTexture.m_depthStencilView, 0, 0, 0, 1.0f);
 
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
-	gfx11.deviceContext->VSSetShader(gfx11.verticalBlurVS.GetShader(), NULL, 0);
-	gfx11.deviceContext->IASetInputLayout(gfx11.verticalBlurVS.GetInputLayout());
-	gfx11.deviceContext->PSSetShader(gfx11.verticalBlurPS.GetShader(), NULL, 0);
+	gfx11.deviceContext->VSSetShader(gfx11.gaussianBlurVS.GetShader(), NULL, 0);
+	gfx11.deviceContext->IASetInputLayout(gfx11.gaussianBlurVS.GetInputLayout());
+	gfx11.deviceContext->PSSetShader(gfx11.downSampleBlurPS.GetShader(), NULL, 0);
 	gfx11.deviceContext->PSSetShaderResources(0, 1, &bloomRenderTexture.shaderResourceView);
-
 	rectBloom.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
 
-	//Horizontal Bloom
-	gfx11.deviceContext->RSSetViewports(1, &BloomHorizontalBlurTexture.m_viewport);
-	BloomHorizontalBlurTexture.SetRenderTarget(gfx11.deviceContext.Get(), BloomHorizontalBlurTexture.m_depthStencilView);
-	BloomHorizontalBlurTexture.ClearRenderTarget(gfx11.deviceContext.Get(), BloomHorizontalBlurTexture.m_depthStencilView, 0, 0, 0, 1.0f);
+	//Guassian blur horizontal
+	gfx11.deviceContext->RSSetViewports(1, &horizontalGaussianBlurTexture.m_viewport);
+	horizontalGaussianBlurTexture.SetRenderTarget(gfx11.deviceContext.Get(), horizontalGaussianBlurTexture.m_depthStencilView);
+	horizontalGaussianBlurTexture.ClearRenderTarget(gfx11.deviceContext.Get(), horizontalGaussianBlurTexture.m_depthStencilView, 0, 0, 0, 1.0f);
 
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
-	gfx11.deviceContext->VSSetShader(gfx11.horizontalBlurVS.GetShader(), NULL, 0);
-	gfx11.deviceContext->IASetInputLayout(gfx11.horizontalBlurVS.GetInputLayout());
-	gfx11.deviceContext->PSSetShader(gfx11.horizontalBlurPS.GetShader(), NULL, 0);
-	gfx11.deviceContext->PSSetShaderResources(0, 1, &BloomVerticalBlurTexture.shaderResourceView);
+	gfx11.deviceContext->VSSetShader(gfx11.gaussianBlurVS.GetShader(), NULL, 0);
+	gfx11.deviceContext->IASetInputLayout(gfx11.gaussianBlurVS.GetInputLayout());
+	gfx11.deviceContext->PSSetShader(gfx11.horizontalGaussianBlurPS.GetShader(), NULL, 0);
+	gfx11.deviceContext->PSSetShaderResources(0, 1, &downSampleTexture.shaderResourceView);
+	rectBloom.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
+
+	//Guassian blur vertical
+	gfx11.deviceContext->RSSetViewports(1, &verticalGaussianBlurTexture.m_viewport);
+	verticalGaussianBlurTexture.SetRenderTarget(gfx11.deviceContext.Get(), verticalGaussianBlurTexture.m_depthStencilView);
+	verticalGaussianBlurTexture.ClearRenderTarget(gfx11.deviceContext.Get(), verticalGaussianBlurTexture.m_depthStencilView, 0, 0, 0, 1.0f);
+
+	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
+	gfx11.deviceContext->VSSetShader(gfx11.gaussianBlurVS.GetShader(), NULL, 0);
+	gfx11.deviceContext->IASetInputLayout(gfx11.gaussianBlurVS.GetInputLayout());
+	gfx11.deviceContext->PSSetShader(gfx11.verticalGaussianBlurPS.GetShader(), NULL, 0);
+	gfx11.deviceContext->PSSetShaderResources(0, 1, &horizontalGaussianBlurTexture.shaderResourceView);
 	rectBloom.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
 }
 
@@ -83,10 +96,10 @@ void PostProcessClass::SSR_Render(DX11& gfx11, RectShape& rect, Camera& camera, 
 	gfx11.deviceContext->PSSetShader(gfx11.ssrPS.GetShader(), NULL, 0);
 
 	gfx11.deviceContext->PSSetShaderResources(0, 1, &gBuffer.m_shaderResourceViewArray[0]);
-	gfx11.deviceContext->PSSetShaderResources(1, 1, &gBuffer.m_shaderResourceViewArray[3]);
-	gfx11.deviceContext->PSSetShaderResources(2, 1, &gBuffer.m_shaderResourceViewArray[1]);
-	gfx11.deviceContext->PSSetShaderResources(3, 1, &gBuffer.m_shaderResourceViewArray[4]);
-	gfx11.deviceContext->PSSetShaderResources(4, 1, &gBuffer.m_shaderResourceViewArray[2]);
+	gfx11.deviceContext->PSSetShaderResources(1, 1, &gBuffer.m_shaderResourceViewArray[1]);
+	gfx11.deviceContext->PSSetShaderResources(2, 1, &gBuffer.m_shaderResourceViewArray[2]);
+	gfx11.deviceContext->PSSetShaderResources(3, 1, &gBuffer.m_shaderResourceViewArray[3]);
+	gfx11.deviceContext->PSSetShaderResources(4, 1, &gBuffer.m_shaderResourceViewArray[4]);
 	
 	rect.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
 }
