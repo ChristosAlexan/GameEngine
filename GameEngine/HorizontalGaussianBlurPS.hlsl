@@ -1,3 +1,5 @@
+#define SIGMA 2.0f
+
 cbuffer cameraBuffer : register(b2)
 {
     float4x4 viewMatrix;
@@ -20,22 +22,35 @@ struct PS_INPUT
 Texture2D lowResBloom : TEXTURE : register(t0);
 SamplerState samplerState : register(s1);
 
+float Gaussian(float x, float sigma)
+{
+    return exp(-(x * x) / (2.0f * sigma * sigma)) / (sigma * sqrt(6.283185307179586f));
+}
+
+
 float4 main(PS_INPUT input) : SV_TARGET
 {
-    float2 texelSize = float2(1.0 / (screenSize.x / 2), 1.0 / (screenSize.y / 2));
-
-    // Use a softer, wider blur kernel (with more evenly spread weights)
-    float weights[9] = { 0.125, 0.135, 0.125, 0.110, 0.090, 0.070, 0.050, 0.030, 0.010 };
-
-    float4 sum = lowResBloom.Sample(samplerState, input.uv) * weights[0];
-
-    for (int i = 1; i < 9; i++)
+    float GaussianKernel[9] =
     {
-        sum += lowResBloom.Sample(samplerState, input.uv + texelSize * float2(i, 0)) * weights[i];
-        sum += lowResBloom.Sample(samplerState, input.uv - texelSize * float2(i, 0)) * weights[i];
-        sum += lowResBloom.Sample(samplerState, input.uv + texelSize * float2(0, i)) * weights[i];
-        sum += lowResBloom.Sample(samplerState, input.uv - texelSize * float2(0, i)) * weights[i];
+        Gaussian(-4.0f, SIGMA),
+        Gaussian(-3.0f, SIGMA),
+        Gaussian(-2.0f, SIGMA),
+        Gaussian(-1.0f, SIGMA),
+        Gaussian(0.0f, SIGMA),
+        Gaussian(1.0f, SIGMA),
+        Gaussian(2.0f, SIGMA),
+        Gaussian(3.0f, SIGMA),
+        Gaussian(4.0f, SIGMA)
+    };
+    
+    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    int2 texSize;
+    lowResBloom.GetDimensions(texSize.x, texSize.y);
+
+    for (int i = -4; i <= 4; i++)
+    {
+        result += lowResBloom.Sample(samplerState, input.uv + float2(i, 0) / texSize) * GaussianKernel[i + 4];
     }
 
-    return sum;
+    return result;
 }

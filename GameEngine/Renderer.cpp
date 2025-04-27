@@ -46,8 +46,8 @@ Renderer::Renderer()
 	renderDistance = 6000.0f;
 	shadowLightsDistance = 2000.0f;
 	deferredLightsDistance = 1000.0f;
-	bloomBrightness = 0.4f;
-	bloomStrength = 0.05f;
+	bloomBrightness = 0.3f;
+	bloomStrength = 0.25f;
 	shadowBias = 0.0000001;
 	aspectRatio = 0.0f;
 	ambientStrength = 0.2f;
@@ -433,6 +433,7 @@ void Renderer::UpdateBuffers(std::vector<std::shared_ptr<Light>>& lights, std::v
 	gfx11.cb_ps_cameraBuffer.data.nearPlane = camera.m_nearZ;
 	gfx11.cb_ps_cameraBuffer.data.farPlane = camera.m_farZ;
 
+
 	gfx11.cb_ps_screenEffectBuffer.data.gamma = gamma;
 	gfx11.cb_ps_screenEffectBuffer.data.bloomBrightness = bloomBrightness;
 	gfx11.cb_ps_screenEffectBuffer.data.bloomStrength = bloomStrength;
@@ -581,7 +582,7 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 		ClearScreen();
 		postProcess.BloomRender(gfx11, rect, camera);
 		ClearScreen();
-		//postProcess.SSR_Render(gfx11, rect, camera, gBuffer);
+		postProcess.SSR_Render(gfx11, rect, camera, gBuffer);
 	}
 	ClearScreen();
 
@@ -1320,7 +1321,7 @@ void Renderer::DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, G
 
 	gfx11.deviceContext->PSSetShader(gfx11.testPS.GetShader(), nullptr, 0);
 	rectSmall.pos = DirectX::XMFLOAT3(2.88, -1.56, 2.878);
-	gfx11.deviceContext->PSSetShaderResources(0, 1, &postProcess.bloomRenderTexture.shaderResourceView);
+	gfx11.deviceContext->PSSetShaderResources(0, 1, &postProcess.SsrRenderTexture.shaderResourceView);
 	//gfx11.deviceContext->PSSetShaderResources(0, 1, &postProcess.hbaoTexture.shaderResourceView);
 	//gfx11.deviceContext->PSSetShaderResources(0, 1, &lights[0]->m_shadowMap.shaderResourceView);
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
