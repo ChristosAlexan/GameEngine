@@ -13,36 +13,6 @@ Entity::Entity()
 	bFlagForDeletion = false;
 	isEmissive = false;
 }
-/*
-Entity::Entity(const Entity& other)
-{
-	model.isTextured = other->model.isTextured;
-	filePath = other->filePath;
-	model.animFiles = other->model.animFiles;
-
-	bRender = other->bRender;
-	isAI = other->isAI;
-	isAnimated = other->isAnimated;
-	physicsComponent.isCharacter = other->physicsComponent.isCharacter;
-	isfrustumEnabled = other->isfrustumEnabled;
-	isObstacle = other->isObstacle;
-	isPlayer = other->isPlayer;
-	model.isTransparent = other->model.isTransparent;
-	isWalkable = other->isWalkable;
-	physicsComponent.mass = other->physicsComponent.mass;
-	modelPos = other->modelPos;
-	physicsComponent.physicsShapeEnum = other->physicsComponent.physicsShapeEnum;
-	physicsComponent.physics_rot = other->physicsComponent.physics_rot;
-	physicsComponent.physics_scale = other->physicsComponent.physics_scale;
-	pos = other->pos;
-	scale = other->scale;
-	rot = other->rot;
-	model.bConvertCordinates = other->model.bConvertCordinates;
-	frustumScale = other->frustumScale;
-	isEmissive = other->isEmissive;
-	emissiveColor = other->emissiveColor;
-}
-*/
 
 void Entity::CopyData(const std::shared_ptr<Entity>& other)
 {
@@ -206,7 +176,7 @@ void Entity::Update(bool& runPhysics)
 	UpdatePhysics(runPhysics);
 }
 
-void Entity::Draw(Camera& camera, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, float screenFrustumDepth, Texture* text, bool bCheckFrustum)
+void Entity::Draw(ID3D11DeviceContext* deviceContext, Camera& camera, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, float screenFrustumDepth, Texture* text, bool bCheckFrustum)
 {
 
 	DirectX::XMMATRIX matrix_scale;
@@ -308,7 +278,7 @@ void Entity::Draw(Camera& camera, const DirectX::XMMATRIX& viewMatrix, const Dir
 		{
 			if (isAnimated)
 				model.Update();
-			model.Draw(worldMatrix, viewMatrix, projectionMatrix, text);
+			model.Draw(deviceContext, worldMatrix, viewMatrix, projectionMatrix, text);
 		}
 		else
 		{
@@ -328,14 +298,14 @@ void Entity::Draw(Camera& camera, const DirectX::XMMATRIX& viewMatrix, const Dir
 				{
 					if (isAnimated)
 						model.Update();
-					model.Draw(worldMatrix, viewMatrix, projectionMatrix, text);
+					model.Draw(deviceContext, worldMatrix, viewMatrix, projectionMatrix, text);
 				}
 			}
 			else
 			{
 				if (isAnimated)
 					model.Update();
-				model.Draw(worldMatrix, viewMatrix, projectionMatrix, text);
+				model.Draw(deviceContext, worldMatrix, viewMatrix, projectionMatrix, text);
 			}
 		}
 

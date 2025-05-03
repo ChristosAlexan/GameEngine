@@ -22,7 +22,7 @@ public:
 	void CreatePhysicsComponent(physx::PxPhysics& physics, physx::PxScene& scene);
 	void UpdatePhysics(bool& runPhysics);
 	void Update(bool& runPhysics);
-	void Draw(Camera& camera, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, float screenFrustumDepth, Texture* text = nullptr, bool bCheckFrustum = true);
+	void Draw(ID3D11DeviceContext* deviceContext, Camera& camera, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, float screenFrustumDepth, Texture* text = nullptr, bool bCheckFrustum = true);
 	void FrustumDraw(Camera& camera, ID3D11DeviceContext* deviceContex, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, bool bCheckFrustum);
 	void AttachController(physx::PxController& characterController,bool& runPhysics);
 	void SetupAttachment(Entity* entity);

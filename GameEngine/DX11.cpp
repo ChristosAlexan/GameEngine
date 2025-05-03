@@ -2,6 +2,7 @@
 #include <dxgi1_6.h>
 #include <math.h>
 #include <random>
+#include "ShadersGlobals.h"
 
 DX11::DX11()
 {
@@ -276,6 +277,7 @@ bool DX11::InitializeDirectX(HWND hwnd)
 		hr = this->device->CreateBlendState(&blendDesc, this->deferredLightBlendState.GetAddressOf());
 		COM_ERROR_IF_FAILED(hr, "Failed to create blend state.");
 
+
 		//Create sampler description for sampler state
 		CD3D11_SAMPLER_DESC sampDesc(D3D11_DEFAULT);
 		sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -348,10 +350,10 @@ bool DX11::InitializeShaders()
 		{"TEXCOORD", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  },
 	};
 	UINT numElements = ARRAYSIZE(layout);
-	initVSShader(&vs2D, device, L"Vs2D.cso", layout, &numElements);
-	initVSShader(&testVS, device, L"TestVertex.cso", layout, &numElements);
-	initVSShader(&deferredLightPassVS, device, L"DeferredLightPassVS.cso", layout, &numElements);
-	initVSShader(&ssrVS, device, L"SSR_VS.cso", layout, &numElements);
+	initVSShader(&GFX_GLOBALS::vs2D, device, L"Vs2D.cso", layout, &numElements);
+	initVSShader(&GFX_GLOBALS::testVS, device, L"TestVertex.cso", layout, &numElements);
+	initVSShader(&GFX_GLOBALS::deferredLightPassVS, device, L"DeferredLightPassVS.cso", layout, &numElements);
+	initVSShader(&GFX_GLOBALS::ssrVS, device, L"SSR_VS.cso", layout, &numElements);
 
 	D3D11_INPUT_ELEMENT_DESC layoutInstanced[] =
 	{
@@ -360,7 +362,7 @@ bool DX11::InitializeShaders()
 		{"TEXCOORD", 1, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_INSTANCE_DATA, 1  }
 	};
 	numElements = ARRAYSIZE(layoutInstanced);
-	initVSShader(&instancedVS, device, L"InstancedVS.cso", layoutInstanced, &numElements);
+	initVSShader(&GFX_GLOBALS::instancedVS, device, L"InstancedVS.cso", layoutInstanced, &numElements);
 
 	D3D11_INPUT_ELEMENT_DESC deferredLayout[] =
 	{
@@ -372,8 +374,8 @@ bool DX11::InitializeShaders()
 	};
 	numElements = ARRAYSIZE(deferredLayout);
 
-	initVSShader(&volumetricLightVS, device, L"VolumetricLightVS.cso", deferredLayout, &numElements);
-	initVSShader(&deferredVS, device, L"DeferredVS.cso", deferredLayout, &numElements);
+	initVSShader(&GFX_GLOBALS::volumetricLightVS, device, L"VolumetricLightVS.cso", deferredLayout, &numElements);
+	initVSShader(&GFX_GLOBALS::deferredVS, device, L"DeferredVS.cso", deferredLayout, &numElements);
 
 	D3D11_INPUT_ELEMENT_DESC pbrLayout[] =
 	{
@@ -381,7 +383,7 @@ bool DX11::InitializeShaders()
 		{"TEXCOORD", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  },
 	};
 	numElements = ARRAYSIZE(pbrLayout);
-	initVSShader(&pbrVS, device, L"PbrVS.cso", pbrLayout, &numElements);
+	initVSShader(&GFX_GLOBALS::pbrVS, device, L"PbrVS.cso", pbrLayout, &numElements);
 
 	D3D11_INPUT_ELEMENT_DESC animlayout[] =
 	{
@@ -394,9 +396,9 @@ bool DX11::InitializeShaders()
 		{"BONE_IDs", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_UINT,1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  },
 	};
 	numElements = ARRAYSIZE(animlayout);
-	initVSShader(&animVS, device, L"AnimVS.cso", animlayout, &numElements);
-	initVSShader(&depthAnimVS, device, L"DepthAnimVS.cso", animlayout, &numElements);
-	initVSShader(&animDeferredVS, device, L"AnimDeferredVS.cso", animlayout, &numElements);
+	initVSShader(&GFX_GLOBALS::animVS, device, L"AnimVS.cso", animlayout, &numElements);
+	initVSShader(&GFX_GLOBALS::depthAnimVS, device, L"DepthAnimVS.cso", animlayout, &numElements);
+	initVSShader(&GFX_GLOBALS::animDeferredVS, device, L"AnimDeferredVS.cso", animlayout, &numElements);
 
 	D3D11_INPUT_ELEMENT_DESC depthLayout[] =
 	{
@@ -404,8 +406,8 @@ bool DX11::InitializeShaders()
 		{"TEXCOORD", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  },
 	};
 	numElements = ARRAYSIZE(depthLayout);
-	initVSShader(&depthVS, device, L"DepthVS.cso", depthLayout, &numElements);
-	initVSShader(&gaussianBlurVS, device, L"GaussianBlurVS.cso", depthLayout, &numElements);
+	initVSShader(&GFX_GLOBALS::depthVS, device, L"DepthVS.cso", depthLayout, &numElements);
+	initVSShader(&GFX_GLOBALS::gaussianBlurVS, device, L"GaussianBlurVS.cso", depthLayout, &numElements);
 
 	D3D11_INPUT_ELEMENT_DESC shadowLayout[] =
 	{
@@ -415,34 +417,36 @@ bool DX11::InitializeShaders()
 	};
 	numElements = ARRAYSIZE(shadowLayout);
 
-	initVSShader(&shadowVS, device, L"ShadowVS.cso", shadowLayout, &numElements);
+	initVSShader(&GFX_GLOBALS::shadowVS, device, L"ShadowVS.cso", shadowLayout, &numElements);
 
-	initPSShader(&alphaBlendPS, device, L"AlphaBlendPS.cso");
-	initPSShader(&depthPS, device, L"DepthPS.cso");
-	initPSShader(&testPS, device, L"TestPixel.cso");
-	initPSShader(&colorPS, device, L"ColorPS.cso");
-	initPSShader(&lightPS, device, L"LightPS.cso");
-	initPSShader(&pbrPS, device, L"PbrPS.cso");
-	initPSShader(&deferredLightPassPS, device, L"DeferredLightPassPS.cso");
-	initPSShader(&deferredSpotLightPS, device, L"DeferredSpotLightPS.cso");
-	initPSShader(&transparentPbrPS, device, L"TransparentPbrPS.cso");
-	initPSShader(&cubeMapPS, device, L"CubeMapPS.cso");
-	initPSShader(&irradianceConvPS, device, L"IrradianceConvolutionPS.cso");
-	initPSShader(&brdfPS, device, L"BrdfPS.cso");
-	initPSShader(&prefilterPS, device, L"PrefilterPS.cso");
-	initPSShader(&envProbePS, device, L"envProbePS.cso");
-	initPSShader(&horizontalGaussianBlurPS, device, L"HorizontalGaussianBlurPS.cso");
-	initPSShader(&verticalGaussianBlurPS, device, L"VerticalGaussianBlurPS.cso");
-	initPSShader(&downSampleBlurPS, device, L"DownSampleBlurPS.cso");
-	initPSShader(&bloomLightPS, device, L"BloomLightPS.cso");
-	initPSShader(&volumetricLightPS, device, L"VolumetricLightPS.cso");
-	initPSShader(&postProccessPS, device, L"PostProccessPS.cso");
-	initPSShader(&volumeGPassPS, device, L"VolumeGPassPS.cso");
-	initPSShader(&deferredPS, device, L"DeferredPS.cso");
-	initPSShader(&shadowPS, device, L"ShadowPS.cso");
-	initPSShader(&ssaoPS, device, L"SsaoPS.cso");
-	initPSShader(&skyPS, device, L"SkyPS.cso");
-	initPSShader(&ssrPS, device, L"SSR_PS.cso");
+	initPSShader(&GFX_GLOBALS::alphaBlendPS, device, L"AlphaBlendPS.cso");
+	initPSShader(&GFX_GLOBALS::depthPS, device, L"DepthPS.cso");
+	initPSShader(&GFX_GLOBALS::testPS, device, L"TestPixel.cso");
+	initPSShader(&GFX_GLOBALS::colorPS, device, L"ColorPS.cso");
+	initPSShader(&GFX_GLOBALS::lightPS, device, L"LightPS.cso");
+	initPSShader(&GFX_GLOBALS::pbrPS, device, L"PbrPS.cso");
+	initPSShader(&GFX_GLOBALS::deferredLightPassPS, device, L"DeferredLightPassPS.cso");
+	initPSShader(&GFX_GLOBALS::deferredSpotLightPS, device, L"DeferredSpotLightPS.cso");
+	initPSShader(&GFX_GLOBALS::transparentPbrPS, device, L"TransparentPbrPS.cso");
+	initPSShader(&GFX_GLOBALS::cubeMapPS, device, L"CubeMapPS.cso");
+	initPSShader(&GFX_GLOBALS::irradianceConvPS, device, L"IrradianceConvolutionPS.cso");
+	initPSShader(&GFX_GLOBALS::brdfPS, device, L"BrdfPS.cso");
+	initPSShader(&GFX_GLOBALS::prefilterPS, device, L"PrefilterPS.cso");
+	initPSShader(&GFX_GLOBALS::envProbePS, device, L"envProbePS.cso");
+	initPSShader(&GFX_GLOBALS::horizontalGaussianBlurPS, device, L"HorizontalGaussianBlurPS.cso");
+	initPSShader(&GFX_GLOBALS::verticalGaussianBlurPS, device, L"VerticalGaussianBlurPS.cso");
+	initPSShader(&GFX_GLOBALS::downSampleBlurPS, device, L"DownSampleBlurPS.cso");
+	initPSShader(&GFX_GLOBALS::bloomLightPS, device, L"BloomLightPS.cso");
+	initPSShader(&GFX_GLOBALS::volumetricLightPS, device, L"VolumetricLightPS.cso");
+	initPSShader(&GFX_GLOBALS::postProccessPS, device, L"PostProccessPS.cso");
+	initPSShader(&GFX_GLOBALS::volumeGPassPS, device, L"VolumeGPassPS.cso");
+	initPSShader(&GFX_GLOBALS::deferredPS, device, L"DeferredPS.cso");
+	initPSShader(&GFX_GLOBALS::shadowPS, device, L"ShadowPS.cso");
+	initPSShader(&GFX_GLOBALS::skyPS, device, L"SkyPS.cso");
+	initPSShader(&GFX_GLOBALS::ssrPS, device, L"SSR_PS.cso");
+	initPSShader(&GFX_GLOBALS::deferredForwardCombinePS, device, L"DeferredForwardCombinePS.cso");
+	initPSShader(&GFX_GLOBALS::shadowHorizontalGaussianBlurPS, device, L"ShadowHorizontalPS.cso");
+	initPSShader(&GFX_GLOBALS::shadowVerticalGaussianBlurPS, device, L"ShadowVerticalPS.cso");
 	return true;
 }
 

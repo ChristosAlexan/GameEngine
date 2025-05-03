@@ -15,7 +15,7 @@ cbuffer lightBuffer : register(b0)
 cbuffer shadowsbuffer : register(b9)
 {
     float4 shadowsSoftnessBias[NO_LIGHTS];
-    double bias;
+    float bias;
 }
 cbuffer ssrBuffer : register(b10)
 {
@@ -59,7 +59,8 @@ TextureCube prefilterMap : TEXTURE : register(t5);
 Texture2D brdfTexture : TEXTURE : register(t6);
 TextureCube irradianceMap : TEXTURE : register(t7);
 Texture2D depthTexture : TEXTURE : register(t8);
-Texture2D depthMapTextures[NO_LIGHTS] : TEXTURE : register(t9);
+Texture2D postProcess : TEXTURE : register(t9);
+Texture2D depthMapTextures[NO_LIGHTS] : TEXTURE : register(t10);
 //Texture2D depthMapTextures[NO_LIGHTS] : TEXTURE : register(t7);
 
 SamplerState SampleTypeWrap : register(s0);
@@ -85,6 +86,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     if (dist < depth)
         discard;
     
+    float4 postProcessColor = postProcess.Load(input.inPosition.xyz);
     float4 albedo = objTexture.Sample(SampleTypeWrap, input.inTexCoord);
     //float4 albedo = float4(pow(objTexture.Sample(SampleTypeWrap, input.inTexCoord), gamma));
     float3 normal = normalTexture.Sample(SampleTypeWrap, input.inTexCoord).rgb;
@@ -159,7 +161,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     float3 color = ambient + Lo;
    
   
-    return float4(color, 0.4);
+    return float4(color + postProcessColor.rgb, 0.4);
    
 }
 

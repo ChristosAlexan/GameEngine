@@ -21,8 +21,8 @@ float4 main(PS_INPUT input) : SV_TARGET
     
     float dist = input.inPosition.z / input.inPosition.w;
     //float3 depth = depthTexture.SampleCmp(objSamplerState, input.inTexCoord.xy, input.inPosition.z);
-    if (dist < depth)
-        discard;
+    //if (dist < depth)
+        //discard;
     
   
     sampleColor = sampleColor / (sampleColor + float3(1.0, 1.0f, 1.0f));

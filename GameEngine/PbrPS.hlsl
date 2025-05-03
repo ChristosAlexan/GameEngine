@@ -26,7 +26,7 @@ cbuffer cameraBuffer : register(b2)
 cbuffer shadowsbuffer : register(b9)
 {
     float4 shadowsSoftnessBias[NO_LIGHTS];
-    double bias;
+    float bias;
 }
 
 cbuffer lightCull : register(b3)
@@ -56,13 +56,13 @@ Texture2D objTexture : TEXTURE : register(t0);
 Texture2D normalTexture : TEXTURE : register(t1);
 Texture2D roughnessMetalicTexture : TEXTURE : register(t2);
 Texture2D worldPositionTexture : TEXTURE : register(t3);
-Texture2D distToCameraTexture : TEXTURE : register(t4);
-TextureCube prefilterMap : TEXTURE : register(t5);
-Texture2D brdfTexture : TEXTURE : register(t6);
-TextureCube irradianceMap : TEXTURE : register(t7);
-Texture2D uvTexture : TEXTURE : register(t8);
-Texture2D depthMapTextures[NO_LIGHTS] : TEXTURE : register(t9);
-//Texture2D depthMapTextures[NO_LIGHTS] : TEXTURE : register(t7);
+Texture2D depthTexture : TEXTURE : register(t4);
+Texture2D specularEmmission : TEXTURE : register(t5);
+TextureCube prefilterMap : TEXTURE : register(t6);
+Texture2D brdfTexture : TEXTURE : register(t7);
+TextureCube irradianceMap : TEXTURE : register(t8);
+Texture2D sunShadowTexture : TEXTURE : register(t9);
+Texture2D depthMapTextures[NO_LIGHTS] : TEXTURE : register(t10);
 
 SamplerState SampleTypeWrap : register(s0);
 SamplerState SampleTypeClamp : register(s1);
@@ -89,23 +89,23 @@ float3 ReinhardToneMapping(float3 color, float exposure)
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
+    float emission = specularEmmission.Sample(SampleTypeWrap, input.inTexCoord).a;
+    float3 bumpNormal = normalTexture.Sample(SampleTypeWrap, input.inTexCoord).rgb;
+    if (dot(bumpNormal, bumpNormal) < 0.001)
+        discard;
+
     uint2 textureSize;
     // Retrieve dimensions of the world position texture
     worldPositionTexture.GetDimensions(textureSize.x, textureSize.y);
     int2 sampleIndices = int2(input.inTexCoord * float2(textureSize.x, textureSize.y));
     
     float4 albedo = objTexture.Sample(SampleTypeWrap, input.inTexCoord);
-    //float4 albedo = float4(pow(objTexture.Sample(SampleTypeWrap, input.inTexCoord), gamma));
-    float3 bumpNormal = normalTexture.Sample(SampleTypeWrap, input.inTexCoord).rgb;
-    if (bumpNormal.r == -1 && bumpNormal.g == -1 && bumpNormal.b == -1)
-    {
-        float3 color = albedo.rgb;
-        return float4(color, 1.0f);
-    }
+    
     float metallic = roughnessMetalicTexture.Sample(SampleTypeWrap, input.inTexCoord).b;
     float roughness = roughnessMetalicTexture.Sample(SampleTypeWrap, input.inTexCoord).g;
     float4 worldPos = worldPositionTexture.Load(int3(sampleIndices,0));
     
+    float3 sunShadows = sunShadowTexture.Sample(SampleTypeWrap, input.inTexCoord);
     
     float3 V = normalize(cameraPos.xyz - worldPos.xyz);
 
@@ -115,6 +115,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     F0 = lerp(F0, albedo.rgb, metallic);
     float3 Lo = float3(0.0f, 0.0f, 0.0f);
     
+ 
     if (lightsSize > 0)
     {
         [unroll(NO_LIGHTS)]
@@ -126,6 +127,13 @@ float4 main(PS_INPUT input) : SV_TARGET
             float distance = length(dynamicLightPosition[i].xyz - worldPos.xyz);
             if (distance < RadiusAndcutOff[i].x)
             {
+                if (emission == 1.0f)
+                {
+                    Lo = float3(1, 1, 1);
+                    return float4(Lo, 1.0f);
+
+                }
+                
                 if (lightTypeEnableShadows[i].x == 0.0)
                     Lo += pointLight(input, albedo.rgb, dynamicLightPosition[i].xyz, dynamicLightColor[i].rgb, RadiusAndcutOff[i].y, bumpNormal, roughness, metallic, V, F0, worldPos.xyz);
                 else if (lightTypeEnableShadows[i].x == 1.0)
@@ -141,7 +149,7 @@ float4 main(PS_INPUT input) : SV_TARGET
                     if (lightTypeEnableShadows[i].y == 1.0f)
                     {
                         if(i==0)
-                            Lo += dirLight(input, albedo.rgb, bumpNormal, roughness, metallic, V, F0, worldPos.xyz, i) * Shadows(worldPos, depthMapTextures[i], input, i);
+                            Lo += dirLight(input, albedo.rgb, bumpNormal, roughness, metallic, V, F0, worldPos.xyz, i) * sunShadows; //* Shadows(worldPos, depthMapTextures[i], input, i);
                         else
                             Lo *= Shadows(worldPos, depthMapTextures[i], input, i);
                     }
@@ -149,6 +157,14 @@ float4 main(PS_INPUT input) : SV_TARGET
                         Lo += dirLight(input, albedo.rgb, bumpNormal, roughness, metallic, V, F0, worldPos.xyz, i);
                 }
 
+            }
+            else
+            {
+                if (emission == 1.0f)
+                {
+                    Lo = float3(0, 0, 0);
+                    return float4(Lo, 1.0f);
+                }
             }
         }
       

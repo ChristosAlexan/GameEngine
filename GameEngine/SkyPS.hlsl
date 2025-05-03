@@ -35,7 +35,6 @@ SamplerState objSamplerState : SAMPLER : register(s0);
 float4 main(PS_INPUT input) : SV_TARGET
 {
     float depth = depthTexture.Load(input.inPosition.xyz).z;
-    
     float dist = input.inPosition.z / input.inPosition.w;
     if (dist < depth)
         discard;

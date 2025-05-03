@@ -6,9 +6,6 @@ PhysicsDebugDraw::PhysicsDebugDraw()
 
 void PhysicsDebugDraw::DebugDraw(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ConstantBuffer<CB_VS_vertexshader>* cb_vs_vertexshader, const physx::PxDebugLine& line, Camera& camera)
 {
-	this->mDevice = device;
-	this->mDeviceContext = deviceContext;
-
 	DirectX::XMMATRIX transformationMatrix = DirectX::XMMatrixIdentity();
 	DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity();
 	deviceContext->VSSetConstantBuffers(0, 1, cb_vs_vertexshader->GetBuffer().GetAddressOf());
@@ -22,12 +19,12 @@ void PhysicsDebugDraw::DebugDraw(ID3D11Device* device, ID3D11DeviceContext* devi
 
 	if (vertices.size() > 0)
 	{
-		mesh = std::make_unique<Mesh>(Mesh(mDevice, mDeviceContext, vertices, DirectX::XMMatrixIdentity()));
+		mesh = std::make_unique<Mesh>(Mesh(device, deviceContext, vertices, DirectX::XMMatrixIdentity()));
 		//mesh = new Mesh(mDevice, mDeviceContext, vertices, DirectX::XMMatrixIdentity());
-		this->mDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		cb_vs_vertexshader->UpdateBuffer();
 
-		mesh->Draw();
+		mesh->Draw(deviceContext);
 		vertices.clear();
 		//delete mesh;
 	}

@@ -11,7 +11,7 @@ ModelLoader::ModelLoader()
 	isDDS = true;
 }
 
-bool ModelLoader::Initialize(const std::string filePath, ID3D11Device* device, ID3D11DeviceContext* deviceContex, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, bool isAnimated)
+bool ModelLoader::Initialize(const std::string filePath, ID3D11Device* device, ID3D11DeviceContext* deviceContext, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, bool isAnimated)
 {
 
 	this->directory = StringHelper::GetDirectoryFromPath(filePath);
@@ -33,21 +33,21 @@ bool ModelLoader::Initialize(const std::string filePath, ID3D11Device* device, I
 	_temporary = false;
 	_playTime = 0.0f;
 
-	this->device = device;
-	this->deviceContext = deviceContex;
-	this->cb_vs_vertexshader = cb_vs_vertexshader;
-	deviceContext->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader.GetBuffer().GetAddressOf());
+	//this->device = device;
+	//this->deviceContext = deviceContex;
+	this->cb_vs_vertexshader = &cb_vs_vertexshader;
+
 
 	//OutputDebugStringA(("isDDS = "+ std::to_string(isDDS) + "\n").c_str());
 	if (!_filePath.empty())
 	{
 		if (loadAsync)
 		{
-			_asyncLoad = std::async(std::launch::async, &ModelLoader::LoadModel, this, _filePath);
+			_asyncLoad = std::async(std::launch::async, &ModelLoader::LoadModel, this, device, deviceContext, _filePath);
 		}
 		else
 		{
-			if (!LoadModel(_filePath))
+			if (!LoadModel(device, deviceContext, _filePath))
 			{
 				return false;
 			}
@@ -59,7 +59,7 @@ bool ModelLoader::Initialize(const std::string filePath, ID3D11Device* device, I
 					for (int j = 0; j < meshes[i].textures.size(); ++j)
 					{
 						if (isDDS)
-							meshes[i].textures[j].CreateTextureDDSFromWIC(device, deviceContex, meshes[i].textures[j].texturePath);
+							meshes[i].textures[j].CreateTextureDDSFromWIC(device, deviceContext, meshes[i].textures[j].texturePath);
 						else
 							meshes[i].textures[j].CreateTextureWIC(device, meshes[i].textures[j].path);
 					}
@@ -73,7 +73,7 @@ bool ModelLoader::Initialize(const std::string filePath, ID3D11Device* device, I
 	return true;
 }
 
-bool ModelLoader::LoadModel(const std::string filePath)
+bool ModelLoader::LoadModel(ID3D11Device* device, ID3D11DeviceContext* deviceContext, const std::string filePath)
 {
 	
 	_curScene = importers.size();
@@ -97,7 +97,7 @@ bool ModelLoader::LoadModel(const std::string filePath)
 
 	m_GlobalInverseTransform = DirectX::XMMatrixTranspose(DirectX::XMMATRIX(&mTransform.a1));
 
-	this->ProcessNode(scenes[_curScene]->mRootNode, scenes[_curScene], DirectX::XMMatrixIdentity());
+	this->ProcessNode(device, deviceContext, scenes[_curScene]->mRootNode, scenes[_curScene], DirectX::XMMatrixIdentity());
 	
 	texturesLoaded = true;
 
@@ -218,7 +218,7 @@ bool ModelLoader::LoadAnimation(const std::string& filePath)
 	return true;
 }
 
-void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene, const DirectX::XMMATRIX& parentTransformMatrix)
+void ModelLoader::ProcessNode(ID3D11Device* device, ID3D11DeviceContext* deviceContext, aiNode* node, const aiScene* scene, const DirectX::XMMATRIX& parentTransformMatrix)
 {
 	DirectX::XMMATRIX nodeTransformMatrix = DirectX::XMMATRIX(&node->mTransformation.a1) * parentTransformMatrix;
 	
@@ -226,15 +226,15 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene, const DirectX:
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
-		meshes.push_back(this->ProcessMesh(mesh, scene, nodeTransformMatrix));
+		meshes.push_back(this->ProcessMesh(device, deviceContext, mesh, scene, nodeTransformMatrix));
 	}
 	for (UINT i = 0; i < node->mNumChildren; i++)
 	{
-		this->ProcessNode(node->mChildren[i], scene, nodeTransformMatrix);
+		this->ProcessNode(device, deviceContext, node->mChildren[i], scene, nodeTransformMatrix);
 	}
 }
 
-Mesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, const DirectX::XMMATRIX& transformMatrix)
+Mesh ModelLoader::ProcessMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, aiMesh* mesh, const aiScene* scene, const DirectX::XMMATRIX& transformMatrix)
 {
 	std::vector<Vertex> vertices;
 	std::vector<DWORD> indices;
@@ -342,14 +342,14 @@ Mesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, const DirectX:
 		if (isTextured)
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			std::vector<Texture> diffuseTextures = FindMaterials(material, aiTextureType::aiTextureType_DIFFUSE, scene);
+			std::vector<Texture> diffuseTextures = FindMaterials(device, deviceContext, material, aiTextureType::aiTextureType_DIFFUSE, scene);
 			textures.insert(textures.end(), diffuseTextures.begin(), diffuseTextures.end());
 	
 	
-			std::vector<Texture> normalTextures = FindMaterials(material, aiTextureType::aiTextureType_NORMALS, scene);
+			std::vector<Texture> normalTextures = FindMaterials(device, deviceContext, material, aiTextureType::aiTextureType_NORMALS, scene);
 			textures.insert(textures.end(), normalTextures.begin(), normalTextures.end());
 	
-			std::vector<Texture> roughnessMetallicTextures = FindMaterials(material, aiTextureType::aiTextureType_UNKNOWN, scene);
+			std::vector<Texture> roughnessMetallicTextures = FindMaterials(device, deviceContext, material, aiTextureType::aiTextureType_UNKNOWN, scene);
 			textures.insert(textures.end(), roughnessMetallicTextures.begin(), roughnessMetallicTextures.end());
 		}
 	}
@@ -360,10 +360,10 @@ Mesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, const DirectX:
 	{
 		bonesLoaded = LoadBones(mesh, bones, vertices);
 
-		return Mesh(this->device, this->deviceContext, vertices, indices, textures, bones, transformMatrix);
+		return Mesh(device, deviceContext, vertices, indices, textures, bones, transformMatrix);
 	}
 
-	return Mesh(this->device, this->deviceContext, vertices, indices, textures, transformMatrix);
+	return Mesh(device, deviceContext, vertices, indices, textures, transformMatrix);
 }
 
 TextureStorageType ModelLoader::DetermineTextureStorageType(const aiScene* pScene, aiMaterial* pMat, unsigned int index, aiTextureType textureType)
@@ -383,7 +383,7 @@ TextureStorageType ModelLoader::DetermineTextureStorageType(const aiScene* pScen
 	return TextureStorageType::None;
 }
 
-std::vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* pMaterial, aiTextureType textureType, const aiScene* pScene)
+std::vector<Texture> ModelLoader::LoadMaterialTextures(ID3D11Device* device, aiMaterial* pMaterial, aiTextureType textureType, const aiScene* pScene)
 {
 	std::vector<Texture> materialTextures;
 	TextureStorageType storetype = TextureStorageType::Invalid;
@@ -413,7 +413,7 @@ std::vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* pMaterial, ai
 			{
 				std::string filename = this->directory + '\\' + path.C_Str();
 				
-				Texture diskTexture(this->device.Get(),this->deviceContext.Get(), filename, textureType);
+				Texture diskTexture(device, filename, textureType);
 				materialTextures.push_back(diskTexture);
 				break;
 			}
@@ -423,7 +423,7 @@ std::vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* pMaterial, ai
 	return materialTextures;
 }
 
-std::vector<Texture> ModelLoader::FindMaterials(aiMaterial* pMaterial, aiTextureType textureType, const aiScene* pScene)
+std::vector<Texture> ModelLoader::FindMaterials(ID3D11Device* device, ID3D11DeviceContext* deviceContext, aiMaterial* pMaterial, aiTextureType textureType, const aiScene* pScene)
 {
 	std::vector<Texture> materialTextures;
 	TextureStorageType storetype = TextureStorageType::Invalid;
@@ -453,7 +453,7 @@ std::vector<Texture> ModelLoader::FindMaterials(aiMaterial* pMaterial, aiTexture
 			{
 				std::string filename = this->directory + '\\' + path.C_Str();
 
-				Texture diskTexture(this->device.Get(), this->deviceContext.Get(), filename, textureType);
+				Texture diskTexture(device, deviceContext, filename, textureType);
 				materialTextures.push_back(diskTexture);
 				break;
 			}
@@ -463,8 +463,11 @@ std::vector<Texture> ModelLoader::FindMaterials(aiMaterial* pMaterial, aiTexture
 	return materialTextures;
 }
 
-void ModelLoader::Draw(const DirectX::XMMATRIX& worldMatrix, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, Texture* text)
+void ModelLoader::Draw(ID3D11DeviceContext* deviceContext, const DirectX::XMMATRIX& worldMatrix, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, Texture* text)
 {
+	if (!this->cb_vs_vertexshader)
+		return;
+	deviceContext->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader->GetBuffer().GetAddressOf());
 	if (isAnimated)
 	{
 		DirectX::XMFLOAT4X4 _transforms;
@@ -478,32 +481,32 @@ void ModelLoader::Draw(const DirectX::XMMATRIX& worldMatrix, const DirectX::XMMA
 	
 		for (unsigned int i = 0; i < transforms.size(); ++i)
 		{
-			this->cb_vs_vertexshader.data.bones_transform[i] = transforms[i];
+			this->cb_vs_vertexshader->data.bones_transform[i] = transforms[i];
 		}
 	}
 
-	this->deviceContext->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader.GetBuffer().GetAddressOf());
+	deviceContext->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader->GetBuffer().GetAddressOf());
 
-	this->cb_vs_vertexshader.data.viewMatrix = DirectX::XMMatrixTranspose(viewMatrix);
-	this->cb_vs_vertexshader.data.projectionMatrix = DirectX::XMMatrixTranspose(projectionMatrix);
+	this->cb_vs_vertexshader->data.viewMatrix = DirectX::XMMatrixTranspose(viewMatrix);
+	this->cb_vs_vertexshader->data.projectionMatrix = DirectX::XMMatrixTranspose(projectionMatrix);
 
 	for (int i = 0; i < meshes.size(); ++i)
 	{
 		if (!bConvertCordinates)
 		{
-			this->cb_vs_vertexshader.data.worldMatrix = meshes[i].GetTranformMatrix() * DirectX::XMMatrixTranspose(worldMatrix);
+			this->cb_vs_vertexshader->data.worldMatrix = meshes[i].GetTranformMatrix() * DirectX::XMMatrixTranspose(worldMatrix);
 		}	
 		else
 		{
-			this->cb_vs_vertexshader.data.worldMatrix = DirectX::XMMatrixTranspose(meshes[i].GetTranformMatrix() * worldMatrix);
+			this->cb_vs_vertexshader->data.worldMatrix = DirectX::XMMatrixTranspose(meshes[i].GetTranformMatrix() * worldMatrix);
 
 		}
 			
 		
 
-		this->cb_vs_vertexshader.UpdateBuffer();
+		this->cb_vs_vertexshader->UpdateBuffer();
 
-		meshes[i].Draw(text);
+		meshes[i].Draw(deviceContext, text);
 
 	}
 }

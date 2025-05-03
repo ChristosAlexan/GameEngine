@@ -14,7 +14,7 @@ public:
 	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContex, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader,int width, int height);
 	Camera* GetCamera();
 	void UpdateCamera();
-	void Draw(Camera& camera);
+	void Draw(ID3D11DeviceContext* deviceContext, Camera& camera);
 	void DrawGui(std::string name);
 
 	DirectX::XMMATRIX viewMatrices[6];

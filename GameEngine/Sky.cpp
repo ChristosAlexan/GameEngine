@@ -47,5 +47,5 @@ void Sky::Draw(ID3D11DeviceContext* deviceContext, Camera& camera, ConstantBuffe
 	matrix_rotate = DirectX::XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z);
 	matrix_translate = DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 	worldMatrix = matrix_scale * matrix_rotate * matrix_translate;
-	model.Draw(worldMatrix, camera.GetViewMatrix(), camera.GetProjectionMatrix());
+	model.Draw(deviceContext, worldMatrix, camera.GetViewMatrix(), camera.GetProjectionMatrix());
 }

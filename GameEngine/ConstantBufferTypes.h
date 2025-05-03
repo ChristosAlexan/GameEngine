@@ -118,7 +118,7 @@ struct CB_PS_skyBuffer
 struct CB_PS_shadowsBuffer
 {
 	DirectX::XMFLOAT4 shadowsSoftnessBias[NO_LIGHTS];
-	double bias;
+	float bias;
 };
 
 struct CB_PS_inverseCoordsBuffer

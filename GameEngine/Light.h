@@ -17,7 +17,7 @@ public:
 	void UpdateCamera();
 	Camera* GetCamera();
 	void DrawGui(std::string name);
-	void Draw(Camera& camera);
+	void Draw(ID3D11DeviceContext* deviceContext, Camera& camera);
 
 	void DrawVolume(Camera& camera);
 

@@ -1,9 +1,3 @@
-cbuffer pointLightBuffer : register(b1)
-{
-    float4 pointdynamicLightPosition; // Dynamic point light position
-    float4 pointdynamicLightColor; // Dynamic point light color
-};
-
 cbuffer cameraBuffer : register(b2)
 {
     float4x4 viewMatrix; // View matrix (transposed in CPU)
@@ -19,92 +13,102 @@ cbuffer cameraBuffer : register(b2)
     float farPlane;
 };
 
-struct PSInput
+struct PS_INPUT
 {
     float4 Position : SV_POSITION; // Clip space position
     float2 TexCoord : TEXCOORD; // UV coordinates
 };
 
 // Input textures and buffers
-Texture2D gAlbedo : register(t0); // Scene color (rendered image)
-Texture2D gNormal : register(t1); // G-buffer normals
+Texture2D albedoTexture : register(t0); // Scene color (rendered image)
+Texture2D normalTexture : register(t1); // G-buffer normals
 Texture2D gPosition : register(t3); // Depth buffer
-Texture2D SceneDepth : register(t4); // Depth buffer
+Texture2D sceneDepth : register(t4); // Depth buffer
 SamplerState samplerState : register(s0);
 
-// Raymarch parameters
-#define MAX_RAY_MARCH_STEPS 64
-#define RAY_MARCH_EPSILON 0.001
-#define REFLECT_RADIUS 10.0f
 
-// Functions to transform screen space coordinates to world space
-float4 ScreenToWorld(float2 screenPos)
-{
-    float4 clipSpacePos = float4(screenPos.x * 2.0f - 1.0f, (1.0f - screenPos.y) * 2.0f - 1.0f, 1.0f, 1.0f);
-    float4 worldPos = mul(clipSpacePos, (projectionMatrix));
-    worldPos.xyz /= worldPos.w;
-    return mul(worldPos, (viewMatrix));
-}
+static const int MAX_STEPS = 50;
+static const float STEP_SIZE = 0.2f;
+static const float DEPTH_TOLERANCE = 0.01f;
+static const float BIAS = 0.01f;
 
-// Raymarching function
-bool RayMarch(float3 rayOrigin, float3 rayDir, out float3 hitPos, out float3 hitNormal)
+// Reconstruct view-space position from screen UV and depth
+float3 ReconstructViewPos(float2 uv, float depth)
 {
-    hitPos = rayOrigin;
-    hitNormal = float3(0, 0, 0);
-    
-    for (int i = 0; i < MAX_RAY_MARCH_STEPS; i++)
-    {
-        // Sample the position and normal textures at the current ray march position
-        float3 samplePos = hitPos.xyz;
-        float3 sampleNormal = gNormal.Sample(samplerState, hitPos.xy).xyz;
-        
-        // Check if the ray hits a surface (using a simple depth threshold)
-        if (length(hitPos.xyz - rayOrigin) > REFLECT_RADIUS)
-        {
-            hitNormal = sampleNormal;
-            return true;
-        }
-        
-        // March the ray forward
-        hitPos += rayDir * RAY_MARCH_EPSILON;
-    }
-    return false;
-}
-
-// SSR function
-float4 ScreenSpaceReflection(float2 screenPos, float3 viewDir)
-{
-    // Get the world position and normal at the current pixel
-    float4 position = gPosition.Sample(samplerState, screenPos); // G-buffer position texture
-    float3 normal = gNormal.Sample(samplerState, screenPos).xyz;
-    float3 albedo = gAlbedo.Sample(samplerState, screenPos).xyz;
-    
-    // Calculate reflection direction using the normal and view direction
-    float3 reflectionDir = reflect(viewDir, normal);
-    
-    // Cast the reflection ray into screen space
-    float3 reflectionPos = position.xyz + reflectionDir * REFLECT_RADIUS;
-    
-    // Raymarch to find the reflected surface
-    float3 hitPos, hitNormal;
-    if (RayMarch(reflectionPos, reflectionDir, hitPos, hitNormal))
-    {
-        // Calculate reflection color (could add a fresnel effect or other enhancements here)
-        float3 reflectColor = gAlbedo.Sample(samplerState, hitPos.xy).xyz;
-        return float4(reflectColor, 1.0f);
-    }
-    
-    // Return a default value if no reflection is found
-    return float4(0.0f, 0.0f, 0.0f, 1.0f);
+    float4 clipPos = float4(uv * 2.0f - 1.0f, depth, 1.0f);
+    float4 viewPos = mul(clipPos, inverseProjectionMatrix);
+    return viewPos.xyz / viewPos.w;
 }
 
 // Main pixel shader
-float4 main(float2 screenPos : TEXCOORD) : SV_Target
+float4 main(PS_INPUT input) : SV_TARGET
 {
-    // Get view direction for SSR calculation (camera position to current pixel position)
-    float3 worldPos = ScreenToWorld(screenPos);
-    float3 viewDir = normalize(cameraPos.xyz - worldPos.xyz);
-    
-    // Compute the SSR effect
-    return ScreenSpaceReflection(screenPos, viewDir);
+    float2 uv = input.TexCoord;
+    // === Sample G-buffer data ===
+    float sampledDepth = sceneDepth.Sample(samplerState, uv).r;
+    if (sampledDepth >= 1.0f)
+        return albedoTexture.Sample(samplerState, uv); // Skip skybox
+
+    float3 viewPos = ReconstructViewPos(uv, sampledDepth);
+
+    float3 packedNormal = normalTexture.Sample(samplerState, uv).xyz;
+    float3 normal = normalize(packedNormal * 2.0f - 1.0f); // Decode normal from [0,1] to [-1,1]
+
+    // Optional: transform normal to view-space (if you want full correctness)
+     normal = mul(normal, (float3x3)viewMatrix);
+
+    float3 viewDir = normalize(-viewPos);
+    float3 reflectionDir = reflect(viewDir, normal);
+
+    // === Initialize ray ===
+    float3 rayPos = viewPos + reflectionDir * BIAS;
+    float3 rayStep = reflectionDir * STEP_SIZE;
+
+    bool hitFound = false;
+    float2 hitUV = float2(0.0f, 0.0f);
+
+    // === Ray march loop ===
+    for (int i = 0; i < MAX_STEPS; ++i)
+    {
+        rayPos += rayStep;
+
+        // Project to screen space
+        float4 projPos = mul(float4(rayPos, 1.0f), projectionMatrix);
+        projPos /= projPos.w;
+        float2 rayUV = projPos.xy * 0.5f + 0.5f;
+
+        // Screen bounds check
+        if (rayUV.x < 0.0f || rayUV.x > 1.0f || rayUV.y < 0.0f || rayUV.y > 1.0f)
+            break;
+
+        float sceneDepthAtRay = sceneDepth.Sample(samplerState, rayUV).r;
+        float3 rayViewPos = ReconstructViewPos(rayUV, sceneDepthAtRay);
+
+        float depthDiff = rayViewPos.z - rayPos.z;
+
+        if (abs(depthDiff) < DEPTH_TOLERANCE)
+        {
+            hitFound = true;
+            hitUV = rayUV;
+            break;
+        }
+    }
+
+    // === Reflection color ===
+    float4 reflectionColor;
+    if (hitFound)
+    {
+        reflectionColor = albedoTexture.Sample(samplerState, hitUV);
+    }
+    else
+    {
+        reflectionColor = float4(0.0f, 0.0f, 0.0f, 1.0f); // fallback to black
+    }
+
+    // === Original scene color ===
+    float4 originalColor = albedoTexture.Sample(samplerState, uv);
+
+    // === Blend reflection with scene ===
+    float reflectionStrength = hitFound ? 0.5f : 0.0f;
+    return lerp(originalColor, reflectionColor, reflectionStrength);
 }

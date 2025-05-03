@@ -42,7 +42,7 @@ struct PS_OUTPUT
     float4 roughnessMetalic : SV_Target2;
     float4 worldPosition : SV_Target3;
     float4 depth : SV_TARGET4;
-    float4 ssao_normal : SV_Target5;
+    float4 specularEmmision : SV_Target5;
 };
 
 Texture2D albedoTexture : TEXTURE : register(t0);
@@ -55,36 +55,40 @@ PS_OUTPUT main(PS_INPUT input) : SV_TARGET
 {
     PS_OUTPUT output;
     
-   
   
-    
-    if (bEmissive == 0.0f)
+    output.albedo = albedoTexture.Sample(SampleTypeWrap, input.inTexCoord);
+    if (output.albedo.a < 0.95)
     {
-        output.albedo = albedoTexture.Sample(SampleTypeWrap, input.inTexCoord);
-        if (output.albedo.a < 0.95)
-        {
-            discard;
-        }
-       
+        discard;
+    }
+    if (bEmissive)
+    {
+        output.specularEmmision = float4(1, 1, 1, 1);
+        output.albedo = float4(1, 1, 1, 1);
+
+    }
         
-       output.normal = normalTexture.Sample(SampleTypeWrap, input.inTexCoord);
-       output.normal = (output.normal * 2.0f) - 1.0f;
-       float3 bumpNormal = (output.normal.x * input.inTangent) + (output.normal.y * input.inBinormal) + (output.normal.z * input.inNormal);
-       bumpNormal = normalize(bumpNormal);
-       output.normal = float4(bumpNormal, 1.0f);
+    else
+        output.specularEmmision = float4(0, 0, 0, 0);
+
+
+    float3 tangentNormal = normalTexture.Sample(SampleTypeWrap, input.inTexCoord).xyz;
+    tangentNormal = tangentNormal * 2.0f - 1.0f; // Unpack from [0,1] to [-1,1]
+    // Build TBN matrix (must come from vertex shader)
+    float3x3 TBN = float3x3(input.inTangent, input.inBinormal, input.inNormal);
+    // Transform tangent space normal to world space
+    float3 worldNormal = normalize(mul(tangentNormal, TBN));
+    output.normal = float4(worldNormal, 1.0f);
+
     
-       output.roughnessMetalic = roughnessMetalicTexture.Sample(SampleTypeWrap, input.inTexCoord);
-    }
-    else if(bEmissive == 1.0f)
-    {
-        output.albedo = float4(color.r, color.g, color.b, 1.0f);
-        output.normal = float4(-1, -1, -1, 1.0f);
-        //output.roughnessMetalic = float4(-1, -1, -1, 1.0f);
-    }
+    output.roughnessMetalic = roughnessMetalicTexture.Sample(SampleTypeWrap, input.inTexCoord);
+
+
     output.worldPosition = float4(input.inWorldPos, 1.0f);
     
-    float depth = input.inPosition.z / input.inPosition.w; // Clip space depth
+    float depth = (input.inPosition.z / input.inPosition.w);
     output.depth = float4(depth, depth, depth, 1.0f);
    
+    
     return output;
 }

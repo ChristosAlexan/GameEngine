@@ -28,13 +28,13 @@ EnvironmentProbe::EnvironmentProbe()
 	index = 0;
 }
 
-bool EnvironmentProbe::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContex, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, int width, int height)
+bool EnvironmentProbe::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, int width, int height)
 {
 	recalculate = true;
-	if(!model.Initialize(".//Data/Objects/skyDome.obj", device, deviceContex, cb_vs_vertexshader, false))
+	if(!model.Initialize(".//Data/Objects/skyDome.obj", device, deviceContext, cb_vs_vertexshader, false))
 		return false;
 
-	model.LoadModel(".//Data/Objects/skyDome.obj");
+	model.LoadModel(device, deviceContext, ".//Data/Objects/skyDome.obj");
 	
 	return true;
 }
@@ -60,7 +60,7 @@ void EnvironmentProbe::UpdateCamera()
 		}
 }
 
-void EnvironmentProbe::Draw(Camera& camera)
+void EnvironmentProbe::Draw(ID3D11DeviceContext* deviceContext, Camera& camera)
 {
 	DirectX::XMMATRIX m_scale = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
 	DirectX::XMMATRIX m_rotate = DirectX::XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z);
@@ -68,7 +68,7 @@ void EnvironmentProbe::Draw(Camera& camera)
 
 	const DirectX::XMMATRIX worldMatrix = m_scale * m_rotate * m_translate;
 
-	model.Draw(worldMatrix, camera.GetViewMatrix(), camera.GetProjectionMatrix());
+	model.Draw(deviceContext, worldMatrix, camera.GetViewMatrix(), camera.GetProjectionMatrix());
 }
 
 void EnvironmentProbe::DrawGui(std::string name)

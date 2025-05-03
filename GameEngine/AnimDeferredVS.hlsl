@@ -9,14 +9,6 @@ cbuffer constantBuffer : register(b0)
     float4x4 bones[100];
 };
 
-
-//cbuffer lightsBuffer : register(b1)
-//{
-//    float4x4 lightViewMatrix[NO_LIGHTS];
-//    float4x4 lightProjectionMatrix[NO_LIGHTS];
-//    uint lightsSize;
-//};
-
 struct VS_INPUT
 {
     float3 inPos : POSITION;

@@ -124,7 +124,7 @@ private:
 	bool bRenderCollision;
 	float aspectRatio;
 
-	RenderTexture forwardRenderTexture;
+	RenderTexture forwardRenderTexture, deferredForwardCombinedTexture;
 
 	AppTimer timer;
 

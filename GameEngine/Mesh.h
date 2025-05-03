@@ -16,15 +16,15 @@
 class Mesh
 {
 public:
-	Mesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext, std::vector<Vertex>& vertices, DirectX::XMMATRIX transformMatrix);
-	Mesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, std::vector<Texture>& textures, DirectX::XMMATRIX transformMatrix);
-	Mesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, std::vector<Texture>& textures, std::vector<VertexBoneData>& bones, DirectX::XMMATRIX transformMatrix);
+	Mesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, std::vector<Vertex>& vertices, DirectX::XMMATRIX transformMatrix);
+	Mesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, std::vector<Texture>& textures, DirectX::XMMATRIX transformMatrix);
+	Mesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, std::vector<Texture>& textures, std::vector<VertexBoneData>& bones, DirectX::XMMATRIX transformMatrix);
 
 	void LoadTextures(std::vector<Texture>& textures);
 
 	void Clear();
 
-	void Draw(Texture* text = nullptr);
+	void Draw(ID3D11DeviceContext* deviceContext, Texture* text = nullptr);
 	const DirectX::XMMATRIX& GetTranformMatrix();
 
 	VertexBuffer<Vertex> vertexBuffer;
@@ -36,7 +36,7 @@ public:
 	std::unique_ptr<ID3D11ShaderResourceView*> normalTexture;
 	std::unique_ptr<ID3D11ShaderResourceView*> roughMetalTexture;
 private:
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
+	//Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
 	DirectX::XMMATRIX transformMatrix;
 
 	Texture tex;

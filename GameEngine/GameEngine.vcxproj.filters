@@ -291,6 +291,12 @@
     <ClCompile Include="Controller.cpp">
       <Filter>Characters\Source</Filter>
     </ClCompile>
+    <ClCompile Include="ConstantBufferGlobals.cpp">
+      <Filter>GFX\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadersGlobals.cpp">
+      <Filter>GFX\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowContainer.h">
@@ -518,6 +524,12 @@
     <ClInclude Include="Controller.h">
       <Filter>Characters\Header files</Filter>
     </ClInclude>
+    <ClInclude Include="ConstantBuffersGlobals.h">
+      <Filter>GFX\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadersGlobals.h">
+      <Filter>GFX\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\TestVertex.hlsl">
@@ -625,9 +637,6 @@
     <FxCompile Include="DeferredSpotLightPS.hlsl">
       <Filter>Shaders\Pixel</Filter>
     </FxCompile>
-    <FxCompile Include="SsaoPS.hlsl">
-      <Filter>Shaders\Pixel</Filter>
-    </FxCompile>
     <FxCompile Include="SkyPS.hlsl">
       <Filter>Shaders\Pixel</Filter>
     </FxCompile>
@@ -640,9 +649,6 @@
     <FxCompile Include="AlphaBlendPS.hlsl">
       <Filter>Shaders\Pixel</Filter>
     </FxCompile>
-    <FxCompile Include="SSR_PS.hlsl">
-      <Filter>Shaders\Pixel</Filter>
-    </FxCompile>
     <FxCompile Include="SSR_VS.hlsl">
       <Filter>Shaders\Vertex</Filter>
     </FxCompile>
@@ -653,6 +659,12 @@
       <Filter>Shaders\Pixel</Filter>
     </FxCompile>
     <FxCompile Include="VerticalGaussianBlurPS.hlsl">
+      <Filter>Shaders\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="SSR_PS.hlsl">
+      <Filter>Shaders\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="DeferredForwardCombinePS.hlsl">
       <Filter>Shaders\Pixel</Filter>
     </FxCompile>
   </ItemGroup>

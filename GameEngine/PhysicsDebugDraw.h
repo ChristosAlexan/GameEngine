@@ -15,8 +15,6 @@ public:
 	PhysicsDebugDraw();
 	void DebugDraw(ID3D11Device* device, ID3D11DeviceContext* deviceContext, ConstantBuffer<CB_VS_vertexshader>* cb_vs_vertexshader, const physx::PxDebugLine& line, Camera& camera);
 
-	Microsoft::WRL::ComPtr<ID3D11Device> mDevice;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> mDeviceContext;
 	std::vector<Vertex> vertices;
 	std::unique_ptr<Mesh> mesh;
 	//Mesh* mesh;

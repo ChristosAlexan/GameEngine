@@ -43,10 +43,11 @@ Texture2D objTexture : TEXTURE : register(t0);
 Texture2D normalTexture : TEXTURE : register(t1);
 Texture2D roughnessMetalicTexture : TEXTURE : register(t2);
 Texture2D worldPositionTexture : TEXTURE : register(t3);
-Texture2D distToCameraTexture : TEXTURE : register(t4);
-TextureCube prefilterMap : TEXTURE : register(t5);
-Texture2D brdfTexture : TEXTURE : register(t6);
-TextureCube irradianceMap : TEXTURE : register(t7);
+Texture2D depthTexture : TEXTURE : register(t4);
+Texture2D specularEmmission : TEXTURE : register(t5);
+TextureCube prefilterMap : TEXTURE : register(t6);
+Texture2D brdfTexture : TEXTURE : register(t7);
+TextureCube irradianceMap : TEXTURE : register(t8);
 
 SamplerState SampleTypeWrap : register(s0);
 SamplerState objSamplerStateMip : SAMPLER : register(s2);
@@ -66,18 +67,30 @@ float3 ReinhardToneMapping(float3 color, float exposure)
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
+    
     float2 texCoords = input.inPosition.xy / float2(screenSize.x, screenSize.y);
+    float4 bumpNormal = normalTexture.Sample(SampleTypeWrap, texCoords);
+    float emission = specularEmmission.Sample(SampleTypeWrap, texCoords).a;
+    
+    if (dot(bumpNormal, bumpNormal) < 0.001)
+        discard;
+
     
     float4 albedo = objTexture.Sample(SampleTypeWrap, texCoords);
-    float4 bumpNormal = normalTexture.Sample(SampleTypeWrap, texCoords);
-    if (bumpNormal.r == -1 && bumpNormal.g == -1 && bumpNormal.b == -1)
-    {
-        float3 color = albedo.rgb;
-        return float4(color, 1.0f);
-    }
+    
+       
+
     float metallic = roughnessMetalicTexture.Sample(SampleTypeWrap, texCoords).b;
     float roughness = roughnessMetalicTexture.Sample(SampleTypeWrap, texCoords).g;
     float3 worldPos = worldPositionTexture.Sample(SampleTypeWrap, texCoords).xyz;
+    
+    if (emission == 1.0f)
+    {
+        bumpNormal = float4(1, 1, 1, 1);
+        metallic = 0;
+        roughness = 0;
+
+    }
     
     float3 V = normalize(cameraPos.xyz - worldPos);
 
@@ -87,7 +100,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     F0 = lerp(F0, albedo.rgb, metallic);
     float3 Lo = float3(0.0f, 0.0f, 0.0f);
     
-    Lo = pointLight(input, albedo.rgb, pointdynamicLightPosition.xyz, pointdynamicLightColor.rgb, pointRadiusAndcutOff.y, bumpNormal, roughness, metallic, V, F0, worldPos);
+    Lo = pointLight(input, albedo.rgb, pointdynamicLightPosition.xyz, pointdynamicLightColor.rgb, pointRadiusAndcutOff.y, bumpNormal.xyz, roughness, metallic, V, F0, worldPos);
     
     
     

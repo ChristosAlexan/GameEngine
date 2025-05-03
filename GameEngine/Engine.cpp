@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "ConstantBuffersGlobals.h"
 
 using namespace DirectX;
 
@@ -109,54 +110,73 @@ void Engine::Update(int width, int height)
 
 
 
-	if (!camera.PossessCharacter)
-	{
+	//if (!camera.PossessCharacter)
+	//{
 		if (!renderer.environmentProbe.recalculate)
 		{
 			renderer.bGuiEnabled = true;
-			while (!mouse.EventBufferIsEmpty())
-			{
-				MouseEvent me = mouse.ReadEvent();
 
-				if (mouse.IsMiddleDown())
+			if (!camera.PossessCharacter)
+			{
+				while (!mouse.EventBufferIsEmpty())
 				{
-					if (me.GetType() == MouseEvent::EventType::RAW_MOVE)
+					MouseEvent me = mouse.ReadEvent();
+
+					if (mouse.IsMiddleDown())
 					{
-						camera.AdjustRotation(static_cast<float>(me.GetPosY()) * 0.004f, static_cast<float>(me.GetPosX()) * 0.004f, 0.0f, true);
+						if (me.GetType() == MouseEvent::EventType::RAW_MOVE)
+						{
+							camera.AdjustRotation(static_cast<float>(me.GetPosY()) * 0.004f, static_cast<float>(me.GetPosX()) * 0.004f, 0.0f, true);
+						}
 					}
 				}
-			}
 
-			if (keyboard.KeyIsPressed(VK_SHIFT))
-			{
-				cameraSpeed = 0.01;
-			}
-			if (keyboard.KeyIsPressed('W'))
-			{
-				camera.AdjustPosition(camera.GetForwardVector() * cameraSpeed * dt);
-			}
-			if (keyboard.KeyIsPressed('S'))
-			{
-				camera.AdjustPosition(camera.GetBackwardVector() * cameraSpeed * dt);
-			}
+				if (keyboard.KeyIsPressed(VK_SHIFT))
+				{
+					cameraSpeed = 0.01;
+				}
+				if (keyboard.KeyIsPressed('W'))
+				{
+					camera.AdjustPosition(camera.GetForwardVector() * cameraSpeed * dt);
+				}
+				if (keyboard.KeyIsPressed('S'))
+				{
+					camera.AdjustPosition(camera.GetBackwardVector() * cameraSpeed * dt);
+				}
 
-			if (keyboard.KeyIsPressed('A'))
-			{
-				camera.AdjustPosition(camera.GetLeftVector() * cameraSpeed * dt);
+				if (keyboard.KeyIsPressed('A'))
+				{
+					camera.AdjustPosition(camera.GetLeftVector() * cameraSpeed * dt);
 
-			}
-			if (keyboard.KeyIsPressed('D'))
-			{
-				camera.AdjustPosition(camera.GetRightVector() * cameraSpeed * dt);
-			}
+				}
+				if (keyboard.KeyIsPressed('D'))
+				{
+					camera.AdjustPosition(camera.GetRightVector() * cameraSpeed * dt);
+				}
 
-			if (keyboard.KeyIsPressed(VK_SPACE))
-			{
-				camera.AdjustPosition(0.0f, cameraSpeed * dt, 0.0f);
+				if (keyboard.KeyIsPressed(VK_SPACE))
+				{
+					camera.AdjustPosition(0.0f, cameraSpeed * dt, 0.0f);
+				}
+				if (keyboard.KeyIsPressed('Q'))
+				{
+					camera.AdjustPosition(0.0f, -cameraSpeed * dt, 0.0f);
+				}
+
+
+
+				ClipCursor(NULL);
+				while (ShowCursor(TRUE) < 0);
 			}
-			if (keyboard.KeyIsPressed('Q'))
+			else
 			{
-				camera.AdjustPosition(0.0f, -cameraSpeed * dt, 0.0f);
+				renderer.bGuiEnabled = false;
+				RECT rect;
+				GetClientRect(this->render_window.GetHWND(), &rect);
+				MapWindowPoints(this->render_window.GetHWND(), nullptr, reinterpret_cast<POINT*>(&rect), 2);
+				ClipCursor(&rect);
+				
+				while (ShowCursor(FALSE) >= 0);
 			}
 		}
 		
@@ -170,21 +190,18 @@ void Engine::Update(int width, int height)
 		}
 		
 
-	
-		ClipCursor(NULL);
-		while (ShowCursor(TRUE) < 0);
 
-	}
-	else
-	{
-		renderer.bGuiEnabled = false;
-		RECT rect;
-		GetClientRect(this->render_window.GetHWND(), &rect);
-		MapWindowPoints(this->render_window.GetHWND(), nullptr, reinterpret_cast<POINT*>(&rect), 2);
-		ClipCursor(&rect);
-		
-		while (ShowCursor(FALSE) >= 0);
-	}
+	//}
+	//else
+	//{
+	//	//renderer.bGuiEnabled = false;
+	//	//RECT rect;
+	//	//GetClientRect(this->render_window.GetHWND(), &rect);
+	//	//MapWindowPoints(this->render_window.GetHWND(), nullptr, reinterpret_cast<POINT*>(&rect), 2);
+	//	//ClipCursor(&rect);
+	//	//
+	//	//while (ShowCursor(FALSE) >= 0);
+	//}
 
 	if (keyboard.KeyIsPressed(VK_F7))
 	{
@@ -394,7 +411,7 @@ void Engine::AddEntity(std::string& _inName,bool& isAnimated, bool& bConvertCord
 {
 	entities[entities.size() - 1]->model.isDDS = renderer.isDDS;
 	entities[entities.size() - 1]->model.bConvertCordinates = bConvertCordinates;
-	entities[entities.size() - 1]->Intitialize(_inName, renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), renderer.gfx11.cb_vs_vertexshader, isAnimated);
+	entities[entities.size() - 1]->Intitialize(_inName, renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), GFX_GLOBALS::cb_vs_vertexshader, isAnimated);
 }
 
 void Engine::AddPhysicsComp(std::shared_ptr<Entity>& entity)
@@ -432,14 +449,14 @@ void Engine::AddLight()
 	}
 	width = 2048 * 4;
 	height = 2048 * 4;
-	lights[lights.size() - 1]->Initialize(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), renderer.gfx11.cb_vs_vertexshader);
+	lights[lights.size() - 1]->Initialize(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), GFX_GLOBALS::cb_vs_vertexshader);
 	lights[lights.size() - 1]->m_shadowMap.InitializeShadow(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), width, height, DXGI_FORMAT_R16_FLOAT);
 	lights[lights.size() - 1]->SetupCamera(renderer.gfx11.windowWidth, renderer.gfx11.windowHeight);
 }
 void Engine::AddPointLight()
 {
 	pointlights.push_back(std::make_shared<Light>());
-	pointlights[pointlights.size() - 1]->Initialize(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), renderer.gfx11.cb_vs_vertexshader);
+	pointlights[pointlights.size() - 1]->Initialize(renderer.gfx11.device.Get(), renderer.gfx11.deviceContext.Get(), GFX_GLOBALS::cb_vs_vertexshader);
 }
 
 void Engine::AddCollisionObject()
@@ -649,7 +666,7 @@ void Engine::AIHandler(float& dt)
 			async_navMesh.resize(AIEntities.size());
 			grid.bInitGrid = false;
 
-			grid.Initialize(renderer.gfx11.device, renderer.gfx11.deviceContext, DirectX::XMMatrixIdentity(), renderer.gfx11.cb_vs_vertexshader);
+			grid.Initialize(renderer.gfx11.device, renderer.gfx11.deviceContext, DirectX::XMMatrixIdentity(), GFX_GLOBALS::cb_vs_vertexshader);
 		}
 
 		if (!grid.bRayCastStage)

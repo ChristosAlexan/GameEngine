@@ -5,10 +5,10 @@
 
 RenderTexture::RenderTexture()
 {
-	m_renderTargetTexture = nullptr;
-	m_renderTargetView = nullptr;
-	shaderResourceView = nullptr;
-	m_depthStencilView = nullptr;
+	//m_renderTargetTexture.Get() = nullptr;
+	//m_renderTargetView = nullptr;
+	//shaderResourceView = nullptr;
+	//m_depthStencilView = nullptr;
 }
 bool RenderTexture::Initialize(ID3D11Device* device, int width, int height, DXGI_FORMAT format, bool bMapData, D3D11_SUBRESOURCE_DATA* data)
 {
@@ -38,9 +38,9 @@ bool RenderTexture::Initialize(ID3D11Device* device, int width, int height, DXGI
 		if (!init)
 		{
 			if (bMapData)
-				hr = device->CreateTexture2D(&textureDesc, data, &m_renderTargetTexture);
+				hr = device->CreateTexture2D(&textureDesc, data, m_renderTargetTexture.GetAddressOf());
 			else
-				hr = device->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
+				hr = device->CreateTexture2D(&textureDesc, NULL, m_renderTargetTexture.GetAddressOf());
 
 			COM_ERROR_IF_FAILED(hr, "Failed to create texture");
 		}
@@ -50,7 +50,7 @@ bool RenderTexture::Initialize(ID3D11Device* device, int width, int height, DXGI
 		renderTargetViewDesc.Format = textureDesc.Format;
 		renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 		renderTargetViewDesc.Texture2D.MipSlice = 0;
-		hr = device->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
+		hr = device->CreateRenderTargetView(m_renderTargetTexture.Get(), &renderTargetViewDesc, &m_renderTargetView);
 		COM_ERROR_IF_FAILED(hr, "Failed to CreateRenderTargetView");
 
 		//Setup the description of the shader resource view
@@ -58,7 +58,7 @@ bool RenderTexture::Initialize(ID3D11Device* device, int width, int height, DXGI
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-		hr = device->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &shaderResourceView);
+		hr = device->CreateShaderResourceView(m_renderTargetTexture.Get(), &shaderResourceViewDesc, &shaderResourceView);
 		COM_ERROR_IF_FAILED(hr, "Failed to CreateShaderResourceView");
 
 
@@ -109,7 +109,7 @@ bool RenderTexture::InitializeShadow(ID3D11Device* device, ID3D11DeviceContext* 
 
 		if (!init)
 		{
-			hr = device->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
+			hr = device->CreateTexture2D(&textureDesc, NULL, m_renderTargetTexture.GetAddressOf());
 			COM_ERROR_IF_FAILED(hr, "Failed to create texture");
 		}
 
@@ -118,7 +118,7 @@ bool RenderTexture::InitializeShadow(ID3D11Device* device, ID3D11DeviceContext* 
 		renderTargetViewDesc.Format = textureDesc.Format;
 		renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 		renderTargetViewDesc.Texture2D.MipSlice = 0;
-		hr = device->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
+		hr = device->CreateRenderTargetView(m_renderTargetTexture.Get(), &renderTargetViewDesc, &m_renderTargetView);
 		COM_ERROR_IF_FAILED(hr, "Failed to CreateRenderTargetView");
 
 		//Setup the description of the shader resource view
@@ -126,7 +126,7 @@ bool RenderTexture::InitializeShadow(ID3D11Device* device, ID3D11DeviceContext* 
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 		shaderResourceViewDesc.Texture2D.MipLevels = -1;
-		hr = device->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &shaderResourceView);
+		hr = device->CreateShaderResourceView(m_renderTargetTexture.Get(), &shaderResourceViewDesc, &shaderResourceView);
 		COM_ERROR_IF_FAILED(hr, "Failed to CreateShaderResourceView");
 
 		deviceContext->GenerateMips(shaderResourceView);
@@ -162,7 +162,7 @@ bool RenderTexture::InitializeShadow(ID3D11Device* device, ID3D11DeviceContext* 
 		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		depthStencilViewDesc.Texture2D.MipSlice = 0;
-		hr = device->CreateDepthStencilView(m_texture, &depthStencilViewDesc, &m_depthStencilView);
+		hr = device->CreateDepthStencilView(m_texture.Get(), &depthStencilViewDesc, &m_depthStencilView);
 		COM_ERROR_IF_FAILED(hr, "Failed to create CreateDepthStencilView");
 
 		// Setup the viewport for rendering.
@@ -211,7 +211,7 @@ bool RenderTexture::Initialize(ID3D11Device* device, ID3D11DeviceContext* device
 
 		if (!init)
 		{
-			hr = device->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
+			hr = device->CreateTexture2D(&textureDesc, NULL, m_renderTargetTexture.GetAddressOf());
 			COM_ERROR_IF_FAILED(hr, "Failed to create texture");
 		}
 
@@ -220,7 +220,7 @@ bool RenderTexture::Initialize(ID3D11Device* device, ID3D11DeviceContext* device
 		renderTargetViewDesc.Format = textureDesc.Format;
 		renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 		renderTargetViewDesc.Texture2D.MipSlice = 0;
-		hr = device->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
+		hr = device->CreateRenderTargetView(m_renderTargetTexture.Get(), &renderTargetViewDesc, &m_renderTargetView);
 		COM_ERROR_IF_FAILED(hr, "Failed to CreateRenderTargetView");
 
 		//Setup the description of the shader resource view
@@ -228,7 +228,7 @@ bool RenderTexture::Initialize(ID3D11Device* device, ID3D11DeviceContext* device
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 		shaderResourceViewDesc.Texture2D.MipLevels = -1;
-		hr = device->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &shaderResourceView);
+		hr = device->CreateShaderResourceView(m_renderTargetTexture.Get(), &shaderResourceViewDesc, &shaderResourceView);
 		COM_ERROR_IF_FAILED(hr, "Failed to CreateShaderResourceView");
 		
 		deviceContext->GenerateMips(shaderResourceView);
@@ -285,7 +285,7 @@ bool RenderTexture::InitializeCustom(ID3D11Device* device, int textureWidth, int
 		textureDesc.CPUAccessFlags = 0;
 		textureDesc.MiscFlags = 0;
 
-		hr = device->CreateTexture2D(&textureDesc, &_data, &m_renderTargetTexture);
+		hr = device->CreateTexture2D(&textureDesc, &_data, m_renderTargetTexture.GetAddressOf());
 		COM_ERROR_IF_FAILED(hr, "Failed to create texture");
 
 
@@ -294,7 +294,7 @@ bool RenderTexture::InitializeCustom(ID3D11Device* device, int textureWidth, int
 		renderTargetViewDesc.Format = textureDesc.Format;
 		renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 		renderTargetViewDesc.Texture2D.MipSlice = 0;
-		hr = device->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
+		hr = device->CreateRenderTargetView(m_renderTargetTexture.Get(), &renderTargetViewDesc, &m_renderTargetView);
 		COM_ERROR_IF_FAILED(hr, "Failed to CreateRenderTargetView");
 
 		//Setup the description of the shader resource view
@@ -302,7 +302,7 @@ bool RenderTexture::InitializeCustom(ID3D11Device* device, int textureWidth, int
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 		shaderResourceViewDesc.Texture2D.MipLevels = -1;
-		hr = device->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &shaderResourceView);
+		hr = device->CreateShaderResourceView(m_renderTargetTexture.Get(), &shaderResourceViewDesc, &shaderResourceView);
 		COM_ERROR_IF_FAILED(hr, "Failed to CreateShaderResourceView");
 
 
@@ -333,7 +333,7 @@ bool RenderTexture::InitializeCustom(ID3D11Device* device, int textureWidth, int
 		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		depthStencilViewDesc.Texture2D.MipSlice = 0;
-		hr = device->CreateDepthStencilView(m_texture, &depthStencilViewDesc, &m_depthStencilView);
+		hr = device->CreateDepthStencilView(m_texture.Get(), &depthStencilViewDesc, &m_depthStencilView);
 		COM_ERROR_IF_FAILED(hr, "Failed to create CreateDepthStencilView");
 
 		// Setup the viewport for rendering.
@@ -357,7 +357,7 @@ bool RenderTexture::InitializeCustom(ID3D11Device* device, int textureWidth, int
 
 void RenderTexture::SetRenderTarget(ID3D11DeviceContext* deviceContext, ID3D11DepthStencilView* depthStencilView)
 {
-	deviceContext->OMSetRenderTargets(1, &m_renderTargetView, depthStencilView);
+	deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), depthStencilView);
 }
 
 void RenderTexture::ClearRenderTarget(ID3D11DeviceContext* deviceContext, ID3D11DepthStencilView* depthStencilView, float red, float green, float blue, float alpha, bool bClearStencil)
@@ -372,7 +372,7 @@ void RenderTexture::ClearRenderTarget(ID3D11DeviceContext* deviceContext, ID3D11
 	color[3] = alpha;
 
 	// Clear the back buffer.
-	deviceContext->ClearRenderTargetView(m_renderTargetView, color);
+	deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), color);
 
 	// Clear the depth buffer.
 	if(bClearStencil)
@@ -420,96 +420,101 @@ bool RenderTexture::CreateCubeMap(ID3D11Device* device, ID3D11DeviceContext* dev
 		texElementDesc.CPUAccessFlags = 0;
 		texElementDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE | D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
-		D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
-		ZeroMemory(&resourceViewDesc, sizeof(resourceViewDesc));
-		resourceViewDesc.Format = texElementDesc.Format;
-		resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-		resourceViewDesc.TextureCube.MostDetailedMip = 0;
-		resourceViewDesc.TextureCube.MipLevels = maxMipLevels;
+		HRESULT hr = device->CreateTexture2D(&texElementDesc, NULL, m_renderTargetTexture.GetAddressOf());
+		COM_ERROR_IF_FAILED(hr, "Failed to create cube map texture");
 
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = texElementDesc.Format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+		srvDesc.TextureCube.MostDetailedMip = 0;
+		srvDesc.TextureCube.MipLevels = maxMipLevels;
 
-		HRESULT hr = device->CreateTexture2D(&texElementDesc, NULL, &m_renderTargetTexture);
-		COM_ERROR_IF_FAILED(hr, "Failed to create CreateTexture2D");
-		hr = device->CreateShaderResourceView(m_renderTargetTexture, &resourceViewDesc, &shaderResourceView);
-		COM_ERROR_IF_FAILED(hr, "Failed to create CreateShaderResourceView");
+		hr = device->CreateShaderResourceView(m_renderTargetTexture.Get(), &srvDesc, &shaderResourceView);
+		COM_ERROR_IF_FAILED(hr, "Failed to create shader resource view");
 	}
-	catch (COMException exc)
+	catch (COMException& e)
 	{
-		ErrorLogger::Log(exc);
+		ErrorLogger::Log(e);
 		return false;
 	}
 
 	return true;
 }
 
-void RenderTexture::CreateCubeMapMipLevels(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned int& width, unsigned int& height, unsigned int& mipLevel)
-{
-	ZeroMemory(&renderTargetDesc, sizeof(renderTargetDesc));
-	renderTargetDesc.Format = texElementDesc.Format;
-	renderTargetDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-	renderTargetDesc.Texture2DArray.ArraySize = 1;
-	renderTargetDesc.Texture2DArray.MipSlice = mipLevel;
+//void RenderTexture::CreateCubeMapMipLevels(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned int& width, unsigned int& height, unsigned int& mipLevel)
+//{
+//	ZeroMemory(&renderTargetDesc, sizeof(renderTargetDesc));
+//	renderTargetDesc.Format = texElementDesc.Format;
+//	renderTargetDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+//	renderTargetDesc.Texture2DArray.ArraySize = 1;
+//	renderTargetDesc.Texture2DArray.MipSlice = mipLevel;
+//
+//
+//	m_viewport.Width = width;
+//	m_viewport.Height = height;
+//	m_viewport.MinDepth = 0.0f;
+//	m_viewport.MaxDepth = 1.0f;
+//	m_viewport.TopLeftX = 0.0f;
+//	m_viewport.TopLeftY = 0.0f;
+//}
 
-
-	m_viewport.Width = width;
-	m_viewport.Height = height;
-	m_viewport.MinDepth = 0.0f;
-	m_viewport.MaxDepth = 1.0f;
-	m_viewport.TopLeftX = 0.0f;
-	m_viewport.TopLeftY = 0.0f;
-}
-
-bool RenderTexture::RenderCubeMapFaces(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int& index, ID3D11DepthStencilView* depthView,float* rgba, bool copyDepth,bool bSave)
+bool RenderTexture::RenderCubeMapFace(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int index, unsigned int& mipLevel, ID3D11DepthStencilView* depthView,float* rgba, bool copyDepth,bool bSave)
 {
 	try
 	{
-		renderTargetDesc.Texture2DArray.FirstArraySlice = index;
-		HRESULT hr = device->CreateRenderTargetView(m_renderTargetTexture, &renderTargetDesc, &m_renderTargetViews[index]);
+		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+		rtvDesc.Format = texElementDesc.Format;
+		rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+		rtvDesc.Texture2DArray.ArraySize = 1;
+		rtvDesc.Texture2DArray.FirstArraySlice = index;
+		rtvDesc.Texture2DArray.MipSlice = mipLevel;
 
-		COM_ERROR_IF_FAILED(hr, "Failed to create CreateRenderTargetView");
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> rtv;
+		HRESULT hr = device->CreateRenderTargetView(m_renderTargetTexture.Get(), &rtvDesc, &rtv);
+		COM_ERROR_IF_FAILED(hr, "Failed to create render target view");
 
-		//copy scene depth to texture
-		if(copyDepth)
-			deviceContext->OMSetRenderTargets(1, &m_renderTargetViews[index], depthView);
-		else
-			deviceContext->OMSetRenderTargets(1, &m_renderTargetViews[index], 0);
-		deviceContext->RSSetViewports(1, &m_viewport);
+		D3D11_VIEWPORT viewport = {};
+		viewport.Width = static_cast<float>(std::max(1u, texElementDesc.Width >> mipLevel));
+		viewport.Height = static_cast<float>(std::max(1u, texElementDesc.Height >> mipLevel));
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+		viewport.TopLeftX = 0.0f;
+		viewport.TopLeftY = 0.0f;
 
-		//float color[4];
-		//
-		//color[0] = 0.0f;
-		//color[1] = 0.0f;
-		//color[2] = 0.0f;
-		//color[3] = 1.0f;
+		deviceContext->OMSetRenderTargets(1, rtv.GetAddressOf(), copyDepth ? depthView : nullptr);
+		deviceContext->RSSetViewports(1, &viewport);
 
-
-		//if (bSave)
-		//{
-		//
-		//	ID3D11Resource* resource;
-		//	m_renderTargetViews[index]->GetResource(&resource);
-		//	std::string str = "probeMap" + std::to_string(index) + ".jpg";
-		//	std::wstring fileName = std::wstring(str.begin(), str.end());
-		//	const wchar_t* wFileName = fileName.c_str();
-		//	//hr = DirectX::SaveDDSTextureToFile(deviceContext,resource, wFileName);
-		//	hr = DirectX::SaveWICTextureToFile(deviceContext, resource, GUID_ContainerFormatJpeg, wFileName, nullptr, nullptr, true);
-		//	COM_ERROR_IF_FAILED(hr, "Failed to create SaveWICTextureToFile");
-		//}
-
-		deviceContext->ClearRenderTargetView(m_renderTargetViews[index], rgba);
-		if (copyDepth)
+		deviceContext->ClearRenderTargetView(rtv.Get(), rgba);
+		if (copyDepth && depthView)
+		{
 			deviceContext->ClearDepthStencilView(depthView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-
+		}
 	}
-	catch (COMException exc)
+	catch (COMException& e)
 	{
-		ErrorLogger::Log(exc);
+		ErrorLogger::Log(e);
 		return false;
 	}
 
-	
 	return true;
+}
+
+void RenderTexture::RenderAllCubeFaces(
+	ID3D11Device* device,
+	ID3D11DeviceContext* deviceContext,
+	ID3D11DepthStencilView* depthView,
+	float* rgba,
+	bool copyDepth)
+{
+	for (UINT mip = 0; mip < texElementDesc.MipLevels; ++mip)
+	{
+		for (UINT face = 0; face < 6; ++face)
+		{
+			RenderCubeMapFace(device, deviceContext, face, mip, depthView, rgba, copyDepth);
+		}
+	}
+
+	deviceContext->GenerateMips(shaderResourceView);
 }
 ///////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
@@ -550,7 +555,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 		textureDesc.CPUAccessFlags = 0;
 		textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
 
-		hr = device->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
+		hr = device->CreateTexture2D(&textureDesc, NULL, m_renderTargetTexture.GetAddressOf());
 		COM_ERROR_IF_FAILED(hr, "Failed to create texture");
 		
 
@@ -569,7 +574,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 				sourceRegion.back = 1;
 				if (sourceRegion.bottom == 0 || sourceRegion.right == 0)
 					break;
-				deviceContext->CopySubresourceRegion(m_renderTargetTexture, D3D11CalcSubresource(mipLevel, x, textureDesc.MipLevels), 0, 0, 0, (ID3D11Resource*)textureViews[x], mipLevel, &sourceRegion);
+				deviceContext->CopySubresourceRegion(m_renderTargetTexture.Get(), D3D11CalcSubresource(mipLevel, x, textureDesc.MipLevels), 0, 0, 0, (ID3D11Resource*)textureViews[x], mipLevel, &sourceRegion);
 
 			}
 		}
@@ -580,7 +585,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 		renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 		renderTargetViewDesc.Texture2D.MipSlice = 0;
 
-		hr = device->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
+		hr = device->CreateRenderTargetView(m_renderTargetTexture.Get(), &renderTargetViewDesc, &m_renderTargetView);
 		COM_ERROR_IF_FAILED(hr, "Failed to CreateRenderTargetView");
 
 		//Setup the description of the shader resource view
@@ -588,7 +593,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
 		shaderResourceViewDesc.TextureCube.MostDetailedMip = 0;
 		shaderResourceViewDesc.TextureCube.MipLevels = textureDesc.MipLevels;
-		hr = device->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &shaderResourceView);
+		hr = device->CreateShaderResourceView(m_renderTargetTexture.Get(), &shaderResourceViewDesc, &shaderResourceView);
 		COM_ERROR_IF_FAILED(hr, "Failed to CreateShaderResourceView");
 
 		// Initialize the description of the depth buffer.
@@ -621,7 +626,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		depthStencilViewDesc.Texture2D.MipSlice = 0;
-		hr = device->CreateDepthStencilView(m_texture, &depthStencilViewDesc, &m_depthStencilView);
+		hr = device->CreateDepthStencilView(m_texture.Get(), &depthStencilViewDesc, &m_depthStencilView);
 		COM_ERROR_IF_FAILED(hr, "Failed to create CreateDepthStencilView");
 
 		// Setup the viewport for rendering.
@@ -676,7 +681,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 
 		if (!initCubeMap)
 		{
-			hr = device->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
+			hr = device->CreateTexture2D(&textureDesc, NULL, m_renderTargetTexture.GetAddressOf());
 			COM_ERROR_IF_FAILED(hr, "Failed to create texture");
 		
 		}
@@ -696,7 +701,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 				sourceRegion.back = 1;
 				if (sourceRegion.bottom == 0 || sourceRegion.right == 0)
 					break;
-				deviceContext->CopySubresourceRegion(m_renderTargetTexture, D3D11CalcSubresource(mipLevel, x, textureDesc.MipLevels), 0, 0, 0, (ID3D11Resource*)textureViews[x], mipLevel, &sourceRegion);
+				deviceContext->CopySubresourceRegion(m_renderTargetTexture.Get(), D3D11CalcSubresource(mipLevel, x, textureDesc.MipLevels), 0, 0, 0, (ID3D11Resource*)textureViews[x], mipLevel, &sourceRegion);
 
 			}
 		}
@@ -709,7 +714,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 
 		if (!initCubeMap)
 		{
-			hr = device->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
+			hr = device->CreateRenderTargetView(m_renderTargetTexture.Get(), &renderTargetViewDesc, &m_renderTargetView);
 			COM_ERROR_IF_FAILED(hr, "Failed to CreateRenderTargetView");
 			
 		}
@@ -722,7 +727,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 		shaderResourceViewDesc.TextureCube.MipLevels = textureDesc.MipLevels;
 		if (!initCubeMap)
 		{
-			hr = device->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &shaderResourceView);
+			hr = device->CreateShaderResourceView(m_renderTargetTexture.Get(), &shaderResourceViewDesc, &shaderResourceView);
 			COM_ERROR_IF_FAILED(hr, "Failed to CreateShaderResourceView");
 		}
 
@@ -760,7 +765,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 
 		if (!initCubeMap)
 		{
-			hr = device->CreateDepthStencilView(m_texture, &depthStencilViewDesc, &m_depthStencilView);
+			hr = device->CreateDepthStencilView(m_texture.Get(), &depthStencilViewDesc, &m_depthStencilView);
 			COM_ERROR_IF_FAILED(hr, "Failed to create CreateDepthStencilView");
 			initCubeMap = true;
 		}
@@ -822,7 +827,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 
 		if (!init)
 		{
-			hr = device->CreateTexture2D(&textureDesc, NULL, &m_renderTargetTexture);
+			hr = device->CreateTexture2D(&textureDesc, NULL, m_renderTargetTexture.GetAddressOf());
 			COM_ERROR_IF_FAILED(hr, "Failed to create texture");
 		}
 
@@ -841,7 +846,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 				sourceRegion.back = 1;
 				if (sourceRegion.bottom == 0 || sourceRegion.right == 0)
 					break;
-				deviceContext->CopySubresourceRegion(m_renderTargetTexture, D3D11CalcSubresource(mipLevel, x, textureDesc.MipLevels), 0, 0, 0, (ID3D11Resource*)textureViews[x], mipLevel, &sourceRegion);
+				deviceContext->CopySubresourceRegion(m_renderTargetTexture.Get(), D3D11CalcSubresource(mipLevel, x, textureDesc.MipLevels), 0, 0, 0, (ID3D11Resource*)textureViews[x], mipLevel, &sourceRegion);
 
 			}
 		}
@@ -854,7 +859,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 
 		if (!init)
 		{
-			hr = device->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
+			hr = device->CreateRenderTargetView(m_renderTargetTexture.Get(), &renderTargetViewDesc, &m_renderTargetView);
 			COM_ERROR_IF_FAILED(hr, "Failed to CreateRenderTargetView");
 		}
 
@@ -867,7 +872,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 		if (!init)
 		{
 
-			hr = device->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &shaderResourceView);
+			hr = device->CreateShaderResourceView(m_renderTargetTexture.Get(), &shaderResourceViewDesc, &shaderResourceView);
 			COM_ERROR_IF_FAILED(hr, "Failed to CreateShaderResourceView");
 		}
 
@@ -903,7 +908,7 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 		depthStencilViewDesc.Texture2D.MipSlice = 0;
 		if (!init)
 		{
-			hr = device->CreateDepthStencilView(m_texture, &depthStencilViewDesc, &m_depthStencilView);
+			hr = device->CreateDepthStencilView(m_texture.Get(), &depthStencilViewDesc, &m_depthStencilView);
 			COM_ERROR_IF_FAILED(hr, "Failed to create CreateDepthStencilView");
 			init = true;
 		}
@@ -931,8 +936,12 @@ bool RenderTexture::CubeMapTexture(ID3D11Device* device, ID3D11DeviceContext* de
 
 void RenderTexture::SetRenderTargets(ID3D11DeviceContext* deviceContext, ID3D11DepthStencilView* depthStencilView, int count)
 {
+	std::vector<ID3D11RenderTargetView*> rawRTVs(count);
+	for (int i = 0; i < count; ++i)
+		rawRTVs[i] = m_renderTargetViews[i].Get();
 	// Bind the render target view and depth stencil buffer to the output render pipeline.
-	deviceContext->OMSetRenderTargets(count, m_renderTargetViews, depthStencilView);
+	deviceContext->OMSetRenderTargets(count, rawRTVs.data(), depthStencilView);
+	rawRTVs.clear();
 }
 
 void RenderTexture::ClearRenderTargets(ID3D11DeviceContext* deviceContext, ID3D11DepthStencilView* depthStencilView, int count, float* rgb)
@@ -940,7 +949,7 @@ void RenderTexture::ClearRenderTargets(ID3D11DeviceContext* deviceContext, ID3D1
 	for (int i = 0; i < count; ++i)
 	{
 		// Clear the back buffer.
-		deviceContext->ClearRenderTargetView(m_renderTargetViews[i], rgb);
+		deviceContext->ClearRenderTargetView(m_renderTargetViews[i].Get(), rgb);
 
 		// Clear the depth buffer.
 		deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);

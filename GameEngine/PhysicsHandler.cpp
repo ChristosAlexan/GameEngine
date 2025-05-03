@@ -1,6 +1,6 @@
 #include "PhysicsHandler.h"
 #include "ErrorLogger.h"
-
+#include "ConstantBuffersGlobals.h"
 
 PhysicsHandler::PhysicsHandler()
 {
@@ -596,7 +596,7 @@ void PhysicsHandler::DrawDebugLine(DX11& gfx11, PhysicsDebugDraw& physicsDebugDr
 	for (physx::PxU32 i = 0; i < rb.getNbLines(); ++i)
 	{
 		const physx::PxDebugLine& line = rb.getLines()[i];
-		physicsDebugDraw.DebugDraw(gfx11.device.Get(), gfx11.deviceContext.Get(), &gfx11.cb_vs_vertexshader, line, camera);
+		physicsDebugDraw.DebugDraw(gfx11.device.Get(), gfx11.deviceContext.Get(), &GFX_GLOBALS::cb_vs_vertexshader, line, camera);
 	}
 
 	if (bDebugLines)
@@ -604,7 +604,7 @@ void PhysicsHandler::DrawDebugLine(DX11& gfx11, PhysicsDebugDraw& physicsDebugDr
 		for (int i = 0; i < rayOriginOut.size(); ++i)
 		{
 			physx::PxDebugLine rayLine(rayOriginOut[i], rayDestOut[i], 0);
-			physicsDebugDraw.DebugDraw(gfx11.device.Get(), gfx11.deviceContext.Get(), &gfx11.cb_vs_vertexshader, rayLine, camera);
+			physicsDebugDraw.DebugDraw(gfx11.device.Get(), gfx11.deviceContext.Get(), &GFX_GLOBALS::cb_vs_vertexshader, rayLine, camera);
 		}
 	}
 	

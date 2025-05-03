@@ -1,5 +1,6 @@
 #include "PostProcessClass.h"
-#include <random>
+#include "ConstantBuffersGlobals.h"
+#include "ShadersGlobals.h"
 
 float lerp(float a, float b, float f)
 {
@@ -26,74 +27,91 @@ void PostProcessClass::Initialize(DX11& gfx11, int width, int height, float aspe
 	verticalGaussianBlurTexture.Initialize(gfx11.device.Get(), width / 2, height / 2, DXGI_FORMAT_R16G16B16A16_FLOAT);
 
 	bloomRenderTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	rectBloom.Initialize(gfx11.device.Get(), aspectRatio);
-
 	SsrRenderTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
+
+	//SSAO SAMPLE KERNEL
+	using namespace DirectX;
+	std::vector<DirectX::XMFLOAT3> ssaoKernel;
+	std::uniform_real_distribution<float> randFloat(0.0f, 1.0f);
+	std::default_random_engine gen;
+
+	for (int i = 0; i < 64; ++i) {
+		DirectX::XMFLOAT3 sample(
+			randFloat(gen) * 2.0f - 1.0f,
+			randFloat(gen) * 2.0f - 1.0f,
+			randFloat(gen)
+		);
+		DirectX::XMVECTOR vec = DirectX::XMVector3Normalize(XMLoadFloat3(&sample));
+		float scale = float(i) / 64.0f;
+		scale = 0.1f + 0.9f * scale * scale; // bias toward center
+		vec *= scale;
+		XMStoreFloat3(&sample, vec);
+		ssaoKernel.push_back(sample);
+	}
 }
 
-void PostProcessClass::BloomRender(DX11& gfx11, RectShape& rect, Camera& camera)
+void PostProcessClass::BloomRender(DX11& gfx11, RectShape& rect, Camera& camera, GBufferClass& gbuffer, RenderTexture& forwardPassText)
 {
-	rectBloom.pos = DirectX::XMFLOAT3(0, 0, 0);
 	gfx11.deviceContext->RSSetViewports(1, &bloomRenderTexture.m_viewport);
-	bloomRenderTexture.SetRenderTarget(gfx11.deviceContext.Get(), bloomRenderTexture.m_depthStencilView);
-	bloomRenderTexture.ClearRenderTarget(gfx11.deviceContext.Get(), bloomRenderTexture.m_depthStencilView, 0, 0, 0, 1.0f);
+	bloomRenderTexture.SetRenderTarget(gfx11.deviceContext.Get(), bloomRenderTexture.m_depthStencilView.Get());
+	bloomRenderTexture.ClearRenderTarget(gfx11.deviceContext.Get(), bloomRenderTexture.m_depthStencilView.Get(), 0, 0, 0, 1.0f);
 
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
-	gfx11.deviceContext->VSSetShader(gfx11.vs2D.GetShader(), NULL, 0);
-	gfx11.deviceContext->IASetInputLayout(gfx11.vs2D.GetInputLayout());
-	gfx11.deviceContext->PSSetShader(gfx11.bloomLightPS.GetShader(), NULL, 0);
-	gfx11.deviceContext->PSSetShaderResources(0, 1, &gfx11.renderTexture.shaderResourceView);
-
-	rect.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
+	gfx11.deviceContext->VSSetShader(GFX_GLOBALS::vs2D.GetShader(), NULL, 0);
+	gfx11.deviceContext->IASetInputLayout(GFX_GLOBALS::vs2D.GetInputLayout());
+	gfx11.deviceContext->PSSetShader(GFX_GLOBALS::bloomLightPS.GetShader(), NULL, 0);
+	gfx11.deviceContext->PSSetShaderResources(0, 1, &gbuffer.lightPassTexture.shaderResourceView);
+	gfx11.deviceContext->PSSetShaderResources(1, 1, &forwardPassText.shaderResourceView);
+	rect.Draw(gfx11.deviceContext.Get(), camera, GFX_GLOBALS::cb_vs_vertexshader);
 
 
 	//Guassian blur downSample
 	gfx11.deviceContext->RSSetViewports(1, &downSampleTexture.m_viewport);
-	downSampleTexture.SetRenderTarget(gfx11.deviceContext.Get(), downSampleTexture.m_depthStencilView);
-	downSampleTexture.ClearRenderTarget(gfx11.deviceContext.Get(), downSampleTexture.m_depthStencilView, 0, 0, 0, 1.0f);
+	downSampleTexture.SetRenderTarget(gfx11.deviceContext.Get(), downSampleTexture.m_depthStencilView.Get());
+	downSampleTexture.ClearRenderTarget(gfx11.deviceContext.Get(), downSampleTexture.m_depthStencilView.Get(), 0, 0, 0, 1.0f);
 
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
-	gfx11.deviceContext->VSSetShader(gfx11.gaussianBlurVS.GetShader(), NULL, 0);
-	gfx11.deviceContext->IASetInputLayout(gfx11.gaussianBlurVS.GetInputLayout());
-	gfx11.deviceContext->PSSetShader(gfx11.downSampleBlurPS.GetShader(), NULL, 0);
+	gfx11.deviceContext->VSSetShader(GFX_GLOBALS::gaussianBlurVS.GetShader(), NULL, 0);
+	gfx11.deviceContext->IASetInputLayout(GFX_GLOBALS::gaussianBlurVS.GetInputLayout());
+	gfx11.deviceContext->PSSetShader(GFX_GLOBALS::downSampleBlurPS.GetShader(), NULL, 0);
 	gfx11.deviceContext->PSSetShaderResources(0, 1, &bloomRenderTexture.shaderResourceView);
-	rectBloom.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
+	rect.Draw(gfx11.deviceContext.Get(), camera, GFX_GLOBALS::cb_vs_vertexshader);
 
 	//Guassian blur horizontal
 	gfx11.deviceContext->RSSetViewports(1, &horizontalGaussianBlurTexture.m_viewport);
-	horizontalGaussianBlurTexture.SetRenderTarget(gfx11.deviceContext.Get(), horizontalGaussianBlurTexture.m_depthStencilView);
-	horizontalGaussianBlurTexture.ClearRenderTarget(gfx11.deviceContext.Get(), horizontalGaussianBlurTexture.m_depthStencilView, 0, 0, 0, 1.0f);
+	horizontalGaussianBlurTexture.SetRenderTarget(gfx11.deviceContext.Get(), horizontalGaussianBlurTexture.m_depthStencilView.Get());
+	horizontalGaussianBlurTexture.ClearRenderTarget(gfx11.deviceContext.Get(), horizontalGaussianBlurTexture.m_depthStencilView.Get(), 0, 0, 0, 1.0f);
 
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
-	gfx11.deviceContext->VSSetShader(gfx11.gaussianBlurVS.GetShader(), NULL, 0);
-	gfx11.deviceContext->IASetInputLayout(gfx11.gaussianBlurVS.GetInputLayout());
-	gfx11.deviceContext->PSSetShader(gfx11.horizontalGaussianBlurPS.GetShader(), NULL, 0);
+	gfx11.deviceContext->VSSetShader(GFX_GLOBALS::gaussianBlurVS.GetShader(), NULL, 0);
+	gfx11.deviceContext->IASetInputLayout(GFX_GLOBALS::gaussianBlurVS.GetInputLayout());
+	gfx11.deviceContext->PSSetShader(GFX_GLOBALS::horizontalGaussianBlurPS.GetShader(), NULL, 0);
 	gfx11.deviceContext->PSSetShaderResources(0, 1, &downSampleTexture.shaderResourceView);
-	rectBloom.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
+	rect.Draw(gfx11.deviceContext.Get(), camera, GFX_GLOBALS::cb_vs_vertexshader);
 
 	//Guassian blur vertical
 	gfx11.deviceContext->RSSetViewports(1, &verticalGaussianBlurTexture.m_viewport);
-	verticalGaussianBlurTexture.SetRenderTarget(gfx11.deviceContext.Get(), verticalGaussianBlurTexture.m_depthStencilView);
-	verticalGaussianBlurTexture.ClearRenderTarget(gfx11.deviceContext.Get(), verticalGaussianBlurTexture.m_depthStencilView, 0, 0, 0, 1.0f);
+	verticalGaussianBlurTexture.SetRenderTarget(gfx11.deviceContext.Get(), verticalGaussianBlurTexture.m_depthStencilView.Get());
+	verticalGaussianBlurTexture.ClearRenderTarget(gfx11.deviceContext.Get(), verticalGaussianBlurTexture.m_depthStencilView.Get(), 0, 0, 0, 1.0f);
 
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
-	gfx11.deviceContext->VSSetShader(gfx11.gaussianBlurVS.GetShader(), NULL, 0);
-	gfx11.deviceContext->IASetInputLayout(gfx11.gaussianBlurVS.GetInputLayout());
-	gfx11.deviceContext->PSSetShader(gfx11.verticalGaussianBlurPS.GetShader(), NULL, 0);
+	gfx11.deviceContext->VSSetShader(GFX_GLOBALS::gaussianBlurVS.GetShader(), NULL, 0);
+	gfx11.deviceContext->IASetInputLayout(GFX_GLOBALS::gaussianBlurVS.GetInputLayout());
+	gfx11.deviceContext->PSSetShader(GFX_GLOBALS::verticalGaussianBlurPS.GetShader(), NULL, 0);
 	gfx11.deviceContext->PSSetShaderResources(0, 1, &horizontalGaussianBlurTexture.shaderResourceView);
-	rectBloom.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
+	rect.Draw(gfx11.deviceContext.Get(), camera, GFX_GLOBALS::cb_vs_vertexshader);
 }
 
 void PostProcessClass::SSR_Render(DX11& gfx11, RectShape& rect, Camera& camera, GBufferClass& gBuffer)
 {
 	gfx11.deviceContext->RSSetViewports(1, &SsrRenderTexture.m_viewport);
-	SsrRenderTexture.SetRenderTarget(gfx11.deviceContext.Get(), SsrRenderTexture.m_depthStencilView);
-	SsrRenderTexture.ClearRenderTarget(gfx11.deviceContext.Get(), SsrRenderTexture.m_depthStencilView, 0, 0, 0, 1.0f);
+	SsrRenderTexture.SetRenderTarget(gfx11.deviceContext.Get(), SsrRenderTexture.m_depthStencilView.Get());
+	SsrRenderTexture.ClearRenderTarget(gfx11.deviceContext.Get(), SsrRenderTexture.m_depthStencilView.Get(), 0, 0, 0, 1.0f);
 
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
-	gfx11.deviceContext->VSSetShader(gfx11.ssrVS.GetShader(), NULL, 0);
-	gfx11.deviceContext->IASetInputLayout(gfx11.ssrVS.GetInputLayout());
-	gfx11.deviceContext->PSSetShader(gfx11.ssrPS.GetShader(), NULL, 0);
+	gfx11.deviceContext->VSSetShader(GFX_GLOBALS::ssrVS.GetShader(), NULL, 0);
+	gfx11.deviceContext->IASetInputLayout(GFX_GLOBALS::ssrVS.GetInputLayout());
+	gfx11.deviceContext->PSSetShader(GFX_GLOBALS::ssrPS.GetShader(), NULL, 0);
 
 	gfx11.deviceContext->PSSetShaderResources(0, 1, &gBuffer.m_shaderResourceViewArray[0]);
 	gfx11.deviceContext->PSSetShaderResources(1, 1, &gBuffer.m_shaderResourceViewArray[1]);
@@ -101,7 +119,27 @@ void PostProcessClass::SSR_Render(DX11& gfx11, RectShape& rect, Camera& camera, 
 	gfx11.deviceContext->PSSetShaderResources(3, 1, &gBuffer.m_shaderResourceViewArray[3]);
 	gfx11.deviceContext->PSSetShaderResources(4, 1, &gBuffer.m_shaderResourceViewArray[4]);
 	
-	rect.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
+	rect.Draw(gfx11.deviceContext.Get(), camera, GFX_GLOBALS::cb_vs_vertexshader);
+}
+
+void PostProcessClass::SSAO_Render(DX11& gfx11, RectShape& rect, Camera& camera, GBufferClass& gBuffer)
+{
+	//gfx11.deviceContext->RSSetViewports(1, &SsrRenderTexture.m_viewport);
+	//SsrRenderTexture.SetRenderTarget(gfx11.deviceContext.Get(), SsrRenderTexture.m_depthStencilView);
+	//SsrRenderTexture.ClearRenderTarget(gfx11.deviceContext.Get(), SsrRenderTexture.m_depthStencilView, 0, 0, 0, 1.0f);
+	//
+	//gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
+	//gfx11.deviceContext->VSSetShader(gfx11.ssrVS.GetShader(), NULL, 0);
+	//gfx11.deviceContext->IASetInputLayout(gfx11.ssrVS.GetInputLayout());
+	//gfx11.deviceContext->PSSetShader(gfx11.ssrPS.GetShader(), NULL, 0);
+	//
+	//gfx11.deviceContext->PSSetShaderResources(0, 1, &gBuffer.m_shaderResourceViewArray[0]);
+	//gfx11.deviceContext->PSSetShaderResources(1, 1, &gBuffer.m_shaderResourceViewArray[1]);
+	//gfx11.deviceContext->PSSetShaderResources(2, 1, &gBuffer.m_shaderResourceViewArray[2]);
+	//gfx11.deviceContext->PSSetShaderResources(3, 1, &gBuffer.m_shaderResourceViewArray[3]);
+	//gfx11.deviceContext->PSSetShaderResources(4, 1, &gBuffer.m_shaderResourceViewArray[4]);
+	//
+	//rect.Draw(gfx11.deviceContext.Get(), camera, gfx11.cb_vs_vertexshader);
 }
 
 void PostProcessClass::HbaoPlusInit(DX11& gfx11, int width, int height)
@@ -154,7 +192,7 @@ void PostProcessClass::HbaoPlusRender(DX11& gfx11, RectShape& rect, Camera& came
 	GFSDK_SSAO_RenderMask RenderMask = GFSDK_SSAO_RenderMask::GFSDK_SSAO_RENDER_AO;
 
 	GFSDK_SSAO_Output_D3D11 Output;
-	Output.pRenderTargetView = hbaoTexture.m_renderTargetView;
+	Output.pRenderTargetView = hbaoTexture.m_renderTargetView.Get();
 	Output.Blend.Mode = GFSDK_SSAO_OVERWRITE_RGB;
 	status = pAOContext->RenderAO(gfx11.deviceContext.Get(), Input, Params, Output, RenderMask);
 	assert(status == GFSDK_SSAO_OK);

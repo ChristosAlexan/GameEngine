@@ -12,7 +12,7 @@ cbuffer lightBuffer : register(b0)
 cbuffer PCFbuffer : register(b1)
 {
     int pcfLevel;
-    double bias;
+    float bias;
     bool enableShadows;
 }
 

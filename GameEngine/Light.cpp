@@ -26,7 +26,7 @@ Light::Light()
 
 	bFlagForDeletion = false;
 
-	shadowsSoftnessBias = DirectX::XMFLOAT4(0.5, 1.0, 0.0, 0.0);
+	shadowsSoftnessBias = DirectX::XMFLOAT4(0.5, 1.0, 0.5, 0.0);
 	bShadow = true;
 	isLightEnabled = true;
 	lightType = 1.0f;
@@ -128,7 +128,7 @@ void Light::DrawGui(std::string name)
 	ImGui::DragFloat3("lightColor", &lightColor.x, 0.005f);
 	ImGui::DragFloat3("emissionColor", &emissionColor.x, 0.005f);
 	ImGui::DragFloat("light strength", &lightColor.w, 0.005f, 0.0f, 100.0f);
-	ImGui::DragFloat("shadowsSoftness", &shadowsSoftnessBias.x, 0.005f);
+	ImGui::DragFloat3("shadowsSoftness", &shadowsSoftnessBias.x, 0.005f);
 	ImGui::DragFloat("shadowBias", &shadowsSoftnessBias.y, 0.005f);
 	//ImGui::DragFloat("light attenuation", &lightAttenuation, 0.005f, 0.0f, 100.0f);
 
@@ -158,7 +158,7 @@ void Light::DrawGui(std::string name)
 	ImGui::DragFloat("dimmensions", &dimensions, 0.05f);
 }
 
-void Light::Draw(Camera& camera)
+void Light::Draw(ID3D11DeviceContext* deviceContext, Camera& camera)
 {
 	DirectX::XMMATRIX matrix_scale;
 	DirectX::XMMATRIX matrix_rotate;
@@ -170,7 +170,7 @@ void Light::Draw(Camera& camera)
 	matrix_translate = DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 	worldMatrix = matrix_scale * matrix_rotate * matrix_translate;
 
-	sphere.Draw(worldMatrix,camera.GetViewMatrix(),camera.GetProjectionMatrix());
+	sphere.Draw(deviceContext, worldMatrix,camera.GetViewMatrix(),camera.GetProjectionMatrix());
 	//DrawVolume(camera);
 	//sphere.pos = pos;
 	//sphere.rot = rot;
@@ -191,7 +191,7 @@ void Light::DrawVolume(Camera& camera)
 	matrix_rotate = DirectX::XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z);
 	matrix_translate = DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 	worldMatrix = matrix_scale * matrix_rotate * matrix_translate;
-	sphere.Draw(worldMatrix, camera.GetViewMatrix(), camera.GetProjectionMatrix());
+	sphere.Draw(deviceContext, worldMatrix, camera.GetViewMatrix(), camera.GetProjectionMatrix());
 }
 
 void Light::Clear()
