@@ -29,6 +29,9 @@ PhysicsComponent::~PhysicsComponent()
 
 void PhysicsComponent::CreateCube(physx::PxPhysics& physics, physx::PxScene& scene, physx::PxVec3 _scale, physx::PxVec3 _pos)
 {
+	_scale.x = std::clamp(_scale.x, 0.01f, 10000.0f);
+	_scale.y = std::clamp(_scale.y, 0.01f, 10000.0f);
+	_scale.z = std::clamp(_scale.z, 0.01f, 10000.0f);
 	current_scale = _scale;
 	if (mass > 0.0f)
 	{
@@ -141,6 +144,9 @@ void PhysicsComponent::CreateSphere(physx::PxPhysics& physics, physx::PxScene& s
 
 void PhysicsComponent::CreateCapsule(physx::PxPhysics& physics, physx::PxScene& scene, physx::PxVec3 _scale, physx::PxVec3 _pos)
 {
+	_scale.x = std::clamp(_scale.x, 0.01f, 10000.0f);
+	_scale.y = std::clamp(_scale.y, 0.01f, 10000.0f);
+	_scale.z = std::clamp(_scale.z, 0.01f, 10000.0f);
 	current_scale = _scale;
 
 	if (mass > 0.0f)
@@ -197,6 +203,9 @@ void PhysicsComponent::CreateCapsule(physx::PxPhysics& physics, physx::PxScene& 
 
 void PhysicsComponent::CreateConvex(physx::PxPhysics& physics, physx::PxScene& scene, std::vector<Vertex>& vertices, physx::PxVec3 _scale, physx::PxVec3 _pos)
 {
+	_scale.x = std::clamp(_scale.x, 0.01f, 10000.0f);
+	_scale.y = std::clamp(_scale.y, 0.01f, 10000.0f);
+	_scale.z = std::clamp(_scale.z, 0.01f, 10000.0f);
 	current_scale = _scale;
 	verts = &vertices;
 	if (mass > 0)
@@ -311,6 +320,9 @@ void PhysicsComponent::CreateConvex(physx::PxPhysics& physics, physx::PxScene& s
 
 void PhysicsComponent::CreateTriangleMesh(physx::PxPhysics& physics, physx::PxScene& scene, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, physx::PxVec3 _scale, physx::PxVec3 _pos)
 {
+	physics_scale.x = std::clamp(physics_scale.x, 0.01f, 10000.0f);
+	physics_scale.y = std::clamp(physics_scale.y, 0.01f, 10000.0f);
+	physics_scale.z = std::clamp(physics_scale.z, 0.01f, 10000.0f);
 	current_scale = physics_scale;
 	verts = &vertices;
 	this->indices = &indices;
@@ -382,6 +394,9 @@ void PhysicsComponent::CreateTriangleMesh(physx::PxPhysics& physics, physx::PxSc
 
 void PhysicsComponent::CreatePickingShape(physx::PxPhysics& physics, physx::PxScene& scene, physx::PxVec3 _scale, physx::PxVec3 _pos)
 {
+	_scale.x = std::clamp(_scale.x, 0.01f, 10000.0f);
+	_scale.y = std::clamp(_scale.y, 0.01f, 10000.0f);
+	_scale.z = std::clamp(_scale.z, 0.01f, 10000.0f);
 	current_scale = _scale;
 
 	aMaterial = physics.createMaterial(1.0f, 1.0f, 0.9f);
@@ -426,7 +441,9 @@ void PhysicsComponent::CreateController(physx::PxPhysics& physics, physx::PxScen
 
 void PhysicsComponent::UpdatePhysics(physx::PxPhysics& physics, physx::PxScene& scene)
 {
-
+	physics_scale.x = std::clamp(physics_scale.x, 0.01f, 10000.0f);
+	physics_scale.y = std::clamp(physics_scale.y, 0.01f, 10000.0f);
+	physics_scale.z = std::clamp(physics_scale.z, 0.01f, 10000.0f);
 	physx::PxVec3 _pos;
 	if (aActor || aStaticActor)
 	{

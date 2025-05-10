@@ -26,7 +26,7 @@ public:
 	void FrustumDraw(Camera& camera, ID3D11DeviceContext* deviceContex, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMMATRIX& projectionMatrix, ConstantBuffer<CB_VS_vertexshader>& cb_vs_vertexshader, bool bCheckFrustum);
 	void AttachController(physx::PxController& characterController,bool& runPhysics);
 	void SetupAttachment(Entity* entity);
-	void DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>& entities);
+	void DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>& entities, int index = 0);
 	void Input(Mouse& mouse, Keyboard& keyboard);
 	void Clear(physx::PxScene& scene);
 public:
@@ -37,6 +37,7 @@ public:
 	ModelLoader model;
 	Frustum frustum;
 	Entity* parent;
+	std::vector<Entity*> attachedEntities;
 public:
 	bool isDeleted;
 

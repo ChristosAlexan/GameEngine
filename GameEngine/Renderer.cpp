@@ -1084,7 +1084,7 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 				ImGui::Checkbox("DDS", &isDDS);
 			}
 			ImGui::Checkbox("Animated", &isAnimated);
-			ImGui::Checkbox("ConvertCordinates", &bConvertCordinates);
+			ImGui::Checkbox("flip coords", &bConvertCordinates);
 			if (ImGui::Button("Add"))
 			{
 				bAddEntity = true;

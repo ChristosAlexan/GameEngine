@@ -1,5 +1,9 @@
 #include "Entity.h"
 
+inline std::string ImGuiIDLabel(const std::string& base, int index) {
+	return base + std::to_string(index);
+}
+
 Entity::Entity()
 {
 	pos = DirectX::XMFLOAT3(0, 0, 0);
@@ -359,6 +363,22 @@ void Entity::SetupAttachment(Entity* entity)
 	else
 		return;
 
+	if(parent->attachedEntities.size() == 0)
+		parent->attachedEntities.push_back(this);
+	else
+	{
+		bool alreadyAttached = false;
+		for (Entity* e : parent->attachedEntities) {
+			if (e == this || e->entityName == this->entityName) {
+				alreadyAttached = true;
+				break;
+			}
+		}
+
+		if (!alreadyAttached)
+			parent->attachedEntities.push_back(this);
+	}
+
 	if (model.isAttached && parent)
 	{
 		DirectX::XMMATRIX boneTrans;
@@ -375,89 +395,87 @@ void Entity::SetupAttachment(Entity* entity)
 		pos = DirectX::XMFLOAT3(parent->model.worldPos.x, parent->model.worldPos.y, parent->model.worldPos.z);
 	}
 }
-void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>& entities)
+void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>& entities, int index)
 {
 	if (isDeleted)
 		return;
 
-
 	ImGui::Text(entityName.c_str());
 	ImGui::SameLine();
-
-	if (ImGui::Button("Delete"))
+	if (ImGui::Button(ImGuiIDLabel("Delete##", index).c_str()))
 	{
 		bFlagForDeletion = true;
 	}
-	ImGui::Text(("X: " + std::to_string(physicsComponent.trans.p.x)).c_str());
+	ImGui::Text((ImGuiIDLabel("X: ##",index).c_str() + std::to_string(physicsComponent.trans.p.x)).c_str());
 	ImGui::SameLine();
-	ImGui::Text((" Y: " + std::to_string(physicsComponent.trans.p.y)).c_str());
+	ImGui::Text((ImGuiIDLabel(" Y: ##",index).c_str() + std::to_string(physicsComponent.trans.p.y)).c_str());
 	ImGui::SameLine();
-	ImGui::Text((" Z: " + std::to_string(physicsComponent.trans.p.z)).c_str());
-	ImGui::DragFloat3("pos", &pos.x, 0.01f);
+	ImGui::Text((ImGuiIDLabel(" Z: ##",index).c_str() + std::to_string(physicsComponent.trans.p.z)).c_str());
+	ImGui::DragFloat3(ImGuiIDLabel("pos##",index).c_str(), &pos.x, 0.01f);
 	if (physicsComponent.aActor || physicsComponent.aStaticActor || physicsComponent.isCharacter)
 	{
-		ImGui::DragFloat3("scale", &physicsComponent.physics_scale.x, 0.01f, 0.1f);
-		ImGui::DragFloat4("rot", &physicsComponent.physics_rot.x, 0.5f);
+		ImGui::DragFloat3(ImGuiIDLabel("scale##",index).c_str(), &physicsComponent.physics_scale.x, 0.01f, 0.1f);
+		ImGui::DragFloat4(ImGuiIDLabel("rot##",index).c_str(), &physicsComponent.physics_rot.x, 0.5f);
 	}
 	else
 	{
-		ImGui::DragFloat3("rot", &rot.x, 0.01f);
-		ImGui::DragFloat3("scale", &scale.x, 0.01f);
+		ImGui::DragFloat3(ImGuiIDLabel("rot##",index).c_str(), &rot.x, 0.01f);
+		ImGui::DragFloat3(ImGuiIDLabel("scale##",index).c_str(), &scale.x, 0.01f);
 	}
 
 	static bool showHidden = false;
-	ImGui::Checkbox("More", &showHidden);
+	ImGui::Checkbox(ImGuiIDLabel("More##", index).c_str(), &showHidden);
 
 	if (showHidden)
 	{
 
-		if (ImGui::CollapsingHeader("Model transform"))
+		if (ImGui::CollapsingHeader(ImGuiIDLabel("Model transform##", index).c_str()))
 		{
-			ImGui::DragFloat3("modelPos", &modelPos.x, 0.01f);
+			ImGui::DragFloat3(ImGuiIDLabel("modelPos##",index).c_str(), &modelPos.x, 0.01f);
 
 			if (physicsComponent.aActor || physicsComponent.aStaticActor || physicsComponent.isCharacter)
 			{
-				ImGui::DragFloat3("model_rotation", &rot.x, 0.01f);
-				ImGui::DragFloat3("model_scale", &scale.x, 0.01f);
+				ImGui::DragFloat3(ImGuiIDLabel("model_rotation##",index).c_str(), &rot.x, 0.01f);
+				ImGui::DragFloat3(ImGuiIDLabel("model_scale##",index).c_str(), &scale.x, 0.01f);
 			}
 		}
 
-		if (ImGui::CollapsingHeader("Options"))
+		if (ImGui::CollapsingHeader(ImGuiIDLabel("Options##",index).c_str()))
 		{
-			ImGui::Checkbox("isCharacter", &physicsComponent.isCharacter);
-			ImGui::Checkbox("isPlayer", &isPlayer);
-			ImGui::Checkbox("isAI", &isAI);
-			ImGui::Checkbox("isWalkable", &isWalkable);
-			ImGui::Checkbox("isObstacle", &isObstacle);
-			ImGui::Checkbox("isAttached", &model.isAttached);
-			ImGui::Checkbox("isEmissive", &isEmissive);
-			if (ImGui::Button("Create Controller"))
+			ImGui::Checkbox(ImGuiIDLabel("isCharacter##",index).c_str(), &physicsComponent.isCharacter);
+			ImGui::Checkbox(ImGuiIDLabel("isPlayer##", index).c_str(), &isPlayer);
+			ImGui::Checkbox(ImGuiIDLabel("isAI##", index).c_str(), &isAI);
+			ImGui::Checkbox(ImGuiIDLabel("isWalkable##",index).c_str(), &isWalkable);
+			ImGui::Checkbox(ImGuiIDLabel("isObstacle##",index).c_str(), &isObstacle);
+			ImGui::Checkbox(ImGuiIDLabel("isAttached##",index).c_str(), &model.isAttached);
+			ImGui::Checkbox(ImGuiIDLabel("isEmissive##",index).c_str(), &isEmissive);
+			if (ImGui::Button(ImGuiIDLabel("Create Controller##", index).c_str()))
 			{
 				bCreateController = true;
 			}
-			ImGui::Checkbox("Render", &bRender);
+			ImGui::Checkbox(ImGuiIDLabel("Render##",index).c_str(), &bRender);
 		}
 	
 
-		if (ImGui::CollapsingHeader("Extra"))
+		if (ImGui::CollapsingHeader(ImGuiIDLabel("Extra##",index).c_str()))
 		{
-			ImGui::DragFloat3("frustumScale", &frustumScale.x, 0.01f);
-			ImGui::DragFloat3("emissiveColor", &emissiveColor.x, 0.01f);
-			ImGui::DragFloat3("BoneRot", &model.BoneRot.x, 0.01f);
+			ImGui::DragFloat3(ImGuiIDLabel("frustumScale##",index).c_str(), &frustumScale.x, 0.01f);
+			ImGui::DragFloat3(ImGuiIDLabel("emissiveColor##",index).c_str(), &emissiveColor.x, 0.01f);
+			ImGui::DragFloat3(ImGuiIDLabel("BoneRot##",index).c_str(), &model.BoneRot.x, 0.01f);
 
-			ImGui::Checkbox("isTransparent", &model.isTransparent);
-			ImGui::Checkbox("Frustum", &isfrustumEnabled);
+			ImGui::Checkbox(ImGuiIDLabel("isTransparent##",index).c_str(), &model.isTransparent);
+			ImGui::Checkbox(ImGuiIDLabel("Frustum##",index).c_str(), &isfrustumEnabled);
 		}
 
-		if (ImGui::CollapsingHeader("Physics"))
+		if (ImGui::CollapsingHeader(ImGuiIDLabel("Physics##",index).c_str()))
 		{
-			ImGui::DragFloat("Mass", &physicsComponent.mass);
-			ImGui::InputInt("triangleMeshStride", &physicsComponent.triangleMeshStride);
-			ImGui::InputInt("convexMeshDetail", &physicsComponent.convexMeshDetail);
-			ImGui::InputInt("Physics Shape", &physicsComponent.selectedShape);
+			ImGui::DragFloat(ImGuiIDLabel("Mass##",index).c_str(), &physicsComponent.mass);
+			ImGui::InputInt(ImGuiIDLabel("triangleMeshStride##",index).c_str(), &physicsComponent.triangleMeshStride);
+			ImGui::InputInt(ImGuiIDLabel("convexMeshDetail##",index).c_str(), &physicsComponent.convexMeshDetail);
+			ImGui::InputInt(ImGuiIDLabel("Physics Shape##",index).c_str(), &physicsComponent.selectedShape);
 		}
 
-		if (ImGui::Button("Apply"))
+		if (ImGui::Button(ImGuiIDLabel("Apply##",index).c_str()))
 		{
 			physicsComponent.physicsShapeEnum = static_cast<PhysicsShapeEnum>(physicsComponent.selectedShape);
 			physicsComponent.bCreatePhysicsComp = true;
@@ -472,9 +490,9 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>
 			bool open = false, save = false;
 
 			//ImGui::SameLine();
-			if (ImGui::BeginMenu("Anim Files"))
+			if (ImGui::BeginMenu(ImGuiIDLabel("Anim Files##",index).c_str()))
 			{
-				if (ImGui::MenuItem("Open", NULL))
+				if (ImGui::MenuItem(ImGuiIDLabel("Open##",index).c_str(), NULL))
 					open = true;
 
 				ImGui::EndMenu();
@@ -482,9 +500,9 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>
 
 			//Remember the name to ImGui::OpenPopup() and showFileDialog() must be same...
 			if (open)
-				ImGui::OpenPopup("Open File");
+				ImGui::OpenPopup(ImGuiIDLabel("Open File##",index).c_str());
 
-			if (file_dialog.showFileDialog("Open File", imgui_addons::ImGuiFileBrowser::DialogMode::OPEN, ImVec2(400, 200), "*.*,.obj,.dae,.gltf,.glb,.fbx"))
+			if (file_dialog.showFileDialog(ImGuiIDLabel("Open File##",index).c_str(), imgui_addons::ImGuiFileBrowser::DialogMode::OPEN, ImVec2(400, 200), "*.*,.obj,.dae,.gltf,.glb,.fbx"))
 			{
 				std::cout << file_dialog.selected_fn << std::endl;      // The name of the selected file or directory in case of Select Directory dialog mode
 				std::cout << file_dialog.selected_path << std::endl;    // The absolute path to the selected file
@@ -494,7 +512,7 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>
 
 
 			}
-			if (ImGui::Button("AddAnim"))
+			if (ImGui::Button(ImGuiIDLabel("AddAnim##",index).c_str()))
 			{
 				model.LoadAnimation(inName);
 				model.animFiles.push_back(inName);
@@ -504,7 +522,7 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>
 		}
 		if (model.isAttached)
 		{
-			if (ImGui::CollapsingHeader("Show entities"))
+			if (ImGui::CollapsingHeader(ImGuiIDLabel("Show entities##",index).c_str()))
 			{
 				std::vector<const char*> _entitiesData;
 				for (int i = 0; i < entities.size(); ++i)
@@ -513,7 +531,7 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>
 						_entitiesData.push_back(entities[i]->entityName.c_str());
 				}
 				static int listbox_current = -1;
-				ImGui::ListBox("Entities", &listbox_current, _entitiesData.data(), _entitiesData.size());
+				ImGui::ListBox(ImGuiIDLabel("Entities##",index).c_str(), &listbox_current, _entitiesData.data(), _entitiesData.size());
 
 				if (listbox_current > -1)
 				{
@@ -530,7 +548,7 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>
 
 			}
 
-			if (ImGui::CollapsingHeader("Show skeleton"))
+			if (ImGui::CollapsingHeader(ImGuiIDLabel("Show skeleton##",index).c_str()))
 			{
 				if (parent)
 				{
@@ -540,7 +558,7 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>
 						_bonesData.push_back(parent->model.boneNames[i].c_str());
 					}
 					static int listbox_current = 0;
-					ImGui::ListBox("Skeleton", &listbox_current, _bonesData.data(), _bonesData.size());
+					ImGui::ListBox(ImGuiIDLabel("Skeleton##",index).c_str(), &listbox_current, _bonesData.data(), _bonesData.size());
 
 					if (listbox_current > -1)
 						attachedBone = _bonesData[listbox_current];
@@ -550,7 +568,7 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>
 
 		if (isAnimated)
 		{
-			if (ImGui::CollapsingHeader("Show skeleton"))
+			if (ImGui::CollapsingHeader(ImGuiIDLabel("Show skeleton##",index).c_str()))
 			{
 				std::vector<const char*> _bonesData;
 				for (int i = 0; i < model.boneNames.size(); ++i)
@@ -558,7 +576,64 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>
 					_bonesData.push_back(model.boneNames[i].c_str());
 				}
 				static int listbox_current = 0;
-				ImGui::ListBox("Skeleton", &listbox_current, _bonesData.data(), _bonesData.size());
+				ImGui::ListBox(ImGuiIDLabel("Skeleton##",index).c_str(), &listbox_current, _bonesData.data(), _bonesData.size());
+			}
+		}
+
+		if (ImGui::CollapsingHeader(ImGuiIDLabel("Show attachments##",index).c_str()))
+		{
+
+			std::vector<const char*> attachmentsData;
+			for (int i = 0; i < attachedEntities.size(); ++i)
+			{
+				attachmentsData.push_back(attachedEntities[i]->entityName.c_str());
+			}
+			static int listbox_current = -1;
+			ImGui::ListBox(ImGuiIDLabel("Entities##",index).c_str(), &listbox_current, attachmentsData.data(), attachmentsData.size());
+
+			if (listbox_current > -1)
+			{
+				for (int i = 0; i < attachedEntities.size(); ++i)
+				{
+
+					if (attachedEntities[i]->entityName == attachmentsData[listbox_current])
+					{
+						if (attachedEntities[i]->physicsComponent.aActor)
+						{
+							physx::PxShape* _shape = nullptr;
+							attachedEntities[i]->physicsComponent.aActor->getShapes(&_shape, attachedEntities[i]->physicsComponent.aActor->getNbShapes());
+							if (_shape)
+								_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, true);
+
+
+						}
+						else if (attachedEntities[i]->physicsComponent.aStaticActor)
+						{
+							physx::PxShape* _shape = nullptr;
+							attachedEntities[i]->physicsComponent.aStaticActor->getShapes(&_shape, attachedEntities[i]->physicsComponent.aStaticActor->getNbShapes());
+							if (_shape)
+								_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, true);
+						}
+						attachedEntities[i]->DrawGui(scene, entities, i+1);
+					}
+					else
+					{
+						if (attachedEntities[i]->physicsComponent.aActor)
+						{
+							physx::PxShape* _shape = nullptr;
+							attachedEntities[i]->physicsComponent.aActor->getShapes(&_shape, attachedEntities[i]->physicsComponent.aActor->getNbShapes());
+							if (_shape)
+								_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, false);
+						}
+						else if (attachedEntities[i]->physicsComponent.aStaticActor)
+						{
+							physx::PxShape* _shape = nullptr;
+							attachedEntities[i]->physicsComponent.aStaticActor->getShapes(&_shape, attachedEntities[i]->physicsComponent.aStaticActor->getNbShapes());
+							if (_shape)
+								_shape->setFlag(physx::PxShapeFlag::eVISUALIZATION, false);
+						}
+					}
+				}
 			}
 		}
 	}
