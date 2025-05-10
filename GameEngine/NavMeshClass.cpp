@@ -70,7 +70,7 @@ bool NavMeshClass::CalculatePath(float& dt, Entity* start, Entity* end, AIContro
 
 		if (!solve_async.valid())
 		{
-			OutputDebugStringA(("LINE: " + std::to_string(__LINE__) + "\t").c_str());
+			//OutputDebugStringA(("LINE: " + std::to_string(__LINE__) + "\t").c_str());
 			return false;
 		}
 	}

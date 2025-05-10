@@ -97,7 +97,8 @@ private:
 		std::future<void> async_rayCastNavMesh;
 		std::vector< std::future<void>> async_navMesh;
 
-		std::future<void> async_fireRayCast, async_playerFallCheck;
+		std::future<bool> async_aiCalculatePath;
+		std::future<void> async_aiHandler, async_playerFallCheck;
 		std::vector<std::future<void>> async_fallCheck, async_lineOfSightToPlayer;
 
 		std::future<void> ai_async;

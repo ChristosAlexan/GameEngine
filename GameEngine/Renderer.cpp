@@ -602,7 +602,7 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 	if (enablePostProccess) {
 		postProcess.HbaoPlusRender(gfx11, rect, camera, gBuffer.m_shaderResourceViewArray[4], gBuffer.m_shaderResourceViewArray[5]);
 		postProcess.BloomRender(gfx11, rect, camera, gBuffer, forwardRenderTexture);
-		postProcess.SSR_Render(gfx11, rect, camera, gBuffer);
+		//postProcess.SSR_Render(gfx11, rect, camera, gBuffer);
 	}
 
 
@@ -676,8 +676,6 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 
 	if (bGuiEnabled)
 	{
-
-		
 		static bool show_app_metrics = true;
 		static bool show_app_console = false;
 		static bool show_app_log = false;
@@ -1342,7 +1340,7 @@ void Renderer::DebugDraw(Camera& camera, std::vector<SoundComponent*>& sounds, G
 
 	gfx11.deviceContext->PSSetShader(GFX_GLOBALS::testPS.GetShader(), nullptr, 0);
 	rectSmall.pos = DirectX::XMFLOAT3(2.88, -1.56, 2.878);
-	gfx11.deviceContext->PSSetShaderResources(0, 1, &environmentProbe.environmentCubeMap.shaderResourceView);
+	gfx11.deviceContext->PSSetShaderResources(0, 1, &gBuffer.m_shaderResourceViewArray[4]);
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState2D.Get(), 0);
 	gfx11.deviceContext->IASetInputLayout(GFX_GLOBALS::vs2D.GetInputLayout());
 	gfx11.deviceContext->VSSetShader(GFX_GLOBALS::vs2D.GetShader(), nullptr, 0);

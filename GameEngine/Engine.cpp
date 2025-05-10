@@ -574,23 +574,6 @@ void Engine::ObjectsHandler(float& dt)
 		entities[i]->physicsComponent.UpdatePhysics(*physicsHandler.mPhysics, *physicsHandler.aScene);
 		entities[i]->Update(renderer.bEnableSimulation);
 
-		if (entities[i]->model.isAttached)
-		{
-			if (entities[i]->parent)
-			{
-				if (!entities[i]->parentName.empty() && (entities[i]->parent->entityName == entities[i]->parentName))
-					entities[i]->SetupAttachment(entities[i]->parent);
-				else
-				{
-					for (int j = 0; j < entities.size(); ++j)
-					{
-						if (entities[j]->entityName == entities[i]->parentName)
-							entities[i]->SetupAttachment(entities[j].get());
-					}
-				}
-			}
-		}
-
 		if (entities[i]->physicsComponent.aStaticActor)
 		{
 			if (renderer.bEnableSimulation)
@@ -706,8 +689,10 @@ void Engine::AIHandler(float& dt)
 						
 				if (async_navMesh[i]._Is_ready())
 				{
-					if (!navMeshes[i].CalculatePath(dt, AIEntities[i].get(), player.get(), enemyController, grid, gravity))
-						OutputDebugStringA("Error in A* calculations!\n");
+
+					//async_aiCalculatePath = std::async(std::launch::async, &NavMeshClass::CalculatePath, &navMeshes[i], std::ref(dt), AIEntities[i].get(), player.get(), std::ref(enemyController), std::ref(grid), std::ref(gravity));
+					navMeshes[i].CalculatePath(dt, AIEntities[i].get(), player.get(), enemyController, grid, gravity);
+
 				}
 					
 			}

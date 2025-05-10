@@ -385,6 +385,9 @@ void PhysicsComponent::CreatePickingShape(physx::PxPhysics& physics, physx::PxSc
 	current_scale = _scale;
 
 	aMaterial = physics.createMaterial(1.0f, 1.0f, 0.9f);
+	_scale.x = std::clamp(_scale.x, 0.01f, 10000.0f);
+	_scale.y = std::clamp(_scale.y, 0.01f, 10000.0f);
+	_scale.z = std::clamp(_scale.z, 0.01f, 10000.0f);
 	aStaticActor = physx::PxCreateStatic(physics, physx::PxTransform(_pos), physx::PxBoxGeometry(_scale.x, _scale.y, _scale.z), *aMaterial);
 
 	aStaticActor->getShapes(&aShape, aStaticActor->getNbShapes());

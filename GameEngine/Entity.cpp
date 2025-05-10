@@ -396,7 +396,7 @@ void Entity::DrawGui(physx::PxScene& scene, std::vector<std::shared_ptr<Entity>>
 	ImGui::DragFloat3("pos", &pos.x, 0.01f);
 	if (physicsComponent.aActor || physicsComponent.aStaticActor || physicsComponent.isCharacter)
 	{
-		ImGui::DragFloat3("scale", &physicsComponent.physics_scale.x, 0.01f);
+		ImGui::DragFloat3("scale", &physicsComponent.physics_scale.x, 0.01f, 0.1f);
 		ImGui::DragFloat4("rot", &physicsComponent.physics_rot.x, 0.5f);
 	}
 	else

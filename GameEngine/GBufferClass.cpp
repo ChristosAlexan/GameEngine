@@ -9,12 +9,12 @@ GBufferClass::GBufferClass()
 
 void GBufferClass::Initialize(DX11& gfx11, int width, int height)
 {
-	albedoTexture.Initialize(gfx11.device.Get(), width,height, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	albedoTexture.Initialize(gfx11.device.Get(), width,height, DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM);
 	normalTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	metallicRoughnessTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	worldPositionTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R32G32B32A32_FLOAT);
-	depthTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	specularEmmissionTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	metallicRoughnessTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
+	worldPositionTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	depthTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
+	specularEmmissionTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
 	lightPassTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
 
 	m_renderTargetTextureArray[0] = albedoTexture.m_renderTargetTexture.Get();
