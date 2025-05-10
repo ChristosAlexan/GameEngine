@@ -49,9 +49,13 @@ Renderer::Renderer()
 	deferredLightsDistance = 1000.0f;
 	bloomBrightness = 0.3f;
 	bloomStrength = 0.25f;
-	shadowBias = 0.0000001;
+	shadowBias = 0.001;
 	aspectRatio = 0.0f;
 	ambientStrength = 0.2f;
+
+	depthBias = 1000;
+	slopeBias = 1.5f;
+	clamp = 0.0f;
 
 	GFX_GLOBALS::cb_ps_cameraBuffer.data.testValues.x = 0;
 	GFX_GLOBALS::cb_ps_cameraBuffer.data.testValues.y = 0;
@@ -500,7 +504,7 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 	CD3D11_RASTERIZER_DESC shadowRasterizerDesc(D3D11_DEFAULT);
 	
 	shadowRasterizerDesc.FillMode = D3D11_FILL_SOLID;
-	shadowRasterizerDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_FRONT;
+	shadowRasterizerDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
 	shadowRasterizerDesc.DepthBias = depthBias;
 	shadowRasterizerDesc.DepthBiasClamp = clamp;
 	shadowRasterizerDesc.SlopeScaledDepthBias = slopeBias;

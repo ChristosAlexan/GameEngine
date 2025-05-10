@@ -1,7 +1,7 @@
 mass= 4
-posX= -3.40642
-posY= 0.349665
-posZ= -5.0339
+posX= -5.86348
+posY= 0.270436
+posZ= -7.53864
 rotX= -1.61
 rotY= 0
 rotZ= 0
@@ -41,5 +41,5 @@ isTextured= 1
 isDDS= 1
 physicsShape= 4
 animFilesCount= 0
-entityName= Entity133
+entityName= Entity1
 filePath= .//Data/Objects/glTF-Sample-Models-master/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf

@@ -28,26 +28,6 @@ void PostProcessClass::Initialize(DX11& gfx11, int width, int height, float aspe
 
 	bloomRenderTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	SsrRenderTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
-
-	//SSAO SAMPLE KERNEL
-	using namespace DirectX;
-	std::vector<DirectX::XMFLOAT3> ssaoKernel;
-	std::uniform_real_distribution<float> randFloat(0.0f, 1.0f);
-	std::default_random_engine gen;
-
-	for (int i = 0; i < 64; ++i) {
-		DirectX::XMFLOAT3 sample(
-			randFloat(gen) * 2.0f - 1.0f,
-			randFloat(gen) * 2.0f - 1.0f,
-			randFloat(gen)
-		);
-		DirectX::XMVECTOR vec = DirectX::XMVector3Normalize(XMLoadFloat3(&sample));
-		float scale = float(i) / 64.0f;
-		scale = 0.1f + 0.9f * scale * scale; // bias toward center
-		vec *= scale;
-		XMStoreFloat3(&sample, vec);
-		ssaoKernel.push_back(sample);
-	}
 }
 
 void PostProcessClass::BloomRender(DX11& gfx11, RectShape& rect, Camera& camera, GBufferClass& gbuffer, RenderTexture& forwardPassText)
