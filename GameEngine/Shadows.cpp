@@ -21,19 +21,6 @@ void Shadows::RenderToTexture(DX11& gfx11, std::vector<std::shared_ptr<Entity>>&
 	light->m_shadowMap.ClearRenderTarget(gfx11.deviceContext.Get(), light->m_shadowMap.m_depthStencilView.Get(), 0.0f, 0.0f, 0.0f, 1.0f);
 	
 	RenderShadowEntities(gfx11.deviceContext.Get(), gfx11, entities, light, camera, renderDistance);
-
-	auto futureCmd = RecordShadowCommandListAsync(gfx11, entities, light, camera, renderDistance);
-
-	//if (futureCmd._Is_ready())
-	//{
-	//	ID3D11CommandList* cmd = futureCmd.get(); // Waits for the thread to finish
-	//	if (cmd)
-	//	{
-	//		gfx11.deviceContext->ExecuteCommandList(cmd, TRUE);
-	//		cmd->Release();
-	//	}
-	//}
-	
 }
 
 void Shadows::RenderShadowEntities(ID3D11DeviceContext* ctx, DX11& gfx11, std::vector<std::shared_ptr<Entity>>& entities, Light* light, Camera& camera,float& renderDistance)
@@ -188,23 +175,4 @@ void Shadows::SoftShadows(DX11& gfx11, GBufferClass& gbuffer, RectShape& rect, C
 	rect.Draw(gfx11.deviceContext.Get(), camera, GFX_GLOBALS::cb_vs_vertexshader);
 
 	gfx11.deviceContext->OMSetDepthStencilState(gfx11.depthStencilState.Get(), 0);
-}
-
-std::future<ID3D11CommandList*> Shadows::RecordShadowCommandListAsync(DX11& gfx11, std::vector<std::shared_ptr<Entity>>& entities, Light* light, Camera& camera, float renderDistance)
-{
-	return std::async(std::launch::async, [&]()
-		{
-			ID3D11DeviceContext* deferredCtx = nullptr;
-			gfx11.device->CreateDeferredContext(0, &deferredCtx);
-
-			light->m_shadowMap.SetRenderTarget(deferredCtx, light->m_shadowMap.m_depthStencilView.Get());
-			light->m_shadowMap.ClearRenderTarget(deferredCtx, light->m_shadowMap.m_depthStencilView.Get(), 0, 0, 0, 1);
-
-			RenderShadowEntities(deferredCtx, gfx11, entities, light, camera, renderDistance);
-
-			ID3D11CommandList* commandList = nullptr;
-			deferredCtx->FinishCommandList(FALSE, &commandList);
-			deferredCtx->Release();
-			return commandList;
-		});
 }

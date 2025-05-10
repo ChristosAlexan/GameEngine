@@ -523,15 +523,11 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 				{
 					gfx11.deviceContext->RSSetState(shadowRasterizerState.Get());
 					shadowsRenderer.RenderShadows(gfx11, entities, culledShadowLights[i].get(), camera, shadowLightsDistance, i);
-					gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
-
 				}
-
 			}
 		}
-
 	}
-
+	gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 	//ClearScreen();
 	////////////
 	environmentProbe.UpdateCamera();

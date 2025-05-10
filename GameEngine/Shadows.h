@@ -18,12 +18,6 @@ public:
 	void RenderShadows(DX11& gfx11, std::vector<std::shared_ptr<Entity>>& entities, Light* light, Camera& camera, float& renderDistance, int& index);
 	void SoftShadows(DX11& gfx11, GBufferClass& gbuffer, RectShape& rect, Camera& camera, std::vector<std::shared_ptr<Light>>& culledShadowLights);
 
-	std::future<ID3D11CommandList*> RecordShadowCommandListAsync(DX11& gfx11,
-		std::vector<std::shared_ptr<Entity>>& entities,
-		Light* light,
-		Camera& camera,
-		float renderDistance);
-
 	RenderTexture shadowRenderTexture;
 	RenderTexture downSampleTexture, horizontalGaussianBlurTexture, verticalGaussianBlurTexture;
 };
