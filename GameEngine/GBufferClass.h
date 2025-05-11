@@ -23,5 +23,7 @@ public:
 	ID3D11Texture2D* m_renderTargetTextureArray[BUFFER_COUNT];
 	ID3D11RenderTargetView* m_renderTargetViewArray[BUFFER_COUNT];
 	ID3D11ShaderResourceView* m_shaderResourceViewArray[BUFFER_COUNT];
+
+	ModelLoader sphere;
 };
 

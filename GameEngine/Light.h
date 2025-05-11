@@ -17,9 +17,9 @@ public:
 	void UpdateCamera();
 	Camera* GetCamera();
 	void DrawGui(std::string name);
-	void Draw(ID3D11DeviceContext* deviceContext, Camera& camera);
+	void Draw(ID3D11DeviceContext* deviceContext, Camera& camera, ModelLoader& _sphere);
 
-	void DrawVolume(Camera& camera);
+	void DrawVolume(Camera& camera, ModelLoader& _sphere);
 
 	void Clear();
 	DirectX::XMMATRIX lightViewMatrix;
@@ -74,7 +74,7 @@ public:
 
 	//CubeShape cube;
 
-	ModelLoader sphere;
+	//ModelLoader sphere;
 private:
 	int m_screenWidth, m_screenHeight;
 

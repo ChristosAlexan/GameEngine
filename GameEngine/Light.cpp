@@ -59,10 +59,10 @@ void Light::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 	this->cb_vs_vertexshader = cb_vs_vertexshader;
 
 
-	sphere.loadAsync = true;
-	sphere.isTextured = false;
-	//sphere.Initialize(".//Data/Objects/skyDome.obj", device, deviceContext, cb_vs_vertexshader, false);
-	sphere.Initialize(".//Data/Objects/lightVolume.obj", device, deviceContext, cb_vs_vertexshader, false);
+	//sphere.loadAsync = true;
+	//sphere.isTextured = false;
+	////sphere.Initialize(".//Data/Objects/skyDome.obj", device, deviceContext, cb_vs_vertexshader, false);
+	//sphere.Initialize(".//Data/Objects/lightVolume.obj", device, deviceContext, cb_vs_vertexshader, false);
 }
 
 void Light::SetupCamera(int windowWidth, int windowHeight)
@@ -158,7 +158,7 @@ void Light::DrawGui(std::string name)
 	ImGui::DragFloat("dimmensions", &dimensions, 0.05f);
 }
 
-void Light::Draw(ID3D11DeviceContext* deviceContext, Camera& camera)
+void Light::Draw(ID3D11DeviceContext* deviceContext, Camera& camera, ModelLoader& _sphere)
 {
 	DirectX::XMMATRIX matrix_scale;
 	DirectX::XMMATRIX matrix_rotate;
@@ -170,7 +170,7 @@ void Light::Draw(ID3D11DeviceContext* deviceContext, Camera& camera)
 	matrix_translate = DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 	worldMatrix = matrix_scale * matrix_rotate * matrix_translate;
 
-	sphere.Draw(deviceContext, worldMatrix,camera.GetViewMatrix(),camera.GetProjectionMatrix());
+	_sphere.Draw(deviceContext, worldMatrix,camera.GetViewMatrix(),camera.GetProjectionMatrix());
 	//DrawVolume(camera);
 	//sphere.pos = pos;
 	//sphere.rot = rot;
@@ -178,7 +178,7 @@ void Light::Draw(ID3D11DeviceContext* deviceContext, Camera& camera)
 	//cube.Draw(deviceContext, camera, cb_vs_vertexshader);
 }
 
-void Light::DrawVolume(Camera& camera)
+void Light::DrawVolume(Camera& camera, ModelLoader& _sphere)
 {
 	DirectX::XMMATRIX matrix_scale;
 	DirectX::XMMATRIX matrix_rotate;
@@ -191,10 +191,10 @@ void Light::DrawVolume(Camera& camera)
 	matrix_rotate = DirectX::XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z);
 	matrix_translate = DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 	worldMatrix = matrix_scale * matrix_rotate * matrix_translate;
-	sphere.Draw(deviceContext, worldMatrix, camera.GetViewMatrix(), camera.GetProjectionMatrix());
+	_sphere.Draw(deviceContext, worldMatrix, camera.GetViewMatrix(), camera.GetProjectionMatrix());
 }
 
 void Light::Clear()
 {
-	sphere.Clear();
+	//sphere.Clear();
 }

@@ -49,7 +49,7 @@ Renderer::Renderer()
 	deferredLightsDistance = 1000.0f;
 	bloomBrightness = 0.3f;
 	bloomStrength = 0.25f;
-	shadowBias = 0.001;
+	shadowBias = 0.001f;
 	aspectRatio = 0.0f;
 	ambientStrength = 0.2f;
 
@@ -309,7 +309,7 @@ void Renderer::RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, st
 
 			if (dist < renderDistance)
 			{
-				lights[i]->Draw(gfx11.deviceContext.Get(), camera);
+				lights[i]->Draw(gfx11.deviceContext.Get(), camera, gBuffer.sphere);
 			}
 		}
 	}
@@ -320,13 +320,13 @@ void Renderer::RenderDeferred(std::vector<std::shared_ptr<Entity>>& entities, st
 		GFX_GLOBALS::cb_ps_materialBuffer.data.bEmissive = 1.0f;
 		GFX_GLOBALS::cb_ps_materialBuffer.UpdateBuffer();
 	
-		pointLights[i]->Draw(gfx11.deviceContext.Get(), camera);
+		pointLights[i]->Draw(gfx11.deviceContext.Get(), camera, gBuffer.sphere);
 	}
 
 
 	gfx11.deviceContext->IASetInputLayout(GFX_GLOBALS::instancedVS.GetInputLayout());
 	gfx11.deviceContext->VSSetShader(GFX_GLOBALS::instancedVS.GetShader(), nullptr, 0);
-	//instancedShape.Draw(gfx11.deviceContext.Get(), camera, GFX_GLOBALS::cb_vs_vertexshader,GFX_GLOBALS::cb_vs_instanceShader);
+	instancedShape.Draw(gfx11.deviceContext.Get(), camera, GFX_GLOBALS::cb_vs_vertexshader,GFX_GLOBALS::cb_vs_instanceShader);
 
 	gfx11.deviceContext->OMSetBlendState(gfx11.blendState.Get(), NULL, 0xFFFFFFFF);
 	gfx11.deviceContext->PSSetShader(GFX_GLOBALS::testPS.GetShader(), nullptr, 0);

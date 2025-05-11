@@ -22,51 +22,6 @@ void InstancedShape::Initialize(ID3D11Device* device)
     D3D11_SUBRESOURCE_DATA vertexData, instanceData;
     HRESULT result;
 
-	//std::vector<Vertex> vertices;
-	//
-	//vertices.push_back(Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 0.0f));	 // bottom-left
-	//vertices.push_back(Vertex(1.0f, 1.0f, -1.0f, 1.0f, 1.0f));		// top-right
-	//vertices.push_back(Vertex(1.0f, -1.0f, -1.0f, 1.0f, 0.0f));		 // bottom-right         
-	//vertices.push_back(Vertex(1.0f, 1.0f, -1.0f, 1.0f, 1.0f));		// top-right
-	//vertices.push_back(Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 0.0f));	 // bottom-left
-	//vertices.push_back(Vertex(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f));	// top-left
-	//// front face
-	//vertices.push_back(Vertex(-1.0f, -1.0f, 1.0f, 0.0f, 0.0f));	// bottom-left
-	//vertices.push_back(Vertex(1.0f, -1.0f, 1.0f, 1.0f, 0.0f));// bottom-right
-	//vertices.push_back(Vertex(1.0f, 1.0f, 1.0f, 1.0f, 1.0f));// top-right
-	//vertices.push_back(Vertex(1.0f, 1.0f, 1.0f, 1.0f, 1.0f));// top-right
-	//vertices.push_back(Vertex(-1.0f, 1.0f, 1.0f, 0.0f, 1.0f));// top-left
-	//vertices.push_back(Vertex(-1.0f, -1.0f, 1.0f, 0.0f, 0.0f));	// bottom-left
-	//	// left face
-	//vertices.push_back(Vertex(-1.0f, 1.0f, 1.0f, 1.0f, 0.0f));		// top-right
-	//vertices.push_back(Vertex(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f));	// top-left
-	//vertices.push_back(Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f));		// bottom-left
-	//vertices.push_back(Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f));		// bottom-left
-	//vertices.push_back(Vertex(-1.0f, -1.0f, 1.0f, 0.0f, 0.0f));	// bottom-right
-	//vertices.push_back(Vertex(-1.0f, 1.0f, 1.0f, 1.0f, 0.0f));	// top-right
-	//									// right face
-	//vertices.push_back(Vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f));// top-left
-	//vertices.push_back(Vertex(1.0f, -1.0f, -1.0f, 0.0f, 1.0f));	// bottom-right
-	//vertices.push_back(Vertex(1.0f, 1.0f, -1.0f, 1.0f, 1.0f));	// top-right         
-	//vertices.push_back(Vertex(1.0f, -1.0f, -1.0f, 0.0f, 1.0f));	 // bottom-right
-	//vertices.push_back(Vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f));	 // top-left
-	//vertices.push_back(Vertex(1.0f, -1.0f, 1.0f, 0.0f, 0.0f));	// bottom-left     
-	//								  // bottom face
-	//vertices.push_back(Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f));	 // top-right
-	//vertices.push_back(Vertex(1.0f, -1.0f, -1.0f, 1.0f, 1.0f));	// top-left
-	//vertices.push_back(Vertex(1.0f, -1.0f, 1.0f, 1.0f, 0.0f));	// bottom-left
-	//vertices.push_back(Vertex(1.0f, -1.0f, 1.0f, 1.0f, 0.0f));	// bottom-left
-	//vertices.push_back(Vertex(-1.0f, -1.0f, 1.0f, 0.0f, 0.0f));	// bottom-right
-	//vertices.push_back(Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f));		// top-right
-	//									// top face
-	//vertices.push_back(Vertex(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f));	 // top-left
-	//vertices.push_back(Vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f));	// bottom-right
-	//vertices.push_back(Vertex(1.0f, 1.0f, -1.0f, 1.0f, 1.0f));	// top-right     
-	//vertices.push_back(Vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f));	// bottom-right
-	//vertices.push_back(Vertex(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f));	// top-left
-	//vertices.push_back(Vertex(-1.0f, 1.0f, 1.0f, 0.0f, 0.0f));		// bottom-left    
-
-
 	Vertex vertices[] =
 	{
 		Vertex(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f), // +Y (top face)
@@ -228,7 +183,6 @@ void InstancedShape::Draw(ID3D11DeviceContext* deviceContext, Camera& camera, Co
 	cb_vs_vertexshader.UpdateBuffer();
 
 	deviceContext->DrawIndexedInstanced(indexBuffer.IndexCount(), m_instanceCount,0 , 0, 0);
-	//deviceContext->DrawInstanced(vertexBuffer.VertexCount(), m_instanceCount, 0, 0);
 }
 
 int InstancedShape::GetInstanceCount()

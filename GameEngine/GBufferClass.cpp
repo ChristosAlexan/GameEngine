@@ -9,6 +9,11 @@ GBufferClass::GBufferClass()
 
 void GBufferClass::Initialize(DX11& gfx11, int width, int height)
 {
+	sphere.loadAsync = true;
+	sphere.isTextured = false;
+	//sphere.Initialize(".//Data/Objects/skyDome.obj", device, deviceContext, cb_vs_vertexshader, false);
+	sphere.Initialize(".//Data/Objects/lightVolume.obj", gfx11.device.Get(), gfx11.deviceContext.Get(), GFX_GLOBALS::cb_vs_vertexshader, false);
+
 	albedoTexture.Initialize(gfx11.device.Get(), width,height, DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM);
 	normalTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	metallicRoughnessTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -92,7 +97,7 @@ void GBufferClass::LightPass(DX11& gfx11, RectShape& rect, Camera& camera, std::
 			DirectX::XMFLOAT3 diff = DirectX::XMFLOAT3(camera.GetPositionFloat3().x - pointLights[i]->pos.x, camera.GetPositionFloat3().y - pointLights[i]->pos.y, camera.GetPositionFloat3().z - pointLights[i]->pos.z);
 			physx::PxVec3 diffVec = physx::PxVec3(diff.x, diff.y, diff.z);
 			float dist = diffVec.dot(diffVec);
-			pointLights[i]->DrawVolume(camera);
+			pointLights[i]->DrawVolume(camera, sphere);
 		}
 	}
 
