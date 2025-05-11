@@ -8,10 +8,10 @@ Shadows::Shadows()
 
 void Shadows::Initialize(DX11& gfx11, int width, int height, float aspectRatio)
 {
-	shadowRenderTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	downSampleTexture.Initialize(gfx11.device.Get(), width / 2, height / 2, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	horizontalGaussianBlurTexture.Initialize(gfx11.device.Get(), width / 2, height / 2, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	verticalGaussianBlurTexture.Initialize(gfx11.device.Get(), width / 2, height / 2, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	//shadowRenderTexture.Initialize(gfx11.device.Get(), width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	//downSampleTexture.Initialize(gfx11.device.Get(), width / 2, height / 2, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	//horizontalGaussianBlurTexture.Initialize(gfx11.device.Get(), width / 2, height / 2, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	//verticalGaussianBlurTexture.Initialize(gfx11.device.Get(), width / 2, height / 2, DXGI_FORMAT_R16G16B16A16_FLOAT);
 
 }
 

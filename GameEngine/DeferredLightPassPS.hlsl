@@ -57,7 +57,7 @@ float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness);
 float DistributionGGX(float3 N, float3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(float3 N, float3 V, float3 L, float roughness);
-float3 pointLight(PS_INPUT input, float3 albedo, float3 pos, float3 color, float4 _cutOff, float3 bumpNormal, float roughness, float metallic, float3 V, float3 F0, float3 worldPos);
+float3 pointLight(PS_INPUT input, float3 albedo, float3 pos, float3 color, float4 _radiuscutOff, float3 bumpNormal, float roughness, float metallic, float3 V, float3 F0, float3 worldPos);
 float3 ReinhardToneMapping(float3 color, float exposure)
 {
     float3 mappedColor = color / (color + 1.0);
@@ -75,6 +75,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     if (dot(bumpNormal, bumpNormal) < 0.001)
         discard;
 
+    bumpNormal = normalize(bumpNormal);
     
     float4 albedo = objTexture.Sample(SampleTypeWrap, texCoords);
     
@@ -86,12 +87,12 @@ float4 main(PS_INPUT input) : SV_TARGET
     
     if (emission == 1.0f)
     {
-        bumpNormal = float4(1, 1, 1, 1);
+        bumpNormal = float4(0.577f, 0.577f, 0.577f, 1);
         metallic = 0;
         roughness = 0;
 
     }
-    
+  
     float3 V = normalize(cameraPos.xyz - worldPos);
 
     float3 ambient = float3(0.1, 0.1, 0.1);
@@ -100,7 +101,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     F0 = lerp(F0, albedo.rgb, metallic);
     float3 Lo = float3(0.0f, 0.0f, 0.0f);
     
-    Lo = pointLight(input, albedo.rgb, pointdynamicLightPosition.xyz, pointdynamicLightColor.rgb, pointRadiusAndcutOff.y, bumpNormal.xyz, roughness, metallic, V, F0, worldPos);
+    Lo = pointLight(input, albedo.rgb, pointdynamicLightPosition.xyz, pointdynamicLightColor.rgb, pointRadiusAndcutOff, bumpNormal.xyz, roughness, metallic, V, F0, worldPos);
     
     
     
@@ -156,23 +157,23 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-float3 pointLight(PS_INPUT input, float3 albedo, float3 pos, float3 color, float4 _cutOff, float3 bumpNormal, float roughness, float metallic, float3 V, float3 F0, float3 worldPos)
+float3 pointLight(PS_INPUT input, float3 albedo, float3 pos, float3 color, float4 _radiuscutOff, float3 bumpNormal, float roughness, float metallic, float3 V, float3 F0, float3 worldPos)
 {
     float3 L = normalize(pos.xyz - worldPos.xyz).xyz;
     
-    //float theta = dot(L, normalize(-lightDirectionAndSpecularPower[index].xyz));
-    float outerCutOff = _cutOff.x / 3.0f;
-    float epsilon = _cutOff.x - outerCutOff;
+    float outerCutOff = _radiuscutOff.y / 3.0f;
+    float epsilon = _radiuscutOff.y - outerCutOff;
     float intensity = clamp((L - outerCutOff) / epsilon, 0.0f, 1.0f);
     
     float3 H = normalize(V + L);
-        
-    float distance = length(pos.xyz - worldPos.xyz);
-    //float attenuation = 1.0f / (distance * distance);
+ 
+    float distance = length(pos - worldPos);
     float attenuation = 1.0f / (distance * distance) * epsilon;
     float3 radiance = color.xyz * attenuation;
-
-        
+    float radius = _radiuscutOff.x; // .x is the radius
+    if (distance > radius)
+        discard;
+    
     float NDF = DistributionGGX(bumpNormal, H, roughness);
     float G = GeometrySmith(bumpNormal, V, L, roughness);
     float3 F = fresnelSchlick(max(dot(H, V), 0.0f), F0);

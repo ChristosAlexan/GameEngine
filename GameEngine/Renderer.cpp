@@ -567,8 +567,8 @@ void Renderer::Render(Camera& camera, std::vector<std::shared_ptr<Entity>>& enti
 	gfx11.deviceContext->RSSetState(gfx11.rasterizerState.Get());
 
 	// === SOFT SUN SHADOWS ===
-	shadowsRenderer.SoftShadows(gfx11, gBuffer, rect, camera, culledShadowLights);
-	ClearScreen();
+	//shadowsRenderer.SoftShadows(gfx11, gBuffer, rect, camera, culledShadowLights);
+	//ClearScreen();
 
 	gfx11.deviceContext->PSSetShaderResources(6, 1, &pbr.prefilterCubeMap.shaderResourceView);
 	gfx11.deviceContext->PSSetShaderResources(7, 1, &pbr.brdfTexture.shaderResourceView);

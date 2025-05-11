@@ -1,4 +1,4 @@
-#define NO_LIGHTS 16
+#define NO_LIGHTS 20
 
 cbuffer lightBuffer : register(b0)
 {
@@ -94,6 +94,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     if (dot(bumpNormal, bumpNormal) < 0.001)
         discard;
 
+    bumpNormal = normalize(bumpNormal);
     uint2 textureSize;
     // Retrieve dimensions of the world position texture
     worldPositionTexture.GetDimensions(textureSize.x, textureSize.y);
@@ -149,7 +150,7 @@ float4 main(PS_INPUT input) : SV_TARGET
                     if (lightTypeEnableShadows[i].y == 1.0f)
                     {
                         if(i==0)
-                            Lo += dirLight(input, albedo.rgb, bumpNormal, roughness, metallic, V, F0, worldPos.xyz, i) * sunShadows; //* Shadows(worldPos, depthMapTextures[i], input, i);
+                            Lo += dirLight(input, albedo.rgb, bumpNormal, roughness, metallic, V, F0, worldPos.xyz, i) * Shadows(worldPos, depthMapTextures[i], input, i);
                         else
                             Lo *= Shadows(worldPos, depthMapTextures[i], input, i);
                     }
