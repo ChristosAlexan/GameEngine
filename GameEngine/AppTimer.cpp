@@ -78,3 +78,16 @@ float AppTimer::GetMilliseconds()
 
 	return elapsed.count();
 }
+
+void AppTimer::CalculateDeltaTime(float& deltaTime, float& fps)
+{
+    auto now = std::chrono::high_resolution_clock::now();
+
+    const float minDelta = 1e-6f;
+    deltaTime = std::max(std::chrono::duration<float>(now - lastTime).count(), minDelta);
+    lastTime = now;
+
+    fps = 1.0f / deltaTime;
+
+    OutputDebugStringA(("fps = " + std::to_string(fps) + " | dt = " + std::to_string(deltaTime) + "\n").c_str());
+}

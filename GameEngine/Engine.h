@@ -104,4 +104,16 @@ private:
 		std::future<void> ai_async;
 
 		int entityToCopy = -1;
+
+
+
+		float dt = 0.0f;
+		float fps = 0.0f;
+
+		enum DX_API
+		{
+			DX11_API = 0,
+			DX12_API = 1
+		};
+		DX_API dx_api = DX_API::DX11_API;
 };

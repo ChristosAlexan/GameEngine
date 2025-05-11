@@ -5,7 +5,6 @@ FpsController::FpsController()
 	isJumping = false;
 	timer.Start();
 	currRotation = RotationEnum::UP;
-	//gravity = -0.2f;
 }
 
 void FpsController::MouseMovement(float& dt, Entity& entity, Keyboard& keyboard, Mouse& mouse, Camera& camera)
@@ -215,19 +214,18 @@ void FpsController::Movement(float& dt, float gravity, Entity* entity, Keyboard&
 					canPressSpace = false;
 					timer.Restart();
 					isJumping = true;
-					entity->physicsComponent.aActor->addForce(physx::PxVec3(moveX, 200.0f, moveZ), physx::PxForceMode::eIMPULSE);
+					entity->physicsComponent.aActor->addForce(physx::PxVec3(moveX, 500.0f, moveZ), physx::PxForceMode::eIMPULSE);
 				}
 			}
 			
 			if (!keyboard.KeyIsPressed(VK_SPACE))
 			{
-				//OutputDebugStringA("FREED!!!!!!!\n");
 				canPressSpace = true;
 			}
 		}
 		
 
-		if (timer.GetMilisecondsElapsed() > 5.0f*dt)
+		if (timer.GetMilisecondsElapsed() > 5000.0f*dt)
 		{
 			if (!entity->isFalling && isJumping)
 			{

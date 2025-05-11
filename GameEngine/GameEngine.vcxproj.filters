@@ -94,6 +94,15 @@
     <Filter Include="Model\Source files">
       <UniqueIdentifier>{a36555b9-9eff-4f39-8a36-89b222266969}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GFX\DX12">
+      <UniqueIdentifier>{1f869a31-af56-4e9d-90cc-2b35a4e0cda9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GFX\DX12\Header Files">
+      <UniqueIdentifier>{b84f2283-2d83-49b4-b0a5-e2024067992f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GFX\DX12\Source Files">
+      <UniqueIdentifier>{24b76261-ad55-4d93-b8aa-0817753b3067}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">

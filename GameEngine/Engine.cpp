@@ -6,7 +6,7 @@ using namespace DirectX;
 
 Engine::Engine()
 {
-	//player = nullptr;
+	dx_api = DX11_API;
 }
 
 bool Engine::Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height)
@@ -63,25 +63,33 @@ bool Engine::Initialize(HINSTANCE hInstance, std::string window_title, std::stri
 			player = entities[i];
 		}
 	}
-	if (!renderer.Initialize(this->render_window.GetHWND(), camera, width, height, entities, lights, pointlights))
-		return false;
 
-	for (int i = 0; i < collisionObjects.size(); ++i)
+
+	if (dx_api == DX11_API)
 	{
-		collisionObjects[i].Initialize(renderer.gfx11.device.Get());
+		if (!renderer.Initialize(this->render_window.GetHWND(), camera, width, height, entities, lights, pointlights))
+			return false;
+
+
+
+		for (int i = 0; i < collisionObjects.size(); ++i)
+		{
+			collisionObjects[i].Initialize(renderer.gfx11.device.Get());
+		}
+
+		renderer.InitScene(entities, lights, pointlights, camera, sky);
+		physicsHandler.CreatePhysicsComponents(entities, collisionObjects);
+
+		grid.InitializeBoundsVolume(renderer.gfx11.device.Get());
+
+
+
+		tpsPlayerController.Intitialize(renderer.gfx11.device.Get());
+		backGroundSound.Initialize("./Data/Sounds/through space.ogg", true, renderer.gfx11.device.Get());
+		backGroundSound.cube.pos = DirectX::XMFLOAT3(6.39f, 2.0f, 4.34f);
+		sounds.push_back(&backGroundSound);
 	}
 
-	renderer.InitScene(entities, lights,pointlights, camera,sky);
-	physicsHandler.CreatePhysicsComponents(entities, collisionObjects);
-	
-	grid.InitializeBoundsVolume(renderer.gfx11.device.Get());
-
-
-
-	tpsPlayerController.Intitialize(renderer.gfx11.device.Get());
-	backGroundSound.Initialize("./Data/Sounds/through space.ogg",true, renderer.gfx11.device.Get());
-	backGroundSound.cube.pos = DirectX::XMFLOAT3(6.39f, 2.0f, 4.34f);
-	sounds.push_back(&backGroundSound);
 
 	return true;
 }
@@ -95,10 +103,8 @@ void Engine::Update(int width, int height)
 {
 	ImGuiIO& io = ImGui::GetIO();
 
-	//float dt = timer.GetMilliseconds();
 
-	float dt = 1000.0f / io.Framerate;
-	float fps = io.Framerate;
+	timer.CalculateDeltaTime(dt, fps);
 	timer.Restart();
 	
 	if (keyboard.KeyIsPressed(VK_ESCAPE))
@@ -106,7 +112,7 @@ void Engine::Update(int width, int height)
 		this->render_window.~RenderWindow();
 	}
 
-	float cameraSpeed = 0.001f;
+	float cameraSpeed = 5.0f;
 
 
 
@@ -133,7 +139,7 @@ void Engine::Update(int width, int height)
 
 				if (keyboard.KeyIsPressed(VK_SHIFT))
 				{
-					cameraSpeed = 0.01;
+					cameraSpeed = 10.0f;
 				}
 				if (keyboard.KeyIsPressed('W'))
 				{
@@ -246,7 +252,8 @@ void Engine::Update(int width, int height)
 		bCanPaste = true;
 	}
 
-	RenderFrame(dt, fps);
+	if(dx_api == DX11_API)
+		RenderFrame(dt, fps);
 
 
 	if (keyboard.KeyIsPressed(VK_RETURN))

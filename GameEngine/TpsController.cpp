@@ -64,11 +64,11 @@ void TpsController::MouseMovement(float& dt, Entity& entity, Keyboard& keyboard,
 
 		if (mouse.IsRightDown())
 		{
-			zoom -= 0.008f * dt;
+			zoom -= 10.0f * dt;
 		}
 		else
 		{
-			zoom += 0.008f * dt;
+			zoom += 10.0f * dt;
 		}
 		zoom = std::clamp(zoom, 0.8f, 2.0f);
 
@@ -267,7 +267,7 @@ void TpsController::Movement(float& dt, float gravity, Entity& entity, Keyboard&
 					canPressSpace = false;
 					timer.Restart();
 					isJumping = true;
-					entity.physicsComponent.aActor->addForce(physx::PxVec3(moveX, 350.0f, moveZ), physx::PxForceMode::eIMPULSE);
+					entity.physicsComponent.aActor->addForce(physx::PxVec3(moveX, 300.0f, moveZ), physx::PxForceMode::eIMPULSE);
 				}
 			}
 
@@ -278,7 +278,7 @@ void TpsController::Movement(float& dt, float gravity, Entity& entity, Keyboard&
 		}
 
 
-		if (timer.GetMilisecondsElapsed() > 2.0f * dt)
+		if (timer.GetMilisecondsElapsed() > 5000.0f * dt)
 		{
 			if (!entity.isFalling && isJumping)
 			{
