@@ -34,7 +34,7 @@
 #*.modelproj merge=binary
 #*.sqlproj   merge=binary
 #*.wwaproj   merge=binary
-
+*.i linguist-vendored
 ###############################################################################
 # behavior for image files
 #

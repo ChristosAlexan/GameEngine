@@ -177,7 +177,7 @@ void Renderer::InitScene(std::vector<std::shared_ptr<Entity>>& entities, std::ve
 		lights[i]->Initialize(gfx11.device.Get(), gfx11.deviceContext.Get(), GFX_GLOBALS::cb_vs_vertexshader);
 		if (lights[i]->lightType == 2.0f)
 		{
-			lights[i]->m_shadowMap.InitializeShadow(gfx11.device.Get(), gfx11.deviceContext.Get(), 2048, 2048, DXGI_FORMAT::DXGI_FORMAT_R16_FLOAT);
+			lights[i]->m_shadowMap.InitializeShadow(gfx11.device.Get(), gfx11.deviceContext.Get(), 6144, 6144, DXGI_FORMAT::DXGI_FORMAT_R16_FLOAT);
 		}
 		else
 		{
