@@ -31,7 +31,7 @@ Light::Light()
 	isLightEnabled = true;
 	lightType = 1.0f;
 
-	shadowRenderDist = 40.0f;
+	shadowRenderDist = 100.0f;
 }
 
 void Light::CopyData(const std::shared_ptr<Light>& other)

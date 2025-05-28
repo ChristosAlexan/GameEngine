@@ -112,7 +112,7 @@ void Engine::Update(int width, int height)
 		this->render_window.~RenderWindow();
 	}
 
-	float cameraSpeed = 5.0f;
+	float cameraSpeed = 3.0f;
 
 
 
